@@ -1,0 +1,29 @@
+[package]
+name = "sw-tools-backend"
+version = "0.0.1"
+description = "Suldokar's Wake Tools - SW character manager backend"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+
+[lib]
+name = "sw_tools_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.2", features = [] }
+tauri-plugin-dialog = "2.0"
+tauri-plugin-fs = "2.0"
+tauri-plugin-sql = { version = "2.0", features = ["sqlite"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.42", features = ["full"] }
+rand = "0.8"
+
+# Desktop-only plugins (shell is unavailable on iOS / Android)
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-shell = "2.0"

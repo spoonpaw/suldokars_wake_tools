@@ -1,0 +1,18 @@
+# Build artifacts
+backend/target/
+backend/Cargo.lock
+backend/gen/
+frontend/node_modules/
+frontend/build/
+frontend/.svelte-kit/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Env
+.env
+.env.local
