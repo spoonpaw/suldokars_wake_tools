@@ -72,9 +72,9 @@
 
 <Card title="Graph library">
   <p class="mb-3 text-xs text-neutral-400">
-    Per the rules, characters may pick up new advancement graphs during play.
-    Each graph below is one your character owns; advancement runs on whichever
-    is currently active. Default graphs cannot be edited or deleted.
+    Characters may pick up new advancement graphs during play. Each graph below
+    is one your character owns; advancement runs on whichever is currently
+    active. Default graphs cannot be edited or deleted.
   </p>
 
   {#if graphs.length === 0}
@@ -117,7 +117,9 @@
               {#if !isActive}
                 <Button variant="secondary" onclick={() => onMakeActive?.(og.id)}>Make active</Button>
               {/if}
-              <Button variant="ghost" onclick={() => onRename?.(og.id)}>Rename</Button>
+              {#if og.source !== 'default'}
+                <Button variant="ghost" onclick={() => onRename?.(og.id)}>Rename</Button>
+              {/if}
               {#if editable}
                 <Button variant="ghost" onclick={() => onEditNodes?.(og.id)}>Edit nodes</Button>
               {/if}
@@ -148,8 +150,7 @@
 
   {#if !readOnly}
     <div class="mt-3 flex flex-wrap gap-2">
-      <Button variant="secondary" onclick={() => onAddCustom?.()}>+ Add custom graph</Button>
-      <Button variant="secondary" onclick={() => onLoot?.()}>+ Loot a graph</Button>
+      <Button variant="secondary" onclick={() => onAddCustom?.()}>+ Add graph</Button>
     </div>
   {/if}
 </Card>

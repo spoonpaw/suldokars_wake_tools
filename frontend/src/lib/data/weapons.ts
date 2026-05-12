@@ -21,6 +21,25 @@ export interface WeaponDef {
   notes?: string;
 }
 
+/**
+ * Returns a player-facing warning when the weapon imposes a penalty on this
+ * type (rules/18), or null if clean.
+ *   - Apt: heavy weapons (≥3 slots) cap Ranged at 3 unless using a stack-roll
+ *     stationary device.
+ *   - Core: weapons using more than 1 slot impose half rolls.
+ *   - Prime: no restriction.
+ */
+export function weaponWarningForType(weapon: WeaponDef, type: 'apt' | 'core' | 'prime'): string | null {
+  if (type === 'prime') return null;
+  if (type === 'apt' && weapon.slots >= 3) {
+    return 'Heavy weapon (≥3 slots) — Apt caps usable Ranged at 3.';
+  }
+  if (type === 'core' && weapon.slots > 1) {
+    return 'Weapon uses >1 slot — Core rolls half rolls with it.';
+  }
+  return null;
+}
+
 export const WEAPONS_DATA: WeaponDef[] = [
   {
     id: 'blade',

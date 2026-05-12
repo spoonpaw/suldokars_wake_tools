@@ -294,8 +294,8 @@
     }
     const updated: SWCharacter = JSON.parse(JSON.stringify(character));
     updated.typeGraphPosition = { x: target.x, y: target.y };
-    updated.shadow = target.x;
-    updated.guntaValue = target.y;
+    // Intermediate cells do NOT grant Shadow / Gunta — those bump only on
+    // arrival at a labeled node (rules/52). Position moves; values stay.
     // PROMOTE: replace the existing session in-place (we already validated
     // the entry exists). CREATE: append a new one.
     if (isPromoteMode) {
@@ -317,9 +317,7 @@
       toNode: { x: target.x, y: target.y },
       appliedAt: new Date().toISOString(),
       changes: [
-        `Moved (${currentPos.x}, ${currentPos.y}) → (${target.x}, ${target.y}) — intermediate cell`,
-        `Shadow ${currentPos.x} → ${target.x}`,
-        `Gunta ${currentPos.y} → ${target.y}`
+        `Moved (${currentPos.x}, ${currentPos.y}) → (${target.x}, ${target.y}) — intermediate cell (Shadow + Gunta unchanged)`
       ],
       sessionLogEntryId,
       reversible: true,
@@ -492,12 +490,13 @@
       }
     }
 
-    // Position + derived Shadow/Gunta — revert to fromNode (or beforeState
-    // values if recorded — they should agree). For graph_swap entries
-    // fromNode === toNode (no move), so this is a no-op.
+    // Position reverts to the prior coord. Shadow/Gunta revert to the
+    // recorded beforeState — falling back to the CURRENT value if none was
+    // recorded (an intermediate-cell move, which never bumps Shadow/Gunta
+    // anyway, per rules/52).
     updated.typeGraphPosition = { x: entry.fromNode.x, y: entry.fromNode.y };
-    updated.shadow = entry.beforeState?.shadow ?? entry.fromNode.x;
-    updated.guntaValue = entry.beforeState?.guntaValue ?? entry.fromNode.y;
+    updated.shadow = entry.beforeState?.shadow ?? character.shadow;
+    updated.guntaValue = entry.beforeState?.guntaValue ?? character.guntaValue;
 
     // Revert raised stack floors.
     if (entry.beforeState?.stacks) {
@@ -653,6 +652,11 @@
 
   // Edit-nodes modal — wraps CustomGraphEditor.
   let editGraphId = $state<string | null>(null);
+  /** Graph id newly created via "+ Add graph" — if the user cancels/X out of
+   *  the editor before saving, this empty shell is removed automatically.
+   *  Cleared on Save so committed graphs stick around. */
+  let freshlyAddedGraphId = $state<string | null>(null);
+
   function openEditGraphModal(graphId: string) {
     if (readOnly) return;
     const og = character.ownedGraphs?.find((g) => g.id === graphId);
@@ -660,10 +664,19 @@
     editGraphId = graphId;
   }
   function closeEditGraphModal() {
+    const wasFresh = editGraphId === freshlyAddedGraphId;
+    const idToClose = editGraphId;
     editGraphId = null;
+    if (wasFresh && idToClose) {
+      // User abandoned a freshly-added graph — drop the empty shell.
+      const cleaned = deleteGraph(character, idToClose);
+      onupdate?.(cleaned);
+    }
+    freshlyAddedGraphId = null;
   }
   function handleEditGraphSave(updated: SWCharacter) {
     editGraphId = null;
+    freshlyAddedGraphId = null;
     onupdate?.(updated);
   }
 
@@ -710,22 +723,23 @@
   /** Non-null when the delete was refused; rendered in a small inline modal. */
   let deleteBlockedReason = $state<string | null>(null);
 
-  // Add custom graph modal.
-  let addCustomOpen = $state(false);
-  let addCustomName = $state('');
-  function openAddCustomModal() {
-    if (readOnly) return;
-    addCustomName = '';
-    addCustomOpen = true;
-  }
-  function closeAddCustomModal() {
-    addCustomOpen = false;
-    addCustomName = '';
-  }
+  /**
+   * Add a new custom graph and jump straight to the editor — no intermediate
+   * "name your graph" modal. The graph starts with the default fallback name
+   * (e.g. "Custom: Apt build"); the editor's first input is the name field
+   * so the player renames it inline. If they cancel/X without saving, the
+   * empty shell is removed (see closeEditGraphModal).
+   */
   function performAddCustom() {
-    const updated = addCustomGraph(character, addCustomName.trim());
-    closeAddCustomModal();
+    if (readOnly) return;
+    const updated = addCustomGraph(character, '');
+    const newGraphId = updated.ownedGraphs?.at(-1)?.id;
+    if (!newGraphId) return;
     onupdate?.(updated);
+    // Direct assign — bypass openEditGraphModal's lookup, since `character`
+    // prop hasn't reactively rebound to `updated` yet.
+    freshlyAddedGraphId = newGraphId;
+    editGraphId = newGraphId;
   }
 
   // Loot a graph modal — clones one of the static defaults under a new name.
@@ -767,7 +781,6 @@
     else if (renameGraphId) closeRenameModal();
     else if (editGraphId) closeEditGraphModal();
     else if (deleteGraphId) cancelDelete();
-    else if (addCustomOpen) closeAddCustomModal();
     else if (lootOpen) closeLootModal();
   }
 
@@ -794,7 +807,6 @@
     editGraphId = null;
     deleteGraphId = null;
     deleteBlockedReason = null;
-    addCustomOpen = false;
     lootOpen = false;
   });
 </script>
@@ -802,18 +814,6 @@
 <svelte:window onkeydown={escapeHandler} />
 
 <div class="space-y-4">
-  <!-- ============= GRAPH LIBRARY ============= -->
-  <GraphLibrary
-    {character}
-    {readOnly}
-    onMakeActive={openSwapModal}
-    onRename={openRenameModal}
-    onEditNodes={openEditGraphModal}
-    onDelete={confirmDeleteGraph}
-    onAddCustom={openAddCustomModal}
-    onLoot={openLootGraphModal}
-  />
-
   <!-- ============= GRAPH + POSITION HEADER ============= -->
   <Card title={`Type graph — ${(activeOwned?.name ?? character.type.toUpperCase())}`}>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm">
@@ -855,7 +855,7 @@
         <Button variant="secondary" onclick={openLogNoMove}>Log session (no move)</Button>
       </div>
       <p class="mt-3 rounded-lg bg-neutral-800/40 p-2 text-xs text-neutral-400">
-        Per rules/52 (strict): each session you survive a shadow encounter of degree &gt; current Shadow ({character.shadow}), you may take ONE orthogonal step on the graph. Use it or lose it — there is no banking. To reach a plotted node 2 steps away, advance over two separate sessions.
+        Strict no-banking: each session you survive a shadow encounter of degree &gt; current Shadow ({character.shadow}), you may take ONE orthogonal step on the graph. Use it or lose it — there is no banking. To reach a plotted node 2 steps away, advance over two separate sessions.
       </p>
     {/if}
   </Card>
@@ -1009,6 +1009,18 @@
     {/if}
   </Card>
 
+  <!-- ============= GRAPH LIBRARY (bottom of advancement section) ============= -->
+  <GraphLibrary
+    {character}
+    {readOnly}
+    onMakeActive={openSwapModal}
+    onRename={openRenameModal}
+    onEditNodes={openEditGraphModal}
+    onDelete={confirmDeleteGraph}
+    onAddCustom={performAddCustom}
+    onLoot={openLootGraphModal}
+  />
+
   <!-- ============= TAKE-STEP MODAL =============
        Modal opens when the player clicks "Take advancement step…". Player
        picks a direction; preview shows where the step lands. On confirm,
@@ -1024,7 +1036,7 @@
           </p>
         {/if}
         <p class="text-xs text-neutral-400">
-          Per rules/52: surviving a shadow encounter of degree &gt; current Shadow ({character.shadow}) lets you take ONE orthogonal step on the graph this session.
+          Surviving a shadow encounter of degree &gt; current Shadow ({character.shadow}) lets you take ONE orthogonal step on the graph this session.
         </p>
         <Input label="Session label" bind:value={stepLabel} placeholder="e.g. Session 3, scene 2" />
         <NumberInput
@@ -1071,7 +1083,7 @@
               <span class="text-neutral-400"> — node-effects wizard will open after confirming.</span>
             {:else}
               <Badge variant="warning">intermediate cell</Badge>
-              <span class="text-neutral-400"> — Shadow → {takeStepTarget.x}, Gunta → {takeStepTarget.y}.</span>
+              <span class="text-neutral-400"> — position only. Shadow + Gunta unchanged (rules/52 — values bump only on labeled nodes).</span>
             {/if}
           </div>
         {/if}
@@ -1205,22 +1217,6 @@
     {/snippet}
     {#snippet footer()}
       <Button onclick={cancelDelete}>OK</Button>
-    {/snippet}
-  </Modal>
-
-  <Modal open={addCustomOpen && !readOnly} title="Add custom graph" onclose={closeAddCustomModal}>
-    {#snippet children()}
-      <div class="space-y-2 text-sm text-neutral-300">
-        <p class="text-xs text-neutral-400">
-          Create a brand-new advancement graph for this character. The graph
-          starts empty — add nodes via the "Edit nodes" button afterward.
-        </p>
-        <Input label="Name" bind:value={addCustomName} placeholder="e.g. Custom: My Spy Build" />
-      </div>
-    {/snippet}
-    {#snippet footer()}
-      <Button variant="ghost" onclick={closeAddCustomModal}>Cancel</Button>
-      <Button onclick={performAddCustom}>Add graph</Button>
     {/snippet}
   </Modal>
 

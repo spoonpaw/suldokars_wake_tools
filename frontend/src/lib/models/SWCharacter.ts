@@ -284,14 +284,72 @@ export interface SpecialGuntaCoin {
   held: boolean;
 }
 
+/**
+ * High-level harm status (rules/46 + rules/50 + rules/51). Drives badge color
+ * and which controls are enabled in the harm tracker UI.
+ *
+ *   clean        — no harm at all
+ *   harmed       — physical 1..bulk; no end-roll required yet
+ *   at-risk      — physical > bulk; an end roll is pending
+ *   suspended    — attacker suspended a forced end roll (legal until 20)
+ *   injured-ko   — failed end roll while harm < 20 → knocked out, NOT dying
+ *   dying        — failed end roll while harm = 20 → KO + d20 dying timer
+ *   comatose     — nanite track hit 20 → ed6 days, daily DN 20 Ghost or die
+ *   dead         — terminal
+ */
+export type HarmStatus =
+  | 'clean'
+  | 'harmed'
+  | 'at-risk'
+  | 'suspended'
+  | 'injured-ko'
+  | 'dying'
+  | 'comatose'
+  | 'dead';
+
 export interface HarmTrackers {
-  /** Harm taken (physical), counter that fills toward harm cap. */
+  // ---- Physical track (fills LEFT → RIGHT, box 1..20). Rules/46. ----
   harmTaken: number;
-  /** Cap (default 20). */
+  /** Hard ceiling — always 20 (rules/46:3). */
   harmCap: number;
-  /** Nanite harm taken; cap 5 → comatose. */
+
+  // ---- Nanite track (fills RIGHT → LEFT, box 20..1). Rules/42, 50. ----
   naniteTaken: number;
+  /** Hard ceiling — always 20 (rules/50:36 — coma at 20, NOT 5). */
   naniteCap: number;
+
+  // ---- Status & state machine ----
+  status: HarmStatus;
+
+  // ---- Suspended end-roll bookkeeping (rules/46:30). ----
+  /** Attacker suspended a forced end roll. Legal only while harm < 20. */
+  endRollSuspended: boolean;
+  /** Harm level at the moment the suspend was initiated. */
+  suspendedAtHarm: number;
+
+  // ---- Dying state (rules/50:32-34). ----
+  /** Hidden d20 timer the GM rolls — UI shows "??? rounds". */
+  dyingTimer: number | null;
+  /** Prime gets minutes; everyone else gets rounds. */
+  dyingTimerUnit: 'round' | 'minute' | null;
+  /** True if bleeding faster than the timer (rules/50:34). */
+  bleeding: boolean;
+  /** Total bled points — dies if > Bulk score (rules/50:34). */
+  bloodShed: number;
+
+  // ---- Comatose state (rules/50:36). ----
+  /** ed6 days remaining at nanite-cap; daily DN 20 Ghost or die. */
+  comaDays: number | null;
+
+  // ---- Recovery bookkeeping (rules/51). ----
+  /** Index of the long turn when last aid attempted (1/long-turn limit). */
+  lastAidAttemptLongTurn: number | null;
+  /** Detrimental keywords picked instead of taking an injury (rules/51:58). */
+  detrimentalKeywords: string[];
+
+  // ---- Penalty (rules/51:11). ----
+  /** Until full rest, the character rolls one shift up on everything. */
+  shiftUpPenalty: boolean;
 }
 
 // ============================================
@@ -789,7 +847,18 @@ export function createDefaultCharacter(): SWCharacter {
       harmTaken: 0,
       harmCap: 20,
       naniteTaken: 0,
-      naniteCap: 5
+      naniteCap: 20,
+      status: 'clean',
+      endRollSuspended: false,
+      suspendedAtHarm: 0,
+      dyingTimer: null,
+      dyingTimerUnit: null,
+      bleeding: false,
+      bloodShed: 0,
+      comaDays: null,
+      lastAidAttemptLongTurn: null,
+      detrimentalKeywords: [],
+      shiftUpPenalty: false
     },
     sessionLog: [],
     typeGraphPosition: { x: 0, y: 0 },
@@ -1040,7 +1109,12 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
     // Deep-merge nested objects so a partial saved version doesn't leave
     // inner fields undefined.
     identity: { ...d.identity, ...(c.identity ?? {}) },
-    harm: { ...d.harm, ...(c.harm ?? {}) },
+    harm: (() => {
+      const merged = { ...d.harm, ...(c.harm ?? {}) };
+      // Migration: old saves had naniteCap=5 (incorrect — rules/50:36 says 20).
+      if ((merged as { naniteCap?: number }).naniteCap !== 20) merged.naniteCap = 20;
+      return merged;
+    })(),
     purse: { ...d.purse, ...(c.purse ?? {}) },
     origo: { ...d.origo, ...(c.origo ?? {}) },
     stacks: mergedStacks,

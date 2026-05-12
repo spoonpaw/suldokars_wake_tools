@@ -284,22 +284,22 @@
                 </h2>
                 <p class="text-sm text-neutral-400">{lineFor(c)}</p>
               </div>
-              <dl class="mt-3 grid grid-cols-3 gap-2 text-xs text-neutral-400">
+              <dl class="mt-3 space-y-2 text-xs text-neutral-400">
                 <div>
                   <dt class="text-neutral-500">Stacks</dt>
-                  <dd class="text-neutral-200">
-                    A{c.stacks.archive} B{c.stacks.bulk} G{c.stacks.ghost} M{c.stacks.morph} S{c.stacks
-                      .speed} T{c.stacks.tech}
+                  <dd class="mt-0.5 text-neutral-200">
+                    Archive {c.stacks.archive} · Bulk {c.stacks.bulk} · Ghost {c.stacks.ghost} ·
+                    Morph {c.stacks.morph} · Speed {c.stacks.speed} · Tech {c.stacks.tech}
                   </dd>
                 </div>
                 <div>
                   <dt class="text-neutral-500">Combat</dt>
-                  <dd class="text-neutral-200">C{c.stacks.close} R{c.stacks.ranged}</dd>
+                  <dd class="mt-0.5 text-neutral-200">Close {c.stacks.close} · Ranged {c.stacks.ranged}</dd>
                 </div>
                 <div>
                   <dt class="text-neutral-500">Trackers</dt>
-                  <dd class="text-neutral-200">
-                    Sh {c.shadow} · Gu {c.guntaValue} · Begin {c.beginnerGuntaCoins}
+                  <dd class="mt-0.5 text-neutral-200">
+                    Shadow {c.shadow} · Gunta {c.guntaValue} · Beginner Coins {c.beginnerGuntaCoins}
                   </dd>
                 </div>
               </dl>

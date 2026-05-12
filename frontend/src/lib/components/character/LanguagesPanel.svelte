@@ -75,8 +75,8 @@
   <Card title={`Known languages (${knownLangs.length})`}>
     {#if knownLangs.length === 0}
       <p class="text-sm text-neutral-400">
-        No languages picked. Pidgin should be present by default — see life-form
-        rules in /18.
+        No languages picked. Pidgin should be present by default — check your
+        life-form's language entry.
       </p>
     {:else}
       <ul class="space-y-2">
@@ -127,7 +127,7 @@
           on Archive (written)
         {:else}
           on Morph (spoken)
-        {/if}. Per rules/20 it covers every known language.
+        {/if}. It covers every known language.
       </p>
     {/if}
   </Card>

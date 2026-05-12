@@ -1,5 +1,26 @@
 <script module lang="ts">
   let modalIdCounter = 0;
+
+  // Body-scroll lock — ref-counted so nested modals don't unlock prematurely.
+  let openModalCount = 0;
+  let savedBodyOverflow: string | null = null;
+  function lockBodyScroll() {
+    if (typeof document === 'undefined') return;
+    if (openModalCount === 0) {
+      savedBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+    openModalCount++;
+  }
+  function unlockBodyScroll() {
+    if (typeof document === 'undefined') return;
+    if (openModalCount === 0) return;
+    openModalCount--;
+    if (openModalCount === 0) {
+      document.body.style.overflow = savedBodyOverflow ?? '';
+      savedBodyOverflow = null;
+    }
+  }
 </script>
 
 <script lang="ts">
@@ -85,6 +106,15 @@
       (focusable[0] ?? modalEl).focus();
     });
   });
+
+  // Lock body scroll while open. Ref-counted so multiple modals stack
+  // safely. Cleanup runs on close OR component unmount (e.g. route change
+  // with the modal still in the DOM).
+  $effect(() => {
+    if (!open) return;
+    lockBodyScroll();
+    return () => unlockBodyScroll();
+  });
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -102,11 +132,12 @@
     aria-label={title ? undefined : 'Dialog'}
     tabindex="-1"
   >
-    <!-- Modal -->
-    <div class="w-full max-w-lg rounded-xl border border-neutral-700 bg-neutral-900 shadow-2xl">
+    <!-- Modal — flex column so the body can scroll while header/footer stay
+         pinned. max-h leaves a gutter so the modal never touches viewport edges. -->
+    <div class="flex w-full max-w-lg max-h-[calc(100vh-2rem)] flex-col rounded-xl border border-neutral-700 bg-neutral-900 shadow-2xl">
       <!-- Header -->
       {#if title}
-        <div class="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+        <div class="flex shrink-0 items-center justify-between border-b border-neutral-800 px-4 py-3">
           <h2 id={titleId} class="text-lg font-semibold text-neutral-100">{title}</h2>
           <button
             type="button"
@@ -121,14 +152,14 @@
         </div>
       {/if}
 
-      <!-- Content -->
-      <div class="p-4">
+      <!-- Scrollable content body -->
+      <div class="flex-1 overflow-y-auto p-4">
         {@render children()}
       </div>
 
       <!-- Footer -->
       {#if footer}
-        <div class="flex items-center justify-end gap-2 border-t border-neutral-800 px-4 py-3">
+        <div class="flex shrink-0 items-center justify-end gap-2 border-t border-neutral-800 px-4 py-3">
           {@render footer()}
         </div>
       {/if}

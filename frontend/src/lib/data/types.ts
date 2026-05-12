@@ -65,7 +65,7 @@ export const APT_TYPE: TypeDef = {
   },
   rules: [
     'Player picks which of Close or Ranged starts at 1 (the other starts at 0).',
-    'Can only use Force Armor or lighter (rules/40) — heavier armor disables the abilities and bonuses below (penalties still apply).',
+    'Can only use Force Armor or lighter — heavier armor disables the abilities and bonuses below (penalties still apply).',
     'When using heavy weapons (3 slots or more) the highest Ranged score they benefit from is 3 — unless operating a stationary weapon or a weapon device based on a primary stack roll.',
     'Increased crit chance: rolls of 19 AND 20 both count as critical successes.',
     'When building things, Apt characters use half the parts.',
@@ -75,7 +75,7 @@ export const APT_TYPE: TypeDef = {
   examples: ['Techno-scavenger', 'Shadow cult assassin', 'Desert trader'],
   spaceContent: 'Equipment, masters, places, or pets.',
   spacesDoWhat:
-    'Once per 24 hours, treat a stack as if it were on an adjacent higher scale (rules/50) for a single action — when the space content relates to that action. Lowers the DN significantly.'
+    'Once per 24 hours, treat a stack as if it were on an adjacent higher scale for a single action — when the space content relates to that action. Lowers the DN significantly.'
 };
 
 export const CORE_TYPE: TypeDef = {
@@ -113,7 +113,7 @@ export const CORE_TYPE: TypeDef = {
       id: 'nanite_cloud',
       label: 'A Nanite Cloud',
       description:
-        'Bond with a sentient cluster of nanites. Starts with a beginner cloud (rules p. 33), can later find and bond with a major cloud — each major cloud is individual (degraded hologram, orug soul, SAI fragment, evolved beginner cloud, etc.).'
+        'Bond with a sentient cluster of nanites. Starts with a beginner cloud, can later find and bond with a major cloud — each major cloud is individual (degraded hologram, orug soul, SAI fragment, evolved beginner cloud, etc.).'
     },
     {
       id: 'subspace_nanites',

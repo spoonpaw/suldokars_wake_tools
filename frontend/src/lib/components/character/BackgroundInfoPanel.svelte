@@ -56,7 +56,7 @@
         </ul>
         <p class="mt-1 text-xs text-neutral-500">
           Stack hints: A=Archive · B=Bulk · G=Ghost · M=Morph · S=Speed · T=Tech.
-          You may place a keyword on a different stack if a plausible arrangement exists (rules/19).
+          You may place a keyword on a different stack if a plausible arrangement exists.
         </p>
       </div>
 

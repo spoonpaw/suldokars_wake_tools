@@ -553,7 +553,7 @@
          ===================================================== -->
     {#if currentStep === 'keyword'}
       <div class="space-y-3 text-sm text-neutral-300">
-        <p>Pick a new keyword. Per rules/19, you may pick one from your own background or cross-pick from another.</p>
+        <p>Pick a new keyword. You may pick one from your own background or cross-pick from another.</p>
         <div class="flex gap-2">
           <Button
             variant={kwSource === 'background' ? 'primary' : 'secondary'}

@@ -111,20 +111,16 @@
       </div>
     </div>
   {:else}
-    <header bind:this={navbarEl} class="sticky top-0 z-40 border-b border-neutral-800 bg-neutral-900/95 backdrop-blur">
+    <header bind:this={navbarEl} class="sticky top-0 z-40 border-b border-neutral-800 bg-neutral-900/95 backdrop-blur" style="padding-top: env(safe-area-inset-top);">
       <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <a href="/" class="text-lg font-bold text-neutral-100 hover:text-cyan-400 transition">
           Suldokar's Wake Tools
         </a>
         <nav class="flex items-center gap-1 sm:gap-3">
-          <a href="/" class="rounded-lg px-2 sm:px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition">Characters</a>
-          <a href="/character/new" class="rounded-lg px-2 sm:px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition">New</a>
-          <a href="/dice" class="rounded-lg px-2 sm:px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition">Dice</a>
-          <a href="/reference" class="rounded-lg px-2 sm:px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition">Reference</a>
           <button
             type="button"
             onclick={handleToggleTheme}
-            class="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white"
+            class="rounded-full p-2 text-neutral-400 transition hover:bg-slate-300/60 hover:text-cyan-700 dark:hover:bg-neutral-800 dark:hover:text-white"
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
@@ -148,7 +144,7 @@
       </div>
     {/if}
 
-    <main>
+    <main style="padding-bottom: env(safe-area-inset-bottom);">
       {@render children()}
     </main>
   {/if}

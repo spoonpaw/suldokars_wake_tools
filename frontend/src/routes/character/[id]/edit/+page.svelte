@@ -31,6 +31,7 @@
   );
   function selectTab(next: EditTab) {
     setDetailTab(id, next as DetailTab);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }
 
   // Clone the source into the editable working copy once per id — re-clones
@@ -109,40 +110,35 @@
       class="sticky z-30 -mx-4 -mt-6 mb-5 px-4 pt-3 pb-1 shadow-sm"
       style="top: var(--navbar-h, 0px); background: var(--sticky-bg, #0b0c0e);"
     >
-      <!--
-        Edit-mode header in canonical card chrome — same outer class string as
-        the view-mode header card. Inner element is a <div>, not <header>, to
-        avoid colliding with the global `html.light & header` rule in app.css.
-      -->
-      <div class="mb-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4 shadow-md shadow-black/20">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <a href={`/character/${id}`} class="text-sm text-cyan-400 hover:underline">← Back to sheet</a>
-            <h1 class="mt-1 text-2xl font-bold text-neutral-100">Edit {working.name || 'character'}</h1>
-            <p class="text-sm text-neutral-400">All tabs commit together when you click Save.</p>
-          </div>
-          <div class="flex gap-2">
+      <!-- Compact edit header — back link + Cancel/Save on top, "Edit X" + tip
+           inline on row 2, tabs on row 3. Vertical real estate kept tight. -->
+      <div class="mb-2 rounded-lg border border-neutral-800 bg-neutral-900/50 px-3 py-2 shadow-sm shadow-black/20 space-y-1.5">
+        <!-- Row 1: back + actions -->
+        <div class="flex items-center justify-between gap-2">
+          <a href={`/character/${id}`} class="text-xs text-cyan-400 hover:underline">← Back to sheet</a>
+          <div class="flex gap-1.5">
             <Button variant="ghost" onclick={cancel}>Cancel</Button>
             <Button onclick={save} loading={saving}>Save</Button>
           </div>
         </div>
-        {#if saveError}
-          <p class="mt-3 text-sm text-red-400">{saveError}</p>
-        {/if}
-      </div>
 
-      <!--
-        Tab rail in matching card chrome — same logic as view-mode page.
-        Plain <div> instead of <nav> to avoid the global `html.light & nav`
-        override painting a competing rectangle inside this rounded card.
-      -->
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4 shadow-md shadow-black/20">
-        <div class="flex flex-wrap gap-1">
+        <!-- Row 2: title + tip on one line -->
+        <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0">
+          <h1 class="text-xl font-bold text-neutral-100 leading-tight">Edit {working.name || 'character'}</h1>
+          <span class="text-[11px] italic text-neutral-500">All tabs commit together on Save.</span>
+        </div>
+
+        {#if saveError}
+          <p class="text-xs text-red-400">{saveError}</p>
+        {/if}
+
+        <!-- Row 3: tabs -->
+        <div class="flex flex-wrap gap-1 pt-0.5">
           {#each EDIT_TABS as t (t.id)}
             <button
               type="button"
               onclick={() => selectTab(t.id)}
-              class={`rounded-full border px-4 py-1.5 text-sm transition ${tab === t.id ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200 shadow-sm shadow-cyan-500/20' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500 hover:text-neutral-100'}`}
+              class={`rounded-full border px-2.5 py-0.5 text-xs transition ${tab === t.id ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500 hover:text-neutral-100'}`}
             >
               {t.label}
             </button>

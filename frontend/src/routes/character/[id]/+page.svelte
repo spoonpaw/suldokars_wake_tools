@@ -6,7 +6,19 @@
   import { getDetailTab, setDetailTab } from '$lib/stores/ui.svelte';
   import { characterStore } from '$lib/stores';
   import { Badge, Button, Card } from '$lib/components/ui';
-  import { summarize, encumbranceStatus } from '$lib/utils/computed';
+  import { summarize, encumbranceStatus, statusBadge } from '$lib/utils/computed';
+
+  /** Map harm-status tone to Tailwind class string for the header badge. */
+  function harmBadgeTone(status: SWCharacter['harm']['status']): { label: string; classes: string } {
+    const b = statusBadge(status);
+    const classes = {
+      ok: 'bg-emerald-700 text-white',
+      warn: 'bg-amber-700 text-white',
+      danger: 'bg-orange-700 text-white',
+      critical: 'bg-red-700 text-white'
+    }[b.tone];
+    return { label: b.label, classes };
+  }
   import { exportToFile, downloadCharactersAsFile } from '$lib/utils/importExport';
   import { getBackground } from '$lib/data/backgrounds';
   import { getLifeForm } from '$lib/data/lifeforms';
@@ -16,6 +28,7 @@
   import BackgroundInfoPanel from '$lib/components/character/BackgroundInfoPanel.svelte';
   import AdvancementPanel from '$lib/components/character/AdvancementPanel.svelte';
   import LanguagesPanel from '$lib/components/character/LanguagesPanel.svelte';
+  import HarmTrackerPanel from '$lib/components/character/HarmTrackerPanel.svelte';
   import EquipmentSection from '$lib/components/character/equipment/EquipmentSection.svelte';
 
   const id = $derived(page.params.id ?? '');
@@ -27,6 +40,9 @@
   const tab = $derived<DetailTab>(getDetailTab(id));
   function selectTab(next: DetailTab) {
     setDetailTab(id, next);
+    // Scroll to top so new tab content starts at the viewport top, not
+    // wherever the previous tab left the scroll position.
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }
 
   const TABS: { id: DetailTab; label: string }[] = [
@@ -109,58 +125,68 @@
         `html.light & header` override (white bg + dark border) that would otherwise
         paint a competing chrome inside this card.
       -->
-      <div class="mb-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4 shadow-md shadow-black/20">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <a href="/" class="text-sm text-cyan-400 hover:underline">← Characters</a>
-            {#if character.title}
-              <p class="mt-1 text-xs uppercase tracking-wider text-cyan-400/80">{character.title}</p>
-            {/if}
-            <h1 class="text-3xl font-bold text-neutral-100">{character.name || 'Unnamed'}</h1>
-            <p class="text-sm text-neutral-400">{summary.classLine}</p>
-            <!-- Sheet polish (rules/52): Shadow + Gunta values come from the type-graph node.
-                 Implants cap (origo.implants) is the maximum implants the character can carry —
-                 raised by I^z floors at advancement nodes. -->
-            <p class="mt-1 text-xs text-neutral-500">
-              Shadow <strong class="text-neutral-300">{tgPos.x}</strong> ·
-              Gunta value <strong class="text-neutral-300">{tgPos.y}</strong> ·
-              Implants <strong class="text-neutral-300">{character.implants.length}/{character.origo.implants}</strong> ·
-              Node <strong class="text-neutral-300">({tgPos.x}, {tgPos.y})</strong>
-              {#if currentNode}
-                — {currentNode.kind.replace('_', ' + ')}
-              {:else if tgPos.x === 0 && tgPos.y === 0}
-                — origo
-              {:else}
-                — intermediate
-              {/if}
-            </p>
-          </div>
-          <div class="flex gap-2">
+      <!-- Compact header — single condensed band: back link + actions on
+           top, name+class+title on row 2, stat chips on row 3, tabs on row 4.
+           Vertical real estate kept tight so the actual sheet content has
+           room to breathe. -->
+      <div class="mb-2 rounded-lg border border-neutral-800 bg-neutral-900/50 px-3 py-2 shadow-sm shadow-black/20 space-y-1.5">
+        <!-- Row 1: back + actions -->
+        <div class="flex items-center justify-between gap-2">
+          <a href="/" class="text-xs text-cyan-400 hover:underline">← Characters</a>
+          <div class="flex gap-1.5">
             <Button variant="ghost" onclick={handleExport}>Export</Button>
             <Button onclick={() => goto(`/character/${character.id}/edit`)}>Edit</Button>
           </div>
         </div>
-      </div>
 
-      <!--
-        Tab row in matching card chrome. The card border itself supplies the visual
-        enclosure; the active-tab underline (border-b-2) on the selected button is
-        enough indication. No additional bottom border on the inner wrapper — that
-        previously painted an ugly horizontal line spanning the card.
-        Inner element is a plain <div>, not <nav>, because app.css applies a global
-        `html.light & nav` override (white bg + dark border) that would otherwise
-        paint a sharp-cornered white rectangle inside this rounded card. We don't
-        claim role="tablist" here because the full WAI-ARIA tabs pattern (arrow-key
-        navigation, tabindex management, aria-controls/tabpanel wiring) is not
-        implemented; bare buttons are natively keyboard accessible.
-      -->
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4 shadow-md shadow-black/20">
-        <div class="flex flex-wrap gap-1">
+        <!-- Row 2: name + title + class -->
+        <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0">
+          <h1 class="text-xl font-bold text-neutral-100 leading-tight">{character.name || 'Unnamed'}</h1>
+          {#if character.title}
+            <span class="text-[10px] uppercase tracking-wider text-cyan-400/80">{character.title}</span>
+          {/if}
+          <span class="text-xs text-neutral-400">· {summary.classLine}</span>
+        </div>
+
+        <!-- Row 3: stat chips (status + harm + advancement state, all inline) -->
+        <div class="flex flex-wrap items-center gap-1 text-[11px]">
+          <span class={`rounded-full px-2 py-0.5 font-bold uppercase ${harmBadgeTone(character.harm.status).classes}`}>{harmBadgeTone(character.harm.status).label}</span>
+          <span class="rounded-full bg-red-900/30 px-2 py-0.5 text-red-200">
+            P harm <strong>{character.harm.harmTaken}</strong>/{character.harm.harmCap}
+          </span>
+          <span class="rounded-full bg-cyan-900/30 px-2 py-0.5 text-cyan-200">
+            N harm <strong>{character.harm.naniteTaken}</strong>/{character.harm.naniteCap}
+          </span>
+          {#if character.harm.harmTaken > character.stacks.bulk}
+            <span class="rounded-full bg-orange-900/40 px-2 py-0.5 text-orange-200">
+              ⚠ End roll DN {Math.max(character.harm.harmTaken, character.harm.naniteTaken)}
+            </span>
+          {/if}
+          <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
+            Sh <strong class="text-neutral-100">{character.shadow}</strong> · G <strong class="text-neutral-100">{character.guntaValue}</strong>
+          </span>
+          <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
+            Imp <strong class="text-neutral-100">{character.implants.length}/{character.origo.implants}</strong>
+          </span>
+          <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
+            Node ({tgPos.x},{tgPos.y})
+            {#if currentNode}
+              · {currentNode.kind.replace('_', '+')}
+            {:else if tgPos.x === 0 && tgPos.y === 0}
+              · origo
+            {:else}
+              · transit
+            {/if}
+          </span>
+        </div>
+
+        <!-- Row 4: tabs (compact, no second card chrome) -->
+        <div class="flex flex-wrap gap-1 pt-0.5">
           {#each TABS as t (t.id)}
             <button
               type="button"
               onclick={() => selectTab(t.id)}
-              class={`rounded-full border px-4 py-1.5 text-sm transition ${tab === t.id ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200 shadow-sm shadow-cyan-500/20' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500 hover:text-neutral-100'}`}
+              class={`rounded-full border px-2.5 py-0.5 text-xs transition ${tab === t.id ? 'border-cyan-400 bg-cyan-500/10 text-cyan-200' : 'border-neutral-700 bg-neutral-900/40 text-neutral-400 hover:border-neutral-500 hover:text-neutral-100'}`}
             >
               {t.label}
             </button>
@@ -183,7 +209,7 @@
         <BackgroundInfoPanel background={character.background} bind:expanded={bgExpanded} />
 
         <div class="grid gap-3 sm:grid-cols-2">
-          <Card title="Origo (rules/18)">
+          <Card title="Origo">
             <ul class="text-sm text-neutral-300">
               <li>Spaces {character.origo.spaces}</li>
               <li>Implants {character.origo.implants}</li>
@@ -430,7 +456,7 @@
       <div class="grid gap-3 sm:grid-cols-2">
         <Card title="Gunta">
           <p class="text-sm text-neutral-300">Beginner coins: <strong>{character.beginnerGuntaCoins}</strong> (one-shot)</p>
-          <p class="text-sm text-neutral-300">Regular value (= type-graph y): <strong>{tgPos.y}</strong></p>
+          <p class="text-sm text-neutral-300">Regular value: <strong>{character.guntaValue}</strong></p>
           {#if character.specialCoins.length > 0}
             <p class="mt-2 text-sm text-neutral-300">Special coins:</p>
             <ul class="text-sm text-neutral-300">
@@ -441,9 +467,9 @@
           {/if}
         </Card>
         <Card title="Shadow & Reputation">
-          <p class="text-sm text-neutral-300">Shadow (= type-graph x): <strong>{tgPos.x}</strong></p>
+          <p class="text-sm text-neutral-300">Shadow: <strong>{character.shadow}</strong></p>
           <p class="text-sm text-neutral-300">Reputation: <strong>{character.reputation}</strong></p>
-          <p class="text-sm text-neutral-300">Type-graph: ({tgPos.x}, {tgPos.y})</p>
+          <p class="text-sm text-neutral-300">Type-graph position: ({tgPos.x}, {tgPos.y})</p>
           <!--
             Session-log summary: count + last-session timestamp. Per
             rules/52 (strict no-banking), each session = at most one move.
@@ -462,10 +488,9 @@
           </p>
           <p class="text-xs text-neutral-500">Log sessions / take advancement steps / roll back from the Advancement tab.</p>
         </Card>
-        <Card title="Harm">
-          <p class="text-sm text-neutral-300">Harm: <strong>{character.harm.harmTaken}</strong> / {character.harm.harmCap}</p>
-          <p class="text-sm text-neutral-300">Nanite: <strong>{character.harm.naniteTaken}</strong> / {character.harm.naniteCap}</p>
-        </Card>
+        {#if character}
+          <HarmTrackerPanel character={character} readOnly />
+        {/if}
         <Card title="Money">
           <p class="text-sm text-neutral-300">Parts: <strong>{character.purse.parts}</strong> P</p>
           <p class="text-sm text-neutral-300">Energy: <strong>{character.purse.energy}</strong> e</p>

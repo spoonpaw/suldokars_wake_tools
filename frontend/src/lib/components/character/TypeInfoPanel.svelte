@@ -28,7 +28,7 @@
 
   <div class="mt-3 grid gap-2 text-xs sm:grid-cols-2">
     <div class="rounded-lg bg-neutral-800/40 p-2">
-      <p class="text-neutral-400">Origo (rules/18)</p>
+      <p class="text-neutral-400">Origo</p>
       <p class="text-neutral-100">
         Spaces {def.origo.spaces} · Implants {def.origo.implants} · Shadow {def.origo.shadow} · Gunta {def.origo.gunta}
       </p>

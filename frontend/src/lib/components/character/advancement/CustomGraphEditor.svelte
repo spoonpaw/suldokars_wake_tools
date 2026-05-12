@@ -51,7 +51,9 @@
     if (open && og) {
       draftName = og.name;
       draftNotes = og.notes ?? '';
-      draftNodes = structuredClone(og.graph.nodes ?? []);
+      // structuredClone chokes on Svelte 5 reactive proxies — use
+      // $state.snapshot to unwrap the proxy to a plain object first.
+      draftNodes = $state.snapshot(og.graph.nodes ?? []) as TypeGraphNode[];
       resetNewForm();
       editingIdx = null;
     }
@@ -193,7 +195,7 @@
               ...g,
               graph: {
                 ...g.graph,
-                nodes: structuredClone(draftNodes)
+                nodes: $state.snapshot(draftNodes) as TypeGraphNode[]
               }
             }
           : g
@@ -215,11 +217,20 @@
   );
 
   const KIND_OPTS = [
-    { value: 'open', label: 'open' },
-    { value: 'double', label: 'double' },
-    { value: 'filled', label: 'filled' },
-    { value: 'double_filled', label: 'double_filled' }
+    { value: 'open', label: 'Open — advancement only' },
+    { value: 'double', label: 'Double — + new keyword' },
+    { value: 'filled', label: 'Filled — rearrange (+ bond swap, Core)' },
+    { value: 'double_filled', label: 'Double + Filled — keyword + rearrange (+ bond)' }
   ];
+
+  /** Per-kind explanation surfaced under the Kind selector so the player
+   *  doesn't have to guess what a node does. Mirrors TypeGraphLegend. */
+  const KIND_HELP: Record<NodeKind, string> = {
+    open: 'Plain advancement node. Step here to take its floor/spaces effects — nothing extra.',
+    double: 'Advancement + on arrival the character picks one new keyword (rules/52).',
+    filled: 'Advancement + on arrival the character may rearrange a stack score (and, for Core, swap deep bond).',
+    double_filled: 'Both: pick a new keyword AND rearrange a stack score (Core may also swap bond).'
+  };
 </script>
 
 <Modal {open} title={og ? `Edit graph: ${og.name}` : 'Edit graph'} {onclose}>
@@ -309,6 +320,7 @@
             <NumberInput label="y (Gunta, 0–{TYPE_GRAPH_Y_MAX})" value={fY} min={0} max={TYPE_GRAPH_Y_MAX} onchange={(v) => (fY = v)} />
           </div>
           <Select label="Kind" options={KIND_OPTS} value={fKind} onchange={(v) => (fKind = v as NodeKind)} />
+          <p class="text-xs text-neutral-400 italic">{KIND_HELP[fKind]}</p>
           <label class="flex items-center gap-2 text-xs text-neutral-300">
             <input type="checkbox" bind:checked={fSpacesEnabled} />
             <span>Node sets a spaces count (uncheck for null = no change)</span>
@@ -321,18 +333,21 @@
               label="Close floor"
               value={fCloseFloor ?? 0}
               min={0}
+              showControls={false}
               onchange={(v) => (fCloseFloor = v > 0 ? v : undefined)}
             />
             <NumberInput
               label="Ranged floor"
               value={fRangedFloor ?? 0}
               min={0}
+              showControls={false}
               onchange={(v) => (fRangedFloor = v > 0 ? v : undefined)}
             />
             <NumberInput
               label="Implants floor"
               value={fImplantsFloor ?? 0}
               min={0}
+              showControls={false}
               onchange={(v) => (fImplantsFloor = v > 0 ? v : undefined)}
             />
           </div>

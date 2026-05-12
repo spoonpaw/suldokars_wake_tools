@@ -4,7 +4,7 @@
   import { createDefaultCharacter, type CharacterType, type LifeForm, type Background, type PrimaryStack, type Stack, PRIMARY_STACKS, ALL_STACKS, STACK_LABELS, BACKGROUNDS, LIFE_FORMS, CHARACTER_TYPES, allowedLifeForms, type Language, recomputeStacks } from '$lib/models';
   import { characterStore } from '$lib/stores';
   import { Button, Card, Input, NumberInput, Select, TextArea, Toggle } from '$lib/components/ui';
-  import { BACKGROUNDS_DATA, LIFE_FORMS_DATA, getTypeGraph, mandatoryLanguageForLifeForm, LANGUAGES_DATA, BASIC_FORMULAE, lifeFormGroup, startingPartsFor } from '$lib/data';
+  import { BACKGROUNDS_DATA, LIFE_FORMS_DATA, TYPES_DATA, getType, getTypeGraph, mandatoryLanguageForLifeForm, LANGUAGES_DATA, BASIC_FORMULAE, SUBSPACE_FORMULAE, lifeFormGroup, startingPartsFor, WEAPONS_DATA, ARMOR_DATA, GEAR_DATA, VEHICLES_DATA, PETS_DATA, getKeywordEntry, STACK_BLURBS, languagePickEligibility, armorWarningForType, weaponWarningForType } from '$lib/data';
   import { rollD3, rollD6, rollD12 } from '$lib/utils/dice';
   import { applyBonuses, applyBonusesComposed, type LifeFormBonusDistribution } from '$lib/utils/computed';
   import CharacterEditForm from '$lib/components/character/CharacterEditForm.svelte';
@@ -22,7 +22,6 @@
     { id: 'languages', label: 'Languages' },
     { id: 'spaces', label: 'Spaces' },
     { id: 'equipment', label: 'Equipment' },
-    { id: 'implants', label: 'Implants' },
     { id: 'identity', label: 'Identity' },
     { id: 'artistic', label: 'Artistic Mod' },
     { id: 'hooks', label: 'Hooks' },
@@ -40,19 +39,31 @@
     combatPick: 'ranged'
   });
 
+  // Whether the player has actually picked a background yet. False until they
+  // touch the step-6 Select. While false, recomputeFinalStacks zeros out the
+  // backgroundBonus contribution so step-5 totals don't include the default
+  // background's bonuses (the model still carries one for type safety).
+  let backgroundChosen = $state(false);
+
+  // Whether the player has actually picked a type yet. False until setType()
+  // runs the first time. Wizard guards Next + hides type-specific UI while
+  // false; the model keeps a default type for type safety.
+  let typeChosen = $state(false);
+
+  // Same pattern for life-form. Cleared automatically by revalidate() if the
+  // current life-form is no longer allowed (pair count changed).
+  let lifeFormChosen = $state(false);
+
   /**
    * Apply life-form + background bonuses + type origo to the raw stack rolls
    * and write the result into character.stacks. Idempotent: re-runnable when
    * the user revisits earlier steps.
    */
   function recomputeFinalStacks() {
+    // Fallback to zeros — never to character.stacks (those are bonused
+    // and would compound). baseStackRolls is set by syncStackFromRoll.
     const raw = character.baseStackRolls ?? {
-      archive: character.stacks.archive,
-      bulk: character.stacks.bulk,
-      ghost: character.stacks.ghost,
-      morph: character.stacks.morph,
-      speed: character.stacks.speed,
-      tech: character.stacks.tech
+      archive: 0, bulk: 0, ghost: 0, morph: 0, speed: 0, tech: 0
     };
     // Compute the full per-slot composition (so the sheet can show the
     // breakdown later) and pull out the cached final scores.
@@ -63,6 +74,15 @@
       background: character.background,
       distribution
     });
+    // If player hasn't confirmed a background yet, strip background bonuses
+    // from every stack and recompute the final cache.
+    if (!backgroundChosen) {
+      for (const k of ALL_STACKS) {
+        const c = composition[k];
+        c.backgroundBonus = 0;
+        c.final = c.base + c.lifeFormBonus + c.backgroundBonus + c.implantBonus + c.other;
+      }
+    }
     character.stackComposition = composition;
     character.stacks = {
       archive: composition.archive.final,
@@ -83,33 +103,121 @@
     }
   }
 
-  function toggleDistributionPick(stack: PrimaryStack, slot: 'plus2' | 'plus1') {
-    const arr = distribution[slot];
-    if (arr.includes(stack)) {
-      distribution[slot] = arr.filter((s) => s !== stack);
-    } else {
-      distribution[slot] = [...arr, stack];
-    }
+  /**
+   * True if a +2/+1 bonus on this stack would be silently swallowed by the
+   * life-form's set/cap rule (Tank Born capped stack, Droid/Holid stackSets).
+   * Bonuses on these stacks are ignored by `applyBonusesComposed` per
+   * rules/18 — surfacing this in the UI prevents the player from "wasting"
+   * a pick that does nothing.
+   */
+  function isSetOrCapped(stack: PrimaryStack): boolean {
+    const lf = LIFE_FORMS_DATA.find((l) => l.id === character.lifeForm);
+    if (!lf) return false;
+    if (lf.pickCapStack && distribution.capped === stack) return true;
+    if (lf.stackSets && lf.stackSets[stack as keyof typeof lf.stackSets] !== undefined) return true;
+    return false;
   }
 
-  // ===== Stack rolling =====
-  // SW: roll 6 stacks (one per primary). Conventional: 2d6 with cap at 6, but
-  // the rules-as-written say roll one die per stack and pair zero rolls (doubles)
-  // to gate life-form. For the wizard we offer a simple "roll 2d6 then -6 capped 0-6"
-  // approach plus a manual override; the "doubles" count is what determines
-  // life-form choice (number of zeroes).
+  function toggleDistributionPick(stack: PrimaryStack, slot: 'plus2' | 'plus1') {
+    const arr = distribution[slot];
+    const other: 'plus2' | 'plus1' = slot === 'plus2' ? 'plus1' : 'plus2';
+    if (arr.includes(stack)) {
+      // Toggle off in this slot.
+      distribution[slot] = arr.filter((s) => s !== stack);
+    } else {
+      // Refuse adds to set/capped stacks — those would be silently ignored.
+      if (isSetOrCapped(stack)) return;
+      // Enforce life-form cap — refuse adds past plusNCount.
+      const lf = LIFE_FORMS_DATA.find((l) => l.id === character.lifeForm);
+      const cap = slot === 'plus2' ? (lf?.plus2Count ?? 0) : (lf?.plus1Count ?? 0);
+      if (arr.length >= cap) return;
+      // Mutually exclusive: drop from the other slot first, then add here.
+      distribution[other] = distribution[other].filter((s) => s !== stack);
+      distribution[slot] = [...arr, stack];
+    }
+    // Inline recompute keeps the totals fresh without a manual button —
+    // a $effect-based version triggered Svelte's update-depth guard
+    // because recomputeFinalStacks also writes to character fields.
+    recomputeFinalStacks();
+  }
+
+  function setCappedStack(stack: 'archive' | 'bulk' | 'morph' | undefined) {
+    distribution.capped = stack;
+    // Mutual exclusivity: drop the newly-capped stack from any +2/+1 picks.
+    if (stack) {
+      distribution.plus2 = distribution.plus2.filter((s) => s !== stack);
+      distribution.plus1 = distribution.plus1.filter((s) => s !== stack);
+    }
+    recomputeFinalStacks();
+  }
+
+  // ===== Stack rolling (SW rules-as-written) =====
+  // For each primary stack: roll 2d6.
+  //   - If a pair (matched dice) → score = 0 + count this as one "pair"
+  //   - Else take the LOWEST die and read it as a d3:
+  //        1-2 → 1
+  //        3-4 → 2
+  //        5-6 → 3
+  // Number of pairs gates life-form (rules/18).
+
+  type StackRoll = { d1: number | null; d2: number | null };
+  // Empty by default — player must roll or type both dice for each stack.
+  let stackRolls = $state<Record<string, StackRoll>>(
+    Object.fromEntries(PRIMARY_STACKS.map((s) => [s, { d1: null, d2: null }]))
+  );
+
+  /** Pure derivation from two d6 rolls per SW procedure. `complete=false`
+   *  when either die is missing — the table shows "—" and the score 0. */
+  function deriveResult(d1: number | null, d2: number | null): { isPair: boolean; result: number; complete: boolean } {
+    if (d1 == null || d2 == null) return { isPair: false, result: 0, complete: false };
+    if (d1 === d2) return { isPair: true, result: 0, complete: true };
+    const low = Math.min(d1, d2);
+    return { isPair: false, result: Math.ceil(low / 2), complete: true };
+  }
+
+  function syncStackFromRoll(s: typeof PRIMARY_STACKS[number]) {
+    const { d1, d2 } = stackRolls[s];
+    const derived = deriveResult(d1, d2);
+    // If the row isn't complete yet, leave baseStackRolls alone for THIS
+    // stack — the wizard's recomputeFinalStacks falls back to 0 anyway.
+    if (!derived.complete) {
+      const next = { ...(character.baseStackRolls ?? {}) } as Partial<Record<typeof s, number>>;
+      delete next[s];
+      character.baseStackRolls = next;
+    } else {
+      character.baseStackRolls = {
+        ...(character.baseStackRolls ?? {
+          archive: 0, bulk: 0, ghost: 0, morph: 0, speed: 0, tech: 0
+        }),
+        [s]: derived.result
+      };
+    }
+    // Pair count may now invalidate the chosen life-form.
+    revalidate();
+    recomputeFinalStacks();
+  }
+
+  function setDie(s: typeof PRIMARY_STACKS[number], which: 'd1' | 'd2', value: number | null) {
+    const v = value == null ? null : Math.max(1, Math.min(6, value));
+    stackRolls[s] = { ...stackRolls[s], [which]: v };
+    syncStackFromRoll(s);
+  }
+
+  function rollOnly(s: typeof PRIMARY_STACKS[number]) {
+    stackRolls[s] = { d1: rollD6(), d2: rollD6() };
+    syncStackFromRoll(s);
+  }
 
   function rollStacks() {
-    for (const s of PRIMARY_STACKS) {
-      // 1d6 - 1 → 0..5 distribution. Adjust as desired.
-      character.stacks[s] = Math.max(0, rollD6() - 1);
-    }
-    character.baseStackRolls = { ...character.stacks };
+    for (const s of PRIMARY_STACKS) rollOnly(s);
   }
 
   function pairs(): number {
     let n = 0;
-    for (const s of PRIMARY_STACKS) if ((character.stacks[s] ?? 0) === 0) n++;
+    for (const s of PRIMARY_STACKS) {
+      const r = stackRolls[s];
+      if (r && r.d1 != null && r.d2 != null && r.d1 === r.d2) n++;
+    }
     return n;
   }
 
@@ -131,7 +239,12 @@
   function setType(t: CharacterType) {
     const prev = character.type;
     character.type = t;
+    typeChosen = true;
     applyOrigo(t);
+    // Revalidate happens at the end of setType (already calls
+    // recomputeFinalStacks); call here so type-dependent state (aptCombatPick,
+    // coreBond, subspace formulae) is pruned BEFORE recompute reads it.
+    revalidate();
     // Reconcile aptCombatPick with stack values across type swaps:
     // - Switching INTO Apt with an existing pick → re-apply so stacks
     //   match the highlighted button (instead of the graph defaults).
@@ -148,6 +261,7 @@
     } else if (prev === 'apt') {
       character.aptCombatPick = undefined;
     }
+    recomputeFinalStacks();
   }
 
   // For Apt: pick which combat starts at 1.
@@ -162,50 +276,178 @@
     character.stacks.ranged = c === 'ranged' ? 1 : 0;
     character.origo.closeStart = character.stacks.close;
     character.origo.rangedStart = character.stacks.ranged;
+    recomputeFinalStacks();
   }
 
   function setLifeForm(lf: LifeForm) {
+    const prevLf = character.lifeForm;
+    const prevMand = mandatoryLanguageForLifeForm(prevLf);
     character.lifeForm = lf;
-    // Reset mandatory language
-    const mand = mandatoryLanguageForLifeForm(lf);
-    if (mand && !character.languages.includes(mand)) {
-      character.languages = [...character.languages.filter((l) => l !== 'pidgin'), 'pidgin', mand];
+    lifeFormChosen = true;
+    // Drop the OLD mandatory language if it changed (so a Droid → Blood swap
+    // doesn't leave Al-Gol stuck as a non-mandatory pick the player can't
+    // remove).
+    const newMand = mandatoryLanguageForLifeForm(lf);
+    if (prevMand && prevMand !== newMand) {
+      character.languages = character.languages.filter((l) => l !== prevMand);
     }
+    if (newMand && !character.languages.includes(newMand)) {
+      character.languages = [...character.languages.filter((l) => l !== 'pidgin'), 'pidgin', newMand];
+    }
+    revalidate();
+    recomputeFinalStacks();
   }
 
   function setBackground(bg: Background) {
     character.background = bg;
+    revalidate();
+    recomputeFinalStacks();
+  }
+
+  /**
+   * Cascading revalidation — pruned ANY selection that's no longer legal in
+   * the current state. Call after every mutator that could invalidate a
+   * downstream pick (type / life-form / background / stack rolls / d3 roll).
+   * Safe to call multiple times — it's idempotent on a clean state.
+   */
+  function revalidate() {
+    // --- Type-dependent state ---
+    if (character.type !== 'apt') {
+      character.aptCombatPick = undefined;
+    }
+    if (character.type !== 'core') {
+      character.coreBond = undefined;
+      // Subspace formulae are Core+subspace_nanites only — drop them.
+      const dropIds = new Set(character.formulae.filter((f) => f.category === 'subspace').map((f) => f.id));
+      if (dropIds.size > 0) {
+        character.formulae = character.formulae.filter((f) => !dropIds.has(f.id));
+        character.spaces = character.spaces.filter((s) => !dropIds.has(s.id));
+      }
+    } else if (character.coreBond !== 'subspace_nanites') {
+      // Core but no subspace bond — subspace formulae still invalid.
+      const dropIds = new Set(character.formulae.filter((f) => f.category === 'subspace').map((f) => f.id));
+      if (dropIds.size > 0) {
+        character.formulae = character.formulae.filter((f) => !dropIds.has(f.id));
+        character.spaces = character.spaces.filter((s) => !dropIds.has(s.id));
+      }
+    }
+
+    // --- Life-form vs. pair-count gate ---
+    const allowed = allowedLifeForms(pairs());
+    if (lifeFormChosen && !allowed.includes(character.lifeForm)) {
+      lifeFormChosen = false;
+    }
+
+    // --- Distribution caps + special-slot validity ---
+    const lf = LIFE_FORMS_DATA.find((l) => l.id === character.lifeForm);
+    if (lf) {
+      // Trim plus2 / plus1 if the new life-form has lower caps.
+      if (distribution.plus2.length > lf.plus2Count) {
+        distribution.plus2 = distribution.plus2.slice(0, lf.plus2Count);
+      }
+      if (distribution.plus1.length > lf.plus1Count) {
+        distribution.plus1 = distribution.plus1.slice(0, lf.plus1Count);
+      }
+      // Capped stack only valid if the life-form allows pickCapStack AND the
+      // pick is in capStackOptions.
+      if (!lf.pickCapStack || !(lf.capStackOptions ?? []).includes(distribution.capped as any)) {
+        distribution.capped = undefined;
+      }
+      // combatPick relevant only for Apt or lf.combatBonusMode='either'.
+      // Leave value as-is; it's harmless when ignored, and dropping it would
+      // strand Apts mid-flow.
+    }
+
+    // --- Keywords vs. background ---
+    // Background picks must be from the current background; cross-picks must
+    // NOT be from the current background.
+    if (backgroundChosen) {
+      const bgKws = BACKGROUNDS_DATA.find((b) => b.id === character.background)?.keywords.map((k) => k.name) ?? [];
+      character.keywords = character.keywords.filter((k) => {
+        if (k.source === 'background') {
+          // Must be from current background AND its keyword list.
+          return k.fromBackground === character.background && bgKws.includes(k.name);
+        }
+        if (k.source === 'cross') {
+          // Must be from a DIFFERENT background.
+          return k.fromBackground !== character.background;
+        }
+        return true;
+      });
+    }
+
+    // --- Languages: enforce restriction + slot cap + mandatory consistency ---
+    const slots = languageSlotsAllowed();
+    const newMandatory = mandatoryLanguageForLifeForm(character.lifeForm);
+    // Drop any restricted language that no longer qualifies (e.g. Krypotkep
+    // when not Construct, or after losing the d3=3 unlock).
+    character.languages = character.languages.filter((id) => {
+      const def = LANGUAGES_DATA.find((x) => x.id === id);
+      if (!def?.restriction) return true;
+      // Skip mandatory + pidgin always-keep checks (they're handled below).
+      if (id === 'pidgin' || id === newMandatory) return true;
+      const reason = languagePickEligibility(def, character.lifeForm, character.thirdLanguageRoll === 3, 0);
+      return !reason;
+    });
+    // Trim extra picks if d3 dropped slots.
+    let extras = character.languages.filter((l) => l !== 'pidgin' && l !== newMandatory);
+    if (extras.length > slots) {
+      const keepExtras = new Set(extras.slice(0, slots));
+      character.languages = character.languages.filter((l) => l === 'pidgin' || l === newMandatory || keepExtras.has(l));
+    }
   }
 
   // ===== Keywords =====
+  // Rules/19: 3 keywords from chosen background + 1 cross-pick from a
+  // different background. Each keyword sits under ONE stack column — placement
+  // changes what it boosts/unblocks. Same keyword cannot be picked twice.
   let availableKw = $derived(BACKGROUNDS_DATA.find((b) => b.id === character.background)?.keywords ?? []);
-  const allKws = BACKGROUNDS_DATA.flatMap((b) =>
-    b.keywords.map((k) => ({ ...k, fromBackground: b.id, label: `${k.name} (${b.label})` }))
-  );
+  // Other backgrounds — eligible for cross-pick.
+  let otherBackgrounds = $derived(BACKGROUNDS_DATA.filter((b) => b.id !== character.background));
 
-  function addBackgroundKw(name: string, stackHint: string) {
-    character.keywords = [
-      ...character.keywords,
-      {
-        id: crypto.randomUUID(),
-        name,
-        stack: stackHint as PrimaryStack,
-        notes: '',
-        source: 'background',
-        fromBackground: character.background
-      }
-    ];
+  function pickedKwByName(name: string) {
+    return character.keywords.find((k) => k.name === name);
   }
 
-  function addCrossKw(name: string, fromBackground: Background, stackHint: string) {
+  /**
+   * Pick or move a keyword. If the keyword is already in character.keywords:
+   *   - Same source + same stack → remove it (toggle off).
+   *   - Otherwise → update its stack/source/fromBackground in place.
+   * If new:
+   *   - Refuse if source slot is full (3 background or 1 cross).
+   *   - Otherwise append.
+   */
+  function pickKeyword(
+    name: string,
+    source: 'background' | 'cross',
+    fromBackground: Background,
+    stack: PrimaryStack
+  ) {
+    const existing = pickedKwByName(name);
+    if (existing) {
+      if (existing.source === source && existing.stack === stack) {
+        // Toggle off — remove.
+        character.keywords = character.keywords.filter((k) => k.id !== existing.id);
+        return;
+      }
+      // Move / restack.
+      character.keywords = character.keywords.map((k) =>
+        k.id === existing.id ? { ...k, source, fromBackground, stack } : k
+      );
+      return;
+    }
+    // New pick — enforce slot caps.
+    const cap = source === 'background' ? 3 : 1;
+    const have = character.keywords.filter((k) => k.source === source).length;
+    if (have >= cap) return;
     character.keywords = [
       ...character.keywords,
       {
         id: crypto.randomUUID(),
         name,
-        stack: stackHint as PrimaryStack,
+        stack,
         notes: '',
-        source: 'cross',
+        source,
         fromBackground
       }
     ];
@@ -215,9 +457,14 @@
     character.keywords = character.keywords.filter((k) => k.id !== id);
   }
 
+  function removeKwByName(name: string) {
+    character.keywords = character.keywords.filter((k) => k.name !== name);
+  }
+
   // ===== Languages =====
   function rollThirdLanguage() {
     character.thirdLanguageRoll = rollD3();
+    revalidate();
   }
   function toggleLang(l: typeof LANGUAGES_DATA[number]['id']) {
     // Pidgin is universal — never removable.
@@ -228,6 +475,22 @@
     if (character.languages.includes(l)) {
       character.languages = character.languages.filter((x) => x !== l);
     } else {
+      // Refuse adds past the slot cap (1 free + 1 if d3 = 3).
+      const slots = languageSlotsAllowed();
+      const picked = extraLanguagesPicked();
+      if (picked >= slots) return;
+      // Refuse if the language has a mechanical restriction the character
+      // doesn't meet (e.g. Krypotkep = construct + third-slot only).
+      const def = LANGUAGES_DATA.find((x) => x.id === l);
+      if (def) {
+        const reason = languagePickEligibility(
+          def,
+          character.lifeForm,
+          character.thirdLanguageRoll === 3,
+          picked
+        );
+        if (reason) return;
+      }
       character.languages = [...character.languages, l];
     }
   }
@@ -253,6 +516,165 @@
     character.startingFunds = startingPartsFor(character.lifeForm, r);
     character.purse.parts = character.startingFunds;
   }
+
+  /** Manual override: player types a d6 result, app derives the Parts amount. */
+  function setFundsRoll(r: number) {
+    const clamped = Math.max(1, Math.min(6, Math.round(r) || 1));
+    character.startingFundsRoll = clamped;
+    character.startingFunds = startingPartsFor(character.lifeForm, clamped);
+    character.purse.parts = character.startingFunds;
+  }
+
+  /** Manual override: player types the Parts amount directly (ignores d6). */
+  function setFundsParts(p: number) {
+    const clamped = Math.max(0, Math.round(p) || 0);
+    character.startingFunds = clamped;
+    character.purse.parts = clamped;
+  }
+
+  // ===== Starter equipment (rules/24) =====
+  // Players may pick up to 5 free items (each ≤ 100 P) AND buy more with their
+  // starting Parts. The free picks are marked `freePick: true` and do NOT
+  // deduct from the purse; bought items DO deduct.
+
+  /** True if an item is too expensive to be a free pick (rules/24: ≤ 100 P). */
+  function isFreeEligible(cost: number): boolean {
+    return cost <= 100;
+  }
+
+  /** Count of items currently flagged as free starter picks. */
+  function freePicksUsed(): number {
+    let n = 0;
+    for (const i of character.inventory) if (i.freePick) n++;
+    for (const w of character.weapons) if ((w as any).freePick) n++;
+    for (const a of character.armor) if ((a as any).freePick) n++;
+    return n;
+  }
+
+  /**
+   * Add a starter item from the catalog. Mode 'free' means it's marked
+   * freePick (no purse deduction); mode 'buy' deducts from purse.
+   * Refuses if free cap reached, item too pricey for free, or insufficient
+   * funds for a buy.
+   */
+  function addStarterItem(source: 'weapon' | 'armor' | 'gear' | 'pet', catalogId: string, mode: 'free' | 'buy') {
+    if (mode === 'free' && freePicksUsed() >= 5) return;
+
+    if (source === 'weapon') {
+      const w = WEAPONS_DATA.find((x) => x.id === catalogId);
+      if (!w) return;
+      if (mode === 'free' && !isFreeEligible(w.cost)) return;
+      if (mode === 'buy' && character.purse.parts < w.cost) return;
+      character.weapons = [
+        ...character.weapons,
+        {
+          id: crypto.randomUUID(),
+          name: w.name,
+          damage: w.damage,
+          damageType: w.damageType,
+          slots: w.slots,
+          range: w.range,
+          clip: w.clip,
+          ammoLoaded: w.clip,
+          ammoSpare: 0,
+          cost: w.cost,
+          kit: w.kit,
+          specials: w.specials,
+          notes: w.notes,
+          equipped: true,
+          ...(mode === 'free' ? { freePick: true } : {})
+        } as any
+      ];
+      if (mode === 'buy') character.purse.parts -= w.cost;
+    } else if (source === 'armor') {
+      const a = ARMOR_DATA.find((x) => x.id === catalogId);
+      if (!a) return;
+      if (mode === 'free' && !isFreeEligible(a.cost)) return;
+      if (mode === 'buy' && character.purse.parts < a.cost) return;
+      character.armor = [
+        ...character.armor,
+        {
+          id: crypto.randomUUID(),
+          name: a.name,
+          strength: a.strength,
+          weakness: a.weakness,
+          slots: a.slots,
+          cost: a.cost,
+          kit: a.kit,
+          notes: a.notes,
+          primeOnly: a.primeOnly,
+          equipped: true,
+          isShield: a.isShield,
+          isHelmet: a.isHelmet,
+          ...(mode === 'free' ? { freePick: true } : {})
+        } as any
+      ];
+      if (mode === 'buy') character.purse.parts -= a.cost;
+    } else if (source === 'gear') {
+      const g = GEAR_DATA.find((x) => x.id === catalogId);
+      if (!g) return;
+      if (mode === 'free' && !isFreeEligible(g.cost)) return;
+      if (mode === 'buy' && character.purse.parts < g.cost) return;
+      character.inventory = [
+        ...character.inventory,
+        {
+          id: crypto.randomUUID(),
+          name: g.name,
+          slots: g.slots,
+          cost: g.cost,
+          location: 'worn',
+          notes: g.notes,
+          kit: g.kit,
+          energyDraw: g.energy,
+          freePick: mode === 'free'
+        }
+      ];
+      if (mode === 'buy') character.purse.parts -= g.cost;
+    } else {
+      const p = PETS_DATA.find((x) => x.id === catalogId);
+      if (!p) return;
+      // Pets aren't usually a "free pick" item, but allow it for fairness.
+      if (mode === 'free' && !isFreeEligible(p.cost)) return;
+      if (mode === 'buy' && character.purse.parts < p.cost) return;
+      character.pets = [
+        ...character.pets,
+        {
+          id: crypto.randomUUID(),
+          name: p.name,
+          kind: p.name,
+          upkeepPerWeek: p.upkeepPerWeek,
+          notes: p.notes
+        }
+      ];
+      if (mode === 'buy') character.purse.parts -= p.cost;
+    }
+  }
+
+  /** Remove a starter item by id + source — refunds purse if it was a buy. */
+  function removeStarterItem(source: 'weapon' | 'armor' | 'gear' | 'pet', id: string) {
+    if (source === 'weapon') {
+      const w = character.weapons.find((x) => x.id === id);
+      if (!w) return;
+      if (!(w as any).freePick) character.purse.parts += w.cost ?? 0;
+      character.weapons = character.weapons.filter((x) => x.id !== id);
+    } else if (source === 'armor') {
+      const a = character.armor.find((x) => x.id === id);
+      if (!a) return;
+      if (!(a as any).freePick) character.purse.parts += a.cost ?? 0;
+      character.armor = character.armor.filter((x) => x.id !== id);
+    } else if (source === 'gear') {
+      const i = character.inventory.find((x) => x.id === id);
+      if (!i) return;
+      if (!i.freePick) character.purse.parts += i.cost ?? 0;
+      character.inventory = character.inventory.filter((x) => x.id !== id);
+    } else {
+      character.pets = character.pets.filter((x) => x.id !== id);
+    }
+  }
+
+  // Per-tab catalog filter for the starter equipment picker.
+  let equipFilter = $state('');
+  let equipTab = $state<'weapon' | 'armor' | 'gear' | 'pet'>('gear');
 
   // ===== Spaces (Core formulae) =====
   // For Core characters, each formula is also a space — keep them in lock-step
@@ -288,6 +710,261 @@
   function removeFormula(id: string) {
     character.formulae = character.formulae.filter((f) => f.id !== id);
     character.spaces = character.spaces.filter((s) => s.id !== id);
+  }
+
+  /** Per-section search filters for the Core formulae lists. */
+  let basicFormulaFilter = $state('');
+  let subspaceFormulaFilter = $state('');
+
+  /** Add a subspace formula — only callable when the Core has the subspace
+   *  nanites bond. Mirrors basic formula behavior. */
+  function addSubspaceFormula(formulaId: string) {
+    const f = SUBSPACE_FORMULAE.find((x) => x.id === formulaId);
+    if (!f) return;
+    const isFirst = character.formulae.length === 0;
+    const sharedId = crypto.randomUUID();
+    character.formulae = [
+      ...character.formulae,
+      {
+        id: sharedId,
+        name: f.name,
+        category: 'subspace',
+        active: isFirst,
+        hCost: f.bondedCost,
+        notes: f.description
+      }
+    ];
+    character.spaces = [
+      ...character.spaces,
+      {
+        id: sharedId,
+        active: isFirst,
+        kind: 'formula',
+        name: f.name,
+        effect: f.description,
+        notes: `${f.bondedCost} H (subspace)`
+      }
+    ];
+  }
+
+  /**
+   * Toggle which formula (and its mirrored space) is the *active* one. Per
+   * rules/18, Core characters have one active and one inactive in each space;
+   * switching active takes a long turn of concentration in play.
+   */
+  function setActiveFormula(id: string) {
+    character.formulae = character.formulae.map((f) => ({ ...f, active: f.id === id }));
+    character.spaces = character.spaces.map((s) =>
+      s.kind === 'formula' ? { ...s, active: s.id === id } : s
+    );
+  }
+
+  // ===== Apt-space catalog options (memoised) =====
+  // Combined catalog of weapon/armor/gear so the player can pick anything in
+  // the books OR fall back to a custom name. Pet picker uses PETS_DATA.
+  const APT_EQUIP_OPTIONS = [
+    { value: '', label: '— pick from books, or freeform name below —' },
+    { value: 'custom', label: '(custom — type a name below)' },
+    ...WEAPONS_DATA.map((w) => ({ value: `weapon:${w.id}`, label: `🗡 ${w.name}` })),
+    ...ARMOR_DATA.map((a) => ({ value: `armor:${a.id}`, label: `🛡 ${a.name}` })),
+    ...GEAR_DATA.map((g) => ({ value: `gear:${g.id}`, label: `🎒 ${g.name}` }))
+  ];
+  const APT_PET_OPTIONS = [
+    { value: '', label: '— pick from books, or freeform name below —' },
+    { value: 'custom', label: '(custom — type a name below)' },
+    ...PETS_DATA.map((p) => ({ value: p.id, label: p.name }))
+  ];
+
+  /** Per-space transient form-state for the catalog picker (alias text + last
+   *  picked catalog id). Keyed by space id so each card has its own. */
+  let aptSpaceForm = $state<Record<string, { catalog: string; alias: string }>>({});
+
+  function ensureAptForm(spaceId: string) {
+    if (!aptSpaceForm[spaceId]) {
+      aptSpaceForm[spaceId] = { catalog: '', alias: '' };
+    }
+  }
+
+  function setSpaceCatalog(spaceId: string, catalogValue: string) {
+    ensureAptForm(spaceId);
+    aptSpaceForm[spaceId].catalog = catalogValue;
+    if (!catalogValue || catalogValue === 'custom') return;
+    const [src, id] = catalogValue.split(':') as ['weapon' | 'armor' | 'gear', string];
+    pickEquipmentForSpace(spaceId, src, id, aptSpaceForm[spaceId].alias);
+  }
+
+  function setSpaceAlias(spaceId: string, alias: string) {
+    ensureAptForm(spaceId);
+    aptSpaceForm[spaceId].alias = alias;
+    // Re-format the display name if a catalog item is currently picked.
+    const cat = aptSpaceForm[spaceId].catalog;
+    if (cat && cat !== 'custom') {
+      const [src, id] = cat.split(':') as ['weapon' | 'armor' | 'gear', string];
+      const baseName =
+        src === 'weapon' ? WEAPONS_DATA.find((x) => x.id === id)?.name :
+        src === 'armor' ? ARMOR_DATA.find((x) => x.id === id)?.name :
+        GEAR_DATA.find((x) => x.id === id)?.name;
+      if (baseName) updateAptSpace(spaceId, { name: formatSpaceName(baseName, alias) });
+    }
+  }
+
+  function setSpacePetCatalog(spaceId: string, catalogId: string) {
+    ensureAptForm(spaceId);
+    aptSpaceForm[spaceId].catalog = catalogId;
+    if (!catalogId || catalogId === 'custom') return;
+    pickPetForSpace(spaceId, catalogId, aptSpaceForm[spaceId].alias);
+  }
+
+  function setSpacePetAlias(spaceId: string, alias: string) {
+    ensureAptForm(spaceId);
+    aptSpaceForm[spaceId].alias = alias;
+    const cat = aptSpaceForm[spaceId].catalog;
+    if (cat && cat !== 'custom') {
+      const baseName = PETS_DATA.find((x) => x.id === cat)?.name;
+      if (baseName) updateAptSpace(spaceId, { name: formatSpaceName(baseName, alias) });
+    }
+  }
+
+  // ===== Apt spaces (equipment / master / place / pet) =====
+  // Per rules/18: each Apt space holds one equipment / master / place / pet
+  // and grants a 1/24h "treat stack as one scale higher" boost when the
+  // content relates to the action. The wizard lets the player fill the slot
+  // now or skip and fill in play.
+
+  /** Add an empty Apt space (capped at character.origo.spaces). */
+  function addAptSpace() {
+    if (character.spaces.length >= character.origo.spaces) return;
+    character.spaces = [
+      ...character.spaces,
+      {
+        id: crypto.randomUUID(),
+        active: true,
+        kind: 'equipment',
+        name: '',
+        effect: '',
+        notes: ''
+      }
+    ];
+  }
+
+  /** Remove a space by id (generic — used for Apt + Prime). */
+  function removeSpace(id: string) {
+    character.spaces = character.spaces.filter((s) => s.id !== id);
+    // If it was a Core formula slot, keep formulae mirrored.
+    character.formulae = character.formulae.filter((f) => f.id !== id);
+  }
+
+  /** Update one field of an Apt space in place. */
+  function updateAptSpace(id: string, patch: Partial<{ kind: 'equipment' | 'master' | 'place' | 'pet'; name: string; effect: string; notes: string }>) {
+    character.spaces = character.spaces.map((s) =>
+      s.id === id ? { ...s, ...patch } : s
+    );
+  }
+
+  /**
+   * Format a display name from a base catalog name + optional alias.
+   * "Kin-Gun" + "Last Chance" → "Kin-Gun \"Last Chance\""
+   */
+  function formatSpaceName(baseName: string, alias: string): string {
+    const a = alias.trim();
+    if (!a) return baseName;
+    return `${baseName} "${a}"`;
+  }
+
+  /**
+   * Pick an equipment catalog entry for an Apt space — also pushes the item
+   * onto the character's weapons/armor/inventory list so the equipment step
+   * already shows it. The display name uses the alias when provided.
+   *
+   * Catalog source may be 'weapon' | 'armor' | 'gear' | 'custom'. For custom
+   * the player provides everything by hand via the name input.
+   */
+  function pickEquipmentForSpace(spaceId: string, source: 'weapon' | 'armor' | 'gear', catalogId: string, alias: string) {
+    let displayName = '';
+    if (source === 'weapon') {
+      const w = WEAPONS_DATA.find((x) => x.id === catalogId);
+      if (!w) return;
+      displayName = formatSpaceName(w.name, alias);
+      character.weapons = [
+        ...character.weapons,
+        {
+          id: crypto.randomUUID(),
+          name: displayName,
+          damage: w.damage,
+          damageType: w.damageType,
+          slots: w.slots,
+          range: w.range,
+          clip: w.clip,
+          ammoLoaded: w.clip,
+          ammoSpare: 0,
+          cost: w.cost,
+          kit: w.kit,
+          specials: w.specials,
+          notes: w.notes,
+          equipped: true
+        }
+      ];
+    } else if (source === 'armor') {
+      const a = ARMOR_DATA.find((x) => x.id === catalogId);
+      if (!a) return;
+      displayName = formatSpaceName(a.name, alias);
+      character.armor = [
+        ...character.armor,
+        {
+          id: crypto.randomUUID(),
+          name: displayName,
+          strength: a.strength,
+          weakness: a.weakness,
+          slots: a.slots,
+          cost: a.cost,
+          kit: a.kit,
+          notes: a.notes,
+          primeOnly: a.primeOnly,
+          equipped: true,
+          isShield: a.isShield,
+          isHelmet: a.isHelmet
+        }
+      ];
+    } else {
+      const g = GEAR_DATA.find((x) => x.id === catalogId);
+      if (!g) return;
+      displayName = formatSpaceName(g.name, alias);
+      character.inventory = [
+        ...character.inventory,
+        {
+          id: crypto.randomUUID(),
+          name: displayName,
+          slots: g.slots,
+          cost: g.cost,
+          location: 'worn',
+          notes: g.notes,
+          kit: g.kit,
+          energyDraw: g.energy
+        }
+      ];
+    }
+    updateAptSpace(spaceId, { name: displayName });
+  }
+
+  /**
+   * Pick a pet catalog entry for an Apt space — also pushes a CharacterPet
+   * onto the character so the pet step already shows it.
+   */
+  function pickPetForSpace(spaceId: string, catalogId: string, alias: string) {
+    const p = PETS_DATA.find((x) => x.id === catalogId);
+    if (!p) return;
+    const displayName = formatSpaceName(p.name, alias);
+    character.pets = [
+      ...character.pets,
+      {
+        id: crypto.randomUUID(),
+        name: displayName,
+        kind: p.name,
+        upkeepPerWeek: p.upkeepPerWeek,
+        notes: p.notes
+      }
+    ];
+    updateAptSpace(spaceId, { name: displayName });
   }
 
   // ===== Save =====
@@ -755,6 +1432,34 @@
     { value: 'other', label: 'Other' }
   ];
 
+  // ===== Equipment catalog for the AM "expensive equipment + debt" picker =====
+  // Flattens every catalog data source into a single Select-friendly list.
+  // Each entry carries the auto-fill values (cost, slots) so picking sets
+  // the rest of the form. "__custom__" lets the player type a name freely.
+  type AmEquipCatalogEntry = { value: string; label: string; cost: number; slots: number };
+  const AM_EQUIP_CATALOG: AmEquipCatalogEntry[] = [
+    { value: '__custom__', label: '— Custom item (type your own) —', cost: 0, slots: 0 },
+    ...WEAPONS_DATA.map((w) => ({ value: `weapon:${w.name}`, label: `Weapon — ${w.name} (${w.cost} P)`, cost: w.cost, slots: w.slots })),
+    ...ARMOR_DATA.map((a) => ({ value: `armor:${a.name}`, label: `Armor — ${a.name} (${a.cost} P)`, cost: a.cost, slots: a.slots })),
+    ...GEAR_DATA.map((g) => ({ value: `gear:${g.name}`, label: `Gear — ${g.name} (${g.cost} P)`, cost: g.cost, slots: g.slots })),
+    ...VEHICLES_DATA.map((v) => ({ value: `vehicle:${v.name}`, label: `Vehicle — ${v.name} (${v.cost} P)`, cost: v.cost, slots: 0 })),
+    ...PETS_DATA.map((p) => ({ value: `pet:${p.name}`, label: `Pet — ${p.name} (${p.cost} P)`, cost: p.cost, slots: 0 }))
+  ];
+
+  let amEquipCatalogPick = $state<string>('__custom__');
+
+  function pickAmEquipCatalog(value: string) {
+    amEquipCatalogPick = value;
+    if (value === '__custom__') return;
+    const entry = AM_EQUIP_CATALOG.find((e) => e.value === value);
+    if (!entry) return;
+    // Strip the "kind:" prefix to derive the bare item name.
+    const bareName = value.replace(/^[^:]+:/, '');
+    amDraft.equipmentName = bareName;
+    amDraft.equipmentCost = entry.cost;
+    amDraft.equipmentSlots = entry.slots;
+  }
+
   const AM_BODY_PART_OPTS = [
     { value: 'head', label: 'Head' },
     { value: 'body', label: 'Body' },
@@ -894,101 +1599,287 @@
       </div>
     </Card>
   {:else if STEPS[step].id === 'type'}
-    <Card title="Pick a type (rules/18)">
+    <Card title="Pick a type">
+      <p class="text-sm text-neutral-400 mb-3">
+        Your type sets your origo (starting Spaces / Implants / Combat) and the
+        ability shape of your character. Switch any time during this step —
+        downstream picks revalidate automatically.
+      </p>
       <div class="grid gap-3 sm:grid-cols-3">
-        {#each CHARACTER_TYPES as t (t.id)}
+        {#each TYPES_DATA as t (t.id)}
+          {@const selected = typeChosen && character.type === t.id}
           <button
             type="button"
             onclick={() => setType(t.id)}
-            class={`rounded-xl border p-3 text-left transition ${
-              character.type === t.id
-                ? 'border-cyan-500/50 bg-cyan-900/30'
-                : 'border-neutral-800 bg-neutral-900/40 hover:bg-neutral-900/70'
+            class={`rounded-xl border-2 p-3 text-left transition ${
+              selected
+                ? 'border-cyan-400 bg-cyan-900/30 shadow-md shadow-cyan-500/20'
+                : 'border-neutral-700 bg-neutral-900/40 hover:border-cyan-700 hover:bg-neutral-900/70'
             }`}
           >
-            <p class="font-semibold text-neutral-100">{t.label}</p>
-            <p class="text-xs text-neutral-400">{t.tagline}</p>
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-semibold text-neutral-100">{t.label}</p>
+              {#if selected}
+                <span class="rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">selected</span>
+              {/if}
+            </div>
+            <p class="text-xs italic text-neutral-400">{t.tagline}</p>
+            <div class="mt-2 flex flex-wrap gap-1 text-[10px]">
+              <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">Sp {t.origo.spaces}</span>
+              <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">Imp {t.origo.implants}</span>
+              <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">Cl {t.origo.closeStart}</span>
+              <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">Rng {t.origo.rangedStart}</span>
+            </div>
+            <p class="mt-2 text-[10px] text-neutral-400">
+              <span class="font-semibold text-neutral-300">Examples:</span> {t.examples.join(', ')}
+            </p>
           </button>
         {/each}
       </div>
-      {#if character.type === 'apt'}
-        <div class="mt-4">
-          <p class="text-sm text-neutral-300">Apt picks which combat stack starts at 1:</p>
-          <div class="mt-2 flex gap-2">
-            <Button
-              variant={character.aptCombatPick === 'close' ? 'primary' : 'secondary'}
-              onclick={() => pickAptCombat('close')}
-            >
-              Close
-            </Button>
-            <Button
-              variant={character.aptCombatPick === 'ranged' ? 'primary' : 'secondary'}
-              onclick={() => pickAptCombat('ranged')}
-            >
-              Ranged
-            </Button>
+      {#if !typeChosen}
+        <p class="mt-3 text-sm italic text-amber-300">No type selected — pick one to continue.</p>
+      {:else}
+        {@const td = getType(character.type)}
+        <div class="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-900/10 p-3 space-y-3">
+          <p class="text-sm text-neutral-200">{td.description}</p>
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wide text-cyan-300">Mechanics</h4>
+            <ul class="mt-1 list-disc space-y-1 pl-5 text-xs text-neutral-300">
+              {#each td.rules as r}
+                <li>{r}</li>
+              {/each}
+            </ul>
           </div>
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wide text-cyan-300">Spaces</h4>
+            <p class="mt-1 text-xs text-neutral-300">
+              <span class="font-semibold text-neutral-200">Holds:</span> {td.spaceContent}
+            </p>
+            <p class="mt-1 text-xs text-neutral-300">
+              <span class="font-semibold text-neutral-200">Effect:</span> {td.spacesDoWhat}
+            </p>
+          </div>
+        </div>
+      {/if}
+      {#if typeChosen && character.type === 'apt'}
+        <p class="mt-3 text-xs italic text-neutral-500">
+          Apt picks which combat stack (Close or Ranged) starts at 1 — handled on the
+          Bonus distribution step.
+        </p>
+      {:else if typeChosen && character.type === 'core'}
+        {@const coreTd = getType('core')}
+        <h3 class="mt-4 mb-2 text-sm font-semibold text-neutral-100">Pick a deep bond</h3>
+        <p class="mb-3 text-xs text-neutral-400">
+          Core characters bond with one of three forces. Switching is possible
+          at black nodes during play. Your bond shapes which formulae you can
+          use on the Spaces step.
+        </p>
+        <div class="grid gap-2 sm:grid-cols-3">
+          {#each (coreTd.bonds ?? []) as b (b.id)}
+            {@const selected = character.coreBond === b.id}
+            <button
+              type="button"
+              onclick={() => { character.coreBond = b.id; revalidate(); }}
+              class={`rounded-xl border-2 p-3 text-left transition ${
+                selected
+                  ? 'border-cyan-400 bg-cyan-900/30 shadow-md shadow-cyan-500/20'
+                  : 'border-neutral-700 bg-neutral-900/40 hover:border-cyan-700 hover:bg-neutral-900/70'
+              }`}
+            >
+              <div class="flex items-center justify-between gap-2">
+                <p class="font-semibold text-neutral-100">{b.label}</p>
+                {#if selected}
+                  <span class="rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">selected</span>
+                {/if}
+              </div>
+              <p class="mt-1 text-[11px] text-neutral-400">{b.description}</p>
+            </button>
+          {/each}
         </div>
       {/if}
     </Card>
   {:else if STEPS[step].id === 'stacks'}
-    <Card title="Stack rolls (rules/16)">
+    <Card title="Stack rolls">
       <p class="text-sm text-neutral-400">
-        Roll one die per primary stack (1d6 - 1 = 0..5). Zeros count as "doubles" and gate
-        life-form. You may swap any two scores after rolling.
+        For each primary stack, roll <strong>2d6</strong> — the app rolls them, or punch in your
+        own physical rolls. The lowest die reads as a d3 (1-2→1, 3-4→2, 5-6→3). A pair (matched
+        dice) scores <strong>0</strong> and counts toward the pair gate that decides which life-forms
+        you can play.
       </p>
-      <div class="my-3">
+      <div class="my-3 flex flex-wrap gap-2">
         <Button onclick={rollStacks}>Roll all stacks</Button>
       </div>
-      <div class="grid gap-3 sm:grid-cols-3">
-        {#each PRIMARY_STACKS as s}
-          <NumberInput
-            label={STACK_LABELS[s]}
-            value={character.stacks[s]}
-            min={0}
-            max={9}
-            onchange={(v) => (character.stacks[s] = v)}
-          />
-        {/each}
+
+      <!-- Spreadsheet-style table: stack | d1 | d2 | result | actions.
+           Each die is a small NumberInput so the player can override with
+           their own physical rolls; result computes from current d1/d2. -->
+      <div class="overflow-x-auto stacks-table">
+        <table class="w-full text-sm tabular-nums" style="table-layout: fixed;">
+          <colgroup>
+            <col style="width: 28%;" />
+            <col style="width: 14%;" />
+            <col style="width: 14%;" />
+            <col style="width: 14%;" />
+            <col style="width: 16%;" />
+            <col style="width: 14%;" />
+          </colgroup>
+          <thead>
+            <tr class="border-b border-neutral-800 text-xs uppercase tracking-wider text-neutral-500">
+              <th class="py-2 pr-3 text-left font-medium">Stack</th>
+              <th class="py-2 px-1 text-center font-medium">d6 #1</th>
+              <th class="py-2 px-1 text-center font-medium">d6 #2</th>
+              <th class="py-2 px-1 text-center font-medium">Pair?</th>
+              <th class="py-2 px-1 text-right font-medium">= Score</th>
+              <th class="py-2 pl-3 text-right font-medium"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each PRIMARY_STACKS as s}
+              {@const roll = stackRolls[s]}
+              {@const derived = deriveResult(roll.d1, roll.d2)}
+              <tr class="border-t border-neutral-800/60 align-middle">
+                <td class="py-2 pr-3 text-left font-semibold text-neutral-100">{STACK_LABELS[s]}</td>
+                <td class="py-1 px-1 text-center">
+                  <input
+                    type="number"
+                    min="1"
+                    max="6"
+                    placeholder="–"
+                    value={roll.d1 ?? ''}
+                    oninput={(e) => {
+                      const raw = (e.currentTarget as HTMLInputElement).value;
+                      setDie(s, 'd1', raw === '' ? null : parseInt(raw, 10));
+                    }}
+                    class="mx-auto block w-14 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-center text-neutral-100 placeholder-neutral-600 focus:border-cyan-600 focus:outline-none"
+                  />
+                </td>
+                <td class="py-1 px-1 text-center">
+                  <input
+                    type="number"
+                    min="1"
+                    max="6"
+                    placeholder="–"
+                    value={roll.d2 ?? ''}
+                    oninput={(e) => {
+                      const raw = (e.currentTarget as HTMLInputElement).value;
+                      setDie(s, 'd2', raw === '' ? null : parseInt(raw, 10));
+                    }}
+                    class="mx-auto block w-14 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-center text-neutral-100 placeholder-neutral-600 focus:border-cyan-600 focus:outline-none"
+                  />
+                </td>
+                <td class="py-2 px-1 text-center">
+                  {#if !derived.complete}
+                    <span class="text-neutral-600">—</span>
+                  {:else if derived.isPair}
+                    <span class="text-amber-300">PAIR</span>
+                  {:else}
+                    <span class="text-neutral-500">—</span>
+                  {/if}
+                </td>
+                <td class="py-2 px-1 text-right text-lg font-bold text-cyan-300">
+                  {#if derived.complete}{derived.result}{:else}<span class="text-neutral-600">–</span>{/if}
+                </td>
+                <td class="py-1 pl-3 text-right">
+                  <Button variant="ghost" onclick={() => rollOnly(s)}>Roll</Button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       </div>
-      <p class="mt-3 text-sm text-neutral-300">Pairs (zero rolls): <strong>{pairs()}</strong></p>
+
+      <p class="mt-3 text-sm text-neutral-300">
+        Pairs (zero rolls): <strong>{pairs()}</strong>
+      </p>
       <p class="text-xs text-neutral-500">
         0 → Blood or Alien · 1 → Blood only · 2 → Blood/Alien/Tank Born · 3+ → all (incl Construct).
       </p>
     </Card>
   {:else if STEPS[step].id === 'lifeform'}
-    <Card title="Life-form (rules/18)">
+    <Card title="Life-form">
       <p class="text-sm text-neutral-400 mb-3">
-        Allowed for your pair count: {allowedLfs.map((l) => LIFE_FORMS.find((x) => x.id === l)?.label).join(', ')}.
+        Your <strong>life-form</strong> is the species/origin of your character —
+        it sets stack bonuses, set/cap rules, mandatory languages, and special
+        physical traits. Some life-forms are gated by your <strong>pair count</strong>
+        from stack rolls (rules/18).
+      </p>
+      <p class="text-xs text-neutral-500 mb-3">
+        Pairs rolled: <strong class="text-neutral-300">{pairs()}</strong> ·
+        Allowed: <strong class="text-neutral-300">{allowedLfs.map((l) => LIFE_FORMS.find((x) => x.id === l)?.label).join(', ')}</strong>
       </p>
       <div class="grid gap-3 sm:grid-cols-2">
         {#each LIFE_FORMS_DATA as lf (lf.id)}
           {@const enabled = allowedLfs.includes(lf.id)}
+          {@const selected = lifeFormChosen && character.lifeForm === lf.id}
           <button
             type="button"
             disabled={!enabled}
             onclick={() => setLifeForm(lf.id)}
-            class={`rounded-xl border p-3 text-left transition ${
-              character.lifeForm === lf.id
-                ? 'border-cyan-500/50 bg-cyan-900/30'
+            class={`rounded-xl border-2 p-3 text-left transition ${
+              selected
+                ? 'border-cyan-400 bg-cyan-900/30 shadow-md shadow-cyan-500/20'
                 : enabled
-                  ? 'border-neutral-800 bg-neutral-900/40 hover:bg-neutral-900/70'
-                  : 'border-neutral-800/50 bg-neutral-900/20 opacity-40'
+                  ? 'border-neutral-700 bg-neutral-900/40 hover:border-cyan-700 hover:bg-neutral-900/70'
+                  : 'border-neutral-800/50 bg-neutral-900/20 opacity-40 cursor-not-allowed'
             }`}
           >
-            <p class="font-semibold text-neutral-100">{lf.label}</p>
-            <p class="text-xs text-neutral-400">{lf.blurb}</p>
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-semibold text-neutral-100">{lf.label}</p>
+              <div class="flex items-center gap-1 shrink-0">
+                <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-[9px] font-bold uppercase text-neutral-300">{lf.group}</span>
+                {#if selected}
+                  <span class="rounded-full bg-cyan-600 px-2 py-0.5 text-[9px] font-bold uppercase text-white">selected</span>
+                {:else if !enabled}
+                  <span class="rounded-full bg-red-700 px-2 py-0.5 text-[9px] font-bold uppercase text-white">gated</span>
+                {/if}
+              </div>
+            </div>
+            <p class="mt-1 text-[11px] italic text-neutral-400">{lf.blurb}</p>
+            <p class="mt-2 text-[10px] font-medium text-emerald-300">{lf.bonusSummary}</p>
+            {#if lf.notes && lf.notes.length}
+              <ul class="mt-2 list-disc space-y-0.5 pl-4 text-[10px] text-neutral-400">
+                {#each lf.notes.slice(0, 4) as n}
+                  <li>{n}</li>
+                {/each}
+              </ul>
+            {/if}
+            {#if lf.mandatoryLanguages && lf.mandatoryLanguages.length}
+              <p class="mt-1 text-[10px] text-amber-300">
+                <span class="font-semibold">Mandatory language:</span> {lf.mandatoryLanguages.join(', ')}
+              </p>
+            {/if}
           </button>
         {/each}
       </div>
-      <p class="mt-3 text-xs text-neutral-500">Distribute the life-form's stack bonuses on the next step.</p>
+
+      {#if lifeFormChosen}
+        {@const sel = LIFE_FORMS_DATA.find((l) => l.id === character.lifeForm)!}
+        <div class="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-900/10 p-3 space-y-2">
+          <p class="text-sm text-neutral-200">{sel.description}</p>
+          {#if sel.fictionNotes && sel.fictionNotes.length}
+            <div>
+              <h4 class="text-xs font-semibold uppercase tracking-wide text-cyan-300">Fiction / body</h4>
+              <ul class="mt-1 list-disc space-y-1 pl-5 text-xs text-neutral-300">
+                {#each sel.fictionNotes as n}
+                  <li>{n}</li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+          {#if sel.rollsAlienTables}
+            <p class="text-xs text-amber-300">⚠ Alien — rolls d12 twice for a resistance + a vulnerability, plus d12 once for an alien feature.</p>
+          {/if}
+        </div>
+      {:else}
+        <p class="mt-3 text-sm italic text-amber-300">No life-form selected — pick one to continue.</p>
+      {/if}
     </Card>
   {:else if STEPS[step].id === 'distribution'}
     {@const lf = LIFE_FORMS_DATA.find((l) => l.id === character.lifeForm)!}
-    <Card title="Bonus distribution (rules/18)">
+    <Card title="Bonus distribution">
       <p class="text-sm text-neutral-400 mb-3">
-        Assign the {lf.label} bonuses to your stacks. Recompute when done — that
-        applies origo + life-form + background to your raw rolls.
+        Assign the {lf.label} bonuses to your stacks. Final stacks below show
+        the live total <strong>raw + life-form{backgroundChosen ? ' + background' : ''}</strong>{backgroundChosen ? '' : ' — background bonuses apply once you pick one on the next step.'}
       </p>
 
       {#if lf.pickCapStack}
@@ -1012,40 +1903,82 @@
       {/if}
 
       {#if lf.plus2Count > 0}
+        {@const plus2AtCap = distribution.plus2.length >= lf.plus2Count}
         <h3 class="mt-2 text-sm font-semibold text-neutral-200">+2 to {lf.plus2Count} stacks ({distribution.plus2.length}/{lf.plus2Count})</h3>
         <div class="my-2 flex flex-wrap gap-2">
           {#each PRIMARY_STACKS as s}
             {@const checked = distribution.plus2.includes(s)}
+            {@const inOther = distribution.plus1.includes(s)}
+            {@const setCap = isSetOrCapped(s)}
+            {@const atCap = plus2AtCap && !checked}
+            {@const blocked = setCap}
             <button
               type="button"
+              disabled={atCap || blocked}
+              title={blocked
+                ? (lf.pickCapStack && distribution.capped === s
+                    ? 'Capped at 8 — bonus would be ignored.'
+                    : 'Stack value set by life-form — bonus would be ignored.')
+                : atCap
+                  ? `+2 cap reached — uncheck another stack first.`
+                  : inOther
+                    ? 'Currently in +1 — clicking will move it to +2'
+                    : ''}
               onclick={() => toggleDistributionPick(s, 'plus2')}
-              class={`rounded-full border px-3 py-1 text-sm transition ${
+              class={`rounded-full border-2 px-3 py-1 text-sm font-medium transition ${
                 checked
-                  ? 'border-cyan-500/50 bg-cyan-900/30 text-cyan-200'
-                  : 'border-neutral-700 bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
+                  ? 'border-cyan-400 bg-cyan-600 text-white shadow-md shadow-cyan-500/30'
+                  : blocked
+                    ? 'border-neutral-800 bg-neutral-900/50 text-neutral-600 cursor-not-allowed opacity-70'
+                    : atCap
+                      ? 'border-red-900/40 bg-neutral-900 text-neutral-700 line-through opacity-50 cursor-not-allowed'
+                      : inOther
+                        ? 'border-amber-500/60 bg-amber-900/40 text-amber-200 italic'
+                        : 'border-neutral-600 bg-neutral-800 text-neutral-200 hover:border-cyan-600 hover:bg-neutral-700'
               }`}
             >
-              {STACK_LABELS[s]}
+              {STACK_LABELS[s]}{blocked ? ' (set/capped)' : inOther ? ' (in +1)' : ''}
             </button>
           {/each}
         </div>
       {/if}
 
       {#if lf.plus1Count > 0}
+        {@const plus1AtCap = distribution.plus1.length >= lf.plus1Count}
         <h3 class="mt-2 text-sm font-semibold text-neutral-200">+1 to {lf.plus1Count} stacks ({distribution.plus1.length}/{lf.plus1Count})</h3>
         <div class="my-2 flex flex-wrap gap-2">
           {#each PRIMARY_STACKS as s}
             {@const checked = distribution.plus1.includes(s)}
+            {@const inOther = distribution.plus2.includes(s)}
+            {@const setCap = isSetOrCapped(s)}
+            {@const atCap = plus1AtCap && !checked}
+            {@const blocked = setCap}
             <button
               type="button"
+              disabled={atCap || blocked}
+              title={blocked
+                ? (lf.pickCapStack && distribution.capped === s
+                    ? 'Capped at 8 — bonus would be ignored.'
+                    : 'Stack value set by life-form — bonus would be ignored.')
+                : atCap
+                  ? `+1 cap reached — uncheck another stack first.`
+                  : inOther
+                    ? 'Currently in +2 — clicking will move it to +1'
+                    : ''}
               onclick={() => toggleDistributionPick(s, 'plus1')}
-              class={`rounded-full border px-3 py-1 text-sm transition ${
+              class={`rounded-full border-2 px-3 py-1 text-sm font-medium transition ${
                 checked
-                  ? 'border-cyan-500/50 bg-cyan-900/30 text-cyan-200'
-                  : 'border-neutral-700 bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
+                  ? 'border-cyan-400 bg-cyan-600 text-white shadow-md shadow-cyan-500/30'
+                  : blocked
+                    ? 'border-neutral-800 bg-neutral-900/50 text-neutral-600 cursor-not-allowed opacity-70'
+                    : atCap
+                      ? 'border-red-900/40 bg-neutral-900 text-neutral-700 line-through opacity-50 cursor-not-allowed'
+                      : inOther
+                        ? 'border-amber-500/60 bg-amber-900/40 text-amber-200 italic'
+                        : 'border-neutral-600 bg-neutral-800 text-neutral-200 hover:border-cyan-600 hover:bg-neutral-700'
               }`}
             >
-              {STACK_LABELS[s]}
+              {STACK_LABELS[s]}{blocked ? ' (set/capped)' : inOther ? ' (in +2)' : ''}
             </button>
           {/each}
         </div>
@@ -1056,224 +1989,888 @@
         <div class="my-2 flex gap-2">
           <Button
             variant={distribution.combatPick === 'close' ? 'primary' : 'secondary'}
-            onclick={() => (distribution.combatPick = 'close')}
+            onclick={() => (character.type === 'apt' ? pickAptCombat('close') : (distribution.combatPick = 'close'))}
           >
             Close
           </Button>
           <Button
             variant={distribution.combatPick === 'ranged' ? 'primary' : 'secondary'}
-            onclick={() => (distribution.combatPick = 'ranged')}
+            onclick={() => (character.type === 'apt' ? pickAptCombat('ranged') : (distribution.combatPick = 'ranged'))}
           >
             Ranged
           </Button>
         </div>
       {/if}
 
-      <div class="mt-4">
-        <Button onclick={recomputeFinalStacks}>Recompute final stacks</Button>
-      </div>
-
       <h3 class="mt-4 text-sm font-semibold text-neutral-200">Current final stacks</h3>
       <dl class="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
         {#each PRIMARY_STACKS as s}
+          {@const comp = character.stackComposition?.[s]}
+          {@const parts = comp ? [
+            { label: 'raw', value: comp.base },
+            { label: 'LF', value: comp.lifeFormBonus },
+            { label: 'BG', value: comp.backgroundBonus },
+            { label: 'imp', value: comp.implantBonus },
+            { label: 'oth', value: comp.other }
+          ].filter((p) => p.value !== 0) : []}
           <div class="rounded-lg bg-neutral-800/50 p-2">
             <dt class="text-neutral-400">{STACK_LABELS[s]}</dt>
             <dd class="text-xl font-bold text-neutral-100">{character.stacks[s]}</dd>
+            {#if parts.length > 1}
+              <dd class="text-[10px] text-neutral-500 mt-0.5">
+                {parts.map((p) => `${p.value > 0 ? '+' : ''}${p.value} ${p.label}`).join(' ')}
+              </dd>
+            {/if}
           </div>
         {/each}
-        <div class="rounded-lg bg-neutral-800/50 p-2">
-          <dt class="text-neutral-400">Close</dt>
-          <dd class="text-xl font-bold text-neutral-100">{character.stacks.close}</dd>
-        </div>
-        <div class="rounded-lg bg-neutral-800/50 p-2">
-          <dt class="text-neutral-400">Ranged</dt>
-          <dd class="text-xl font-bold text-neutral-100">{character.stacks.ranged}</dd>
-        </div>
+        {#each ['close', 'ranged'] as const as s}
+          {@const comp = character.stackComposition?.[s]}
+          {@const parts = comp ? [
+            { label: 'origo', value: comp.base },
+            { label: 'LF', value: comp.lifeFormBonus },
+            { label: 'BG', value: comp.backgroundBonus },
+            { label: 'imp', value: comp.implantBonus },
+            { label: 'oth', value: comp.other }
+          ].filter((p) => p.value !== 0) : []}
+          <div class="rounded-lg bg-neutral-800/50 p-2">
+            <dt class="text-neutral-400">{s === 'close' ? 'Close' : 'Ranged'}</dt>
+            <dd class="text-xl font-bold text-neutral-100">{character.stacks[s]}</dd>
+            {#if parts.length > 1}
+              <dd class="text-[10px] text-neutral-500 mt-0.5">
+                {parts.map((p) => `${p.value > 0 ? '+' : ''}${p.value} ${p.label}`).join(' ')}
+              </dd>
+            {/if}
+          </div>
+        {/each}
       </dl>
     </Card>
   {:else if STEPS[step].id === 'background'}
-    <Card title="Background (rules/19)">
-      <Select
-        label="Background"
-        options={BG_OPTS}
-        value={character.background}
-        onchange={(v) => {
-          character.background = v as Background;
-          // Re-apply bonuses so background changes flow into final stacks.
-          recomputeFinalStacks();
-        }}
-      />
-      {#if character.background}
+    <Card title="Background">
+      <p class="text-sm text-neutral-400 mb-3">
+        Pick a background. Each grants combat + primary bonuses and offers six
+        keyword choices on the next step.
+      </p>
+      <div class="grid gap-3 sm:grid-cols-2">
+        {#each BACKGROUNDS_DATA as bg (bg.id)}
+          {@const selected = backgroundChosen && character.background === bg.id}
+          <button
+            type="button"
+            onclick={() => {
+              character.background = bg.id;
+              backgroundChosen = true;
+              revalidate();
+              recomputeFinalStacks();
+            }}
+            class={`rounded-xl border-2 p-3 text-left transition ${
+              selected
+                ? 'border-cyan-400 bg-cyan-900/30 shadow-md shadow-cyan-500/20'
+                : 'border-neutral-700 bg-neutral-900/40 hover:border-cyan-700 hover:bg-neutral-900/70'
+            }`}
+          >
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-semibold text-neutral-100">{bg.label}</p>
+              {#if selected}
+                <span class="rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">Selected</span>
+              {/if}
+            </div>
+            <p class="mt-1 text-xs italic text-neutral-400">{bg.blurb}</p>
+            <p class="mt-2 text-xs font-medium text-cyan-300">{bg.bonusSummary}</p>
+
+            <div class="mt-2 flex flex-wrap gap-1">
+              {#each Object.entries(bg.primaryBonuses) as [s, v]}
+                <span class="rounded-full bg-emerald-900/40 px-2 py-0.5 text-[10px] font-medium text-emerald-200 capitalize">
+                  +{v} {s}
+                </span>
+              {/each}
+              {#if bg.closeBonus > 0}
+                <span class="rounded-full bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-200">
+                  +{bg.closeBonus} Close
+                </span>
+              {/if}
+              {#if bg.rangedBonus > 0}
+                <span class="rounded-full bg-amber-900/40 px-2 py-0.5 text-[10px] font-medium text-amber-200">
+                  +{bg.rangedBonus} Ranged
+                </span>
+              {/if}
+            </div>
+
+            <p class="mt-2 text-[10px] text-neutral-500">
+              <span class="font-semibold text-neutral-400">Keywords:</span>
+              {bg.keywords.map((k) => k.name).join(' · ')}
+            </p>
+            <p class="mt-1 text-[10px] text-neutral-500">
+              <span class="font-semibold text-neutral-400">Examples:</span>
+              {bg.examples.slice(0, 4).join(', ')}
+            </p>
+          </button>
+        {/each}
+      </div>
+      {#if backgroundChosen}
         {@const bg = BACKGROUNDS_DATA.find((b) => b.id === character.background)!}
-        <p class="mt-3 text-sm text-neutral-300">{bg.blurb}</p>
-        <p class="mt-1 text-sm text-neutral-300">
-          Combat: +{bg.closeBonus} Close, +{bg.rangedBonus} Ranged.
-          Primary:
-          {#each Object.entries(bg.primaryBonuses) as [s, v]}
-            +{v} <span class="capitalize">{s}</span>{' '}
-          {/each}
-        </p>
-        <div class="mt-3">
-          <Button variant="secondary" onclick={recomputeFinalStacks}>Recompute final stacks</Button>
+        <div class="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-900/10 p-3">
+          <p class="text-sm text-neutral-200">{bg.description}</p>
         </div>
+      {:else}
+        <p class="mt-3 text-sm italic text-neutral-500">No background selected — pick one to apply its bonuses.</p>
       {/if}
     </Card>
   {:else if STEPS[step].id === 'keywords'}
     {@const bgPicks = character.keywords.filter((k) => k.source === 'background').length}
     {@const crossPicks = character.keywords.filter((k) => k.source === 'cross').length}
-    <Card title="Pick 3 keywords from your background, plus 1 cross-pick">
-      <p class="text-sm text-neutral-400 mb-2">Background: <strong>{character.background}</strong>. Suggested stack hints in parentheses.</p>
-      <p class="mb-2 text-xs text-neutral-500">
-        Picked: <strong>{bgPicks}</strong> / 3 background, <strong>{crossPicks}</strong> / 1 cross.
+    {@const bgFull = bgPicks >= 3}
+    {@const crossFull = crossPicks >= 1}
+    {@const bgLabel = BACKGROUNDS_DATA.find((b) => b.id === character.background)?.label ?? character.background}
+    <Card title="Keywords">
+      {#if !backgroundChosen}
+        <p class="text-sm italic text-amber-300">
+          Pick a background first — keywords are drawn from your background's
+          list. Use <strong>Back</strong> to return to step 6.
+        </p>
+      {:else}
+      <p class="text-sm text-neutral-400 mb-1">
+        Pick <strong>3 keywords</strong> from your background ({bgLabel}) and
+        <strong>1 cross-pick</strong> from a different background. Each keyword
+        sits under <strong>one stack column</strong> — placement changes what
+        it boosts. Same keyword can't be picked twice.
       </p>
-      <div class="grid gap-2 sm:grid-cols-2">
+      <div class="mt-2 mb-3 flex gap-3 text-xs">
+        <span class={`rounded-full px-2 py-0.5 font-medium ${bgFull ? 'bg-emerald-700 text-white' : 'bg-neutral-800 text-neutral-300'}`}>
+          Background {bgPicks}/3
+        </span>
+        <span class={`rounded-full px-2 py-0.5 font-medium ${crossFull ? 'bg-emerald-700 text-white' : 'bg-neutral-800 text-neutral-300'}`}>
+          Cross-pick {crossPicks}/1
+        </span>
+      </div>
+
+      <h3 class="mt-2 mb-2 text-sm font-semibold text-neutral-100">Background keywords — {bgLabel}</h3>
+      <div class="grid gap-3">
         {#each availableKw as k (k.name)}
-          <button
-            type="button"
-            onclick={() => addBackgroundKw(k.name, k.stackHints[0])}
-            class="rounded-lg border border-neutral-800 bg-neutral-900/50 p-2 text-left text-sm hover:bg-neutral-900/80"
-          >
-            <span class="text-neutral-100">{k.name}</span>
-            <span class="text-neutral-500"> ({k.stackHints.join(', ')})</span>
-          </button>
+          {@const entry = getKeywordEntry(k.name)}
+          {@const picked = pickedKwByName(k.name)}
+          {@const isCrossElsewhere = picked && picked.source === 'cross'}
+          {@const slotFull = !picked && bgFull}
+          <div class={`rounded-xl border-2 p-3 transition ${
+            picked && picked.source === 'background'
+              ? 'border-cyan-400 bg-cyan-900/20'
+              : isCrossElsewhere
+                ? 'border-amber-500/50 bg-amber-900/10'
+                : 'border-neutral-700 bg-neutral-900/40'
+          }`}>
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1">
+                <p class="font-semibold text-neutral-100">
+                  {k.name}
+                  {#if picked && picked.source === 'background'}
+                    <span class="ml-1 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">picked</span>
+                  {:else if isCrossElsewhere}
+                    <span class="ml-1 rounded-full bg-amber-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">in cross-pick</span>
+                  {/if}
+                </p>
+                <p class="mt-0.5 text-xs text-neutral-400">{entry.description}</p>
+              </div>
+              {#if picked}
+                <button
+                  type="button"
+                  class="text-red-400 hover:text-red-300 text-lg leading-none"
+                  onclick={() => removeKwByName(k.name)}
+                  aria-label="Remove"
+                >×</button>
+              {/if}
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              {#each PRIMARY_STACKS as s}
+                {@const isHint = k.stackHints.includes(s)}
+                {@const slotted = picked?.stack === s && picked?.source === 'background'}
+                {@const slotNote = entry.perStack[s]}
+                <button
+                  type="button"
+                  disabled={slotFull && !slotted}
+                  title={slotNote ?? STACK_BLURBS[s]}
+                  onclick={() => pickKeyword(k.name, 'background', character.background, s)}
+                  class={`rounded-full border px-2 py-1 text-[11px] font-medium transition ${
+                    slotted
+                      ? 'border-cyan-400 bg-cyan-600 text-white'
+                      : slotFull
+                        ? 'border-neutral-800 bg-neutral-900 text-neutral-700 cursor-not-allowed'
+                        : isHint
+                          ? 'border-cyan-700/60 bg-neutral-800 text-cyan-200 hover:bg-neutral-700'
+                          : 'border-neutral-700 bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800'
+                  }`}
+                >
+                  {STACK_LABELS[s]}{isHint ? ' ★' : ''}
+                </button>
+              {/each}
+            </div>
+            {#if picked && picked.source === 'background'}
+              <p class="mt-2 text-xs italic text-cyan-200">
+                <span class="font-semibold not-italic">{STACK_LABELS[picked.stack]}:</span>
+                {entry.perStack[picked.stack] ?? STACK_BLURBS[picked.stack]}
+              </p>
+            {/if}
+          </div>
         {/each}
       </div>
 
-      <h3 class="mt-4 mb-2 font-semibold text-neutral-200">Cross-pick (any background)</h3>
-      <div class="max-h-48 overflow-y-auto rounded-lg border border-neutral-800 p-2">
-        {#each allKws as k (`${k.fromBackground}-${k.name}`)}
-          <button
-            type="button"
-            onclick={() => addCrossKw(k.name, k.fromBackground, k.stackHints[0])}
-            class="block w-full text-left text-sm text-neutral-300 hover:text-cyan-200"
-          >
-            {k.label} <span class="text-neutral-500">({k.stackHints.join(', ')})</span>
-          </button>
+      <h3 class="mt-6 mb-2 text-sm font-semibold text-neutral-100">Cross-pick — from a different background</h3>
+      <div class="space-y-3">
+        {#each otherBackgrounds as bg (bg.id)}
+          <details class="rounded-xl border border-neutral-700 bg-neutral-900/40 p-3 group" open={character.keywords.some((k) => k.source === 'cross' && k.fromBackground === bg.id)}>
+            <summary class="cursor-pointer text-sm font-semibold text-neutral-200 hover:text-cyan-200">
+              {bg.label} <span class="text-xs text-neutral-500 font-normal">— {bg.bonusSummary}</span>
+            </summary>
+            <div class="mt-3 grid gap-2">
+              {#each bg.keywords as k (k.name)}
+                {@const entry = getKeywordEntry(k.name)}
+                {@const picked = pickedKwByName(k.name)}
+                {@const isBgElsewhere = picked && picked.source === 'background'}
+                {@const slotFull = !picked && crossFull}
+                <div class={`rounded-lg border p-2 transition ${
+                  picked && picked.source === 'cross'
+                    ? 'border-amber-400 bg-amber-900/20'
+                    : isBgElsewhere
+                      ? 'border-cyan-500/40 bg-cyan-900/10'
+                      : 'border-neutral-800 bg-neutral-900/30'
+                }`}>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1">
+                      <p class="text-sm font-semibold text-neutral-100">
+                        {k.name}
+                        {#if picked && picked.source === 'cross'}
+                          <span class="ml-1 rounded-full bg-amber-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">cross-pick</span>
+                        {:else if isBgElsewhere}
+                          <span class="ml-1 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">in background</span>
+                        {/if}
+                      </p>
+                      <p class="mt-0.5 text-[11px] text-neutral-400">{entry.description}</p>
+                    </div>
+                    {#if picked}
+                      <button
+                        type="button"
+                        class="text-red-400 hover:text-red-300 text-lg leading-none"
+                        onclick={() => removeKwByName(k.name)}
+                        aria-label="Remove"
+                      >×</button>
+                    {/if}
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    {#each PRIMARY_STACKS as s}
+                      {@const isHint = k.stackHints.includes(s)}
+                      {@const slotted = picked?.stack === s && picked?.source === 'cross'}
+                      {@const slotNote = entry.perStack[s]}
+                      <button
+                        type="button"
+                        disabled={slotFull && !slotted}
+                        title={slotNote ?? STACK_BLURBS[s]}
+                        onclick={() => pickKeyword(k.name, 'cross', bg.id, s)}
+                        class={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition ${
+                          slotted
+                            ? 'border-amber-400 bg-amber-600 text-white'
+                            : slotFull
+                              ? 'border-neutral-800 bg-neutral-900 text-neutral-700 cursor-not-allowed'
+                              : isHint
+                                ? 'border-amber-700/60 bg-neutral-800 text-amber-200 hover:bg-neutral-700'
+                                : 'border-neutral-700 bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800'
+                        }`}
+                      >
+                        {STACK_LABELS[s]}{isHint ? ' ★' : ''}
+                      </button>
+                    {/each}
+                  </div>
+                  {#if picked && picked.source === 'cross'}
+                    <p class="mt-2 text-xs italic text-amber-200">
+                      <span class="font-semibold not-italic">{STACK_LABELS[picked.stack]}:</span>
+                      {entry.perStack[picked.stack] ?? STACK_BLURBS[picked.stack]}
+                    </p>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+          </details>
         {/each}
       </div>
 
-      <h3 class="mt-4 mb-2 font-semibold text-neutral-200">Picked</h3>
+      <h3 class="mt-6 mb-2 text-sm font-semibold text-neutral-100">Your keywords</h3>
       {#if character.keywords.length === 0}
-        <p class="text-sm text-neutral-500">None picked yet.</p>
+        <p class="text-sm text-neutral-500 italic">None picked yet.</p>
       {:else}
         <ul class="space-y-1 text-sm">
           {#each character.keywords as k (k.id)}
-            <li class="flex items-center justify-between rounded-lg bg-neutral-800/50 px-2 py-1">
-              <span>{k.name} <span class="text-neutral-500">({k.stack}, {k.source})</span></span>
-              <button class="text-red-400 hover:text-red-300" onclick={() => removeKw(k.id)} aria-label="Remove">×</button>
+            <li class={`flex items-center justify-between rounded-lg px-3 py-2 ${
+              k.source === 'background' ? 'bg-cyan-900/20 border border-cyan-800/40' : 'bg-amber-900/20 border border-amber-800/40'
+            }`}>
+              <div>
+                <span class="font-semibold text-neutral-100">{k.name}</span>
+                <span class="ml-2 text-xs text-neutral-300">under <strong>{STACK_LABELS[k.stack]}</strong></span>
+                <span class={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                  k.source === 'background' ? 'bg-cyan-700 text-white' : 'bg-amber-700 text-white'
+                }`}>
+                  {k.source === 'background' ? bgLabel : `cross — ${BACKGROUNDS_DATA.find((b) => b.id === k.fromBackground)?.label}`}
+                </span>
+              </div>
+              <button class="text-red-400 hover:text-red-300 text-lg leading-none" onclick={() => removeKw(k.id)} aria-label="Remove">×</button>
             </li>
           {/each}
         </ul>
+      {/if}
       {/if}
     </Card>
   {:else if STEPS[step].id === 'languages'}
     {@const slots = languageSlotsAllowed()}
     {@const picked = extraLanguagesPicked()}
     {@const overPicked = picked > slots}
-    <Card title="Languages (rules/20)">
-      <p class="text-sm text-neutral-400">
-        Pidgin always known. Pick a second language. Roll d3 — on a 3, gain a third.
+    {@const atCap = picked >= slots}
+    {@const mandatory = mandatoryLanguageForLifeForm(character.lifeForm)}
+    {@const rollDone = !!character.thirdLanguageRoll}
+    {@const gotThird = character.thirdLanguageRoll === 3}
+    <Card title="Languages">
+      <p class="text-sm text-neutral-400 mb-3">
+        Every character speaks <strong>Pidgin</strong> for free. Pick one more
+        language as your second, then roll a d3 — only a <strong>3</strong>
+        unlocks a third pick.
       </p>
-      {#if mandatoryLanguageForLifeForm(character.lifeForm)}
-        <p class="text-xs text-amber-300 mt-1">
-          Your life-form requires <strong>{mandatoryLanguageForLifeForm(character.lifeForm)}</strong> as second language (locked).
-        </p>
-      {/if}
-      <div class="my-3 flex items-center gap-3">
-        <Button onclick={rollThirdLanguage}>Roll d3</Button>
-        {#if character.thirdLanguageRoll}
-          <span class="text-sm text-neutral-300">d3 → {character.thirdLanguageRoll}{character.thirdLanguageRoll === 3 ? ' (third language unlocked!)' : ''}</span>
+
+      <div class="my-3 rounded-lg border border-neutral-700 bg-neutral-900/40 p-3">
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-sm font-semibold text-neutral-200">Third-language roll</p>
+          <Button onclick={rollThirdLanguage}>{rollDone ? 'Re-roll d3' : 'Roll d3'}</Button>
+        </div>
+        {#if rollDone}
+          <p class={`mt-2 text-sm font-medium ${gotThird ? 'text-emerald-300' : 'text-neutral-300'}`}>
+            d3 → <strong class="text-lg">{character.thirdLanguageRoll}</strong>
+            {#if gotThird}
+              · <span class="text-emerald-300">Third language unlocked! You get 2 extra picks.</span>
+            {:else}
+              · <span class="text-neutral-400">No third language — you get 1 extra pick.</span>
+            {/if}
+          </p>
+        {:else}
+          <p class="mt-2 text-xs italic text-neutral-500">Roll to find out if you get a third language slot.</p>
         {/if}
       </div>
-      <p class="mb-2 text-xs {overPicked ? 'text-red-300' : 'text-neutral-500'}">
-        Extra languages picked: <strong>{picked}</strong> / {slots} allowed
-        {overPicked ? ' — too many for your slots' : ''}
-      </p>
-      <div class="flex flex-wrap gap-2">
+
+      <div class="mb-3 flex flex-wrap gap-2 text-xs">
+        <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
+          Pidgin <span class="text-neutral-500">(free, locked)</span>
+        </span>
+        {#if mandatory}
+          {@const mDef = LANGUAGES_DATA.find((l) => l.id === mandatory)}
+          <span class="rounded-full bg-amber-900/30 px-2 py-0.5 text-amber-200">
+            {mDef?.name ?? mandatory} <span class="opacity-70">(life-form locked)</span>
+          </span>
+        {/if}
+        <span class={`rounded-full px-2 py-0.5 font-medium ${
+          atCap && !overPicked ? 'bg-emerald-700 text-white'
+          : overPicked ? 'bg-red-700 text-white'
+          : 'bg-neutral-800 text-neutral-300'
+        }`}>
+          Extra picks {picked}/{slots}{overPicked ? ' — too many!' : atCap ? ' — full' : ''}
+        </span>
+      </div>
+
+      <div class="grid gap-2 sm:grid-cols-2">
         {#each LANGUAGES_DATA as l (l.id)}
-          {@const checked = character.languages.includes(l.id)}
+          {@const isPidgin = l.id === 'pidgin'}
+          {@const isMandatory = l.id === mandatory}
+          {@const locked = isPidgin || isMandatory}
+          {@const checked = character.languages.includes(l.id) || locked}
+          {@const restrictReason = !checked && !locked
+            ? languagePickEligibility(l, character.lifeForm, gotThird, picked)
+            : null}
+          {@const disabled = locked || (atCap && !checked) || !!restrictReason}
           <button
             type="button"
+            disabled={disabled}
             onclick={() => toggleLang(l.id)}
-            class={`rounded-full border px-3 py-1 text-sm transition ${
-              checked
-                ? 'border-cyan-500/50 bg-cyan-900/30 text-cyan-200'
-                : 'border-neutral-700 bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
+            title={locked
+              ? (isPidgin ? 'Pidgin is universal — always known.' : 'Required by your life-form.')
+              : restrictReason
+                ? `Restricted: ${restrictReason}`
+                : (atCap && !checked ? 'Slot cap reached — un-pick another language first.' : '')}
+            class={`rounded-lg border-2 p-3 text-left transition ${
+              checked && isPidgin
+                ? 'border-neutral-600 bg-neutral-800 text-neutral-100'
+                : checked && isMandatory
+                  ? 'border-amber-500/60 bg-amber-900/30 text-amber-100'
+                  : checked
+                    ? 'border-cyan-400 bg-cyan-900/30 text-cyan-100'
+                    : restrictReason
+                      ? 'border-red-900/40 bg-neutral-900/30 text-neutral-500 cursor-not-allowed opacity-70'
+                      : disabled
+                        ? 'border-neutral-800 bg-neutral-900/30 text-neutral-600 cursor-not-allowed opacity-60'
+                        : 'border-neutral-700 bg-neutral-900/40 text-neutral-200 hover:border-cyan-700 hover:bg-neutral-900/70'
             }`}
           >
-            {l.name}
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-semibold">{l.name}</p>
+              {#if isPidgin}
+                <span class="rounded-full bg-neutral-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white">free</span>
+              {:else if isMandatory}
+                <span class="rounded-full bg-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white">required</span>
+              {:else if checked}
+                <span class="rounded-full bg-cyan-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white">picked</span>
+              {:else if restrictReason}
+                <span class="rounded-full bg-red-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white">restricted</span>
+              {/if}
+            </div>
+            <p class="mt-1 text-[11px] text-neutral-400">
+              <span class="font-semibold text-neutral-300">{l.family}.</span> {l.description}
+            </p>
+            {#if l.note}
+              <p class="mt-1 text-[10px] italic text-amber-300/90">Note: {l.note}</p>
+            {/if}
+            {#if restrictReason}
+              <p class="mt-1 text-[10px] font-medium text-red-300">
+                Blocked: {restrictReason}
+              </p>
+            {/if}
+            {#if l.sampleNames && l.sampleNames.length}
+              <p class="mt-1 text-[10px] italic text-neutral-500">
+                Example names: {l.sampleNames.join(', ')}
+              </p>
+            {/if}
           </button>
         {/each}
       </div>
     </Card>
   {:else if STEPS[step].id === 'spaces'}
+    {@const spaceCap = character.origo.spaces}
     <Card title="Spaces (type-specific)">
-      {#if character.type === 'core'}
-        <p class="text-sm text-neutral-400 mb-2">Core: pick basic formulae for your spaces. First pick is active.</p>
-        <div class="max-h-72 overflow-y-auto rounded-lg border border-neutral-800 p-2">
-          {#each BASIC_FORMULAE as f (f.id)}
-            <button
-              type="button"
-              onclick={() => addCoreFormula(f.id)}
-              class="block w-full rounded px-2 py-1 text-left text-sm text-neutral-300 hover:bg-neutral-800/50"
-            >
-              {f.name} <span class="text-neutral-500">({f.formulaCost} H)</span>
-            </button>
-          {/each}
-        </div>
-        <h3 class="mt-3 mb-2 text-sm font-semibold text-neutral-200">Picked formulae</h3>
-        {#if character.formulae.length === 0}
-          <p class="text-sm text-neutral-500">None picked.</p>
+      {#if character.type === 'apt'}
+        {@const aptSpaces = character.spaces.filter((s) => s.kind !== 'formula' && s.kind !== 'bested_enemy')}
+        {@const atCap = aptSpaces.length >= spaceCap}
+        <p class="text-sm text-neutral-400 mb-2">
+          Apt characters hold one space at origo. Fill it with an
+          <strong>equipment</strong>, <strong>master</strong>,
+          <strong>place</strong>, or <strong>pet</strong> the character has
+          mastered — once per 24 hours, when an action relates to the space
+          content, treat the relevant stack as one scale higher.
+        </p>
+        <p class="mb-3 text-xs text-neutral-500">
+          You can fill this now or skip and fill it in play. Slots:
+          <strong>{aptSpaces.length}</strong> / {spaceCap}.
+        </p>
+
+        {#if aptSpaces.length === 0}
+          <div class="rounded-lg border border-dashed border-neutral-700 bg-neutral-900/40 p-3 text-sm italic text-neutral-500">
+            No spaces filled. Empty is fine — you can fill it later.
+          </div>
         {:else}
-          <ul class="space-y-1 text-sm">
-            {#each character.formulae as f (f.id)}
-              <li class="flex items-center justify-between rounded-lg bg-neutral-800/50 px-2 py-1">
-                <span>{f.name} {f.active ? '(active)' : '(inactive)'} — {f.hCost} H</span>
-                <button class="text-red-400" onclick={() => removeFormula(f.id)}>×</button>
+          <ul class="space-y-3">
+            {#each aptSpaces as s (s.id)}
+              {@const form = aptSpaceForm[s.id] ?? { catalog: '', alias: '' }}
+              <li class="rounded-lg border border-neutral-700 bg-neutral-900/40 p-3 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex flex-wrap gap-1">
+                    {#each ['equipment', 'master', 'place', 'pet'] as const as k}
+                      <button
+                        type="button"
+                        onclick={() => updateAptSpace(s.id, { kind: k })}
+                        class={`rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize transition ${
+                          s.kind === k
+                            ? 'border-cyan-400 bg-cyan-600 text-white'
+                            : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                        }`}
+                      >{k}</button>
+                    {/each}
+                  </div>
+                  <button class="text-red-400 hover:text-red-300 text-lg leading-none" onclick={() => removeSpace(s.id)} aria-label="Remove">×</button>
+                </div>
+
+                {#if s.kind === 'equipment'}
+                  <Select
+                    label="Pick from catalog"
+                    options={APT_EQUIP_OPTIONS}
+                    value={form.catalog}
+                    onchange={(v) => setSpaceCatalog(s.id, v)}
+                  />
+                  <Input
+                    label='Cool name (alias) — e.g. "Last Chance"'
+                    value={form.alias}
+                    placeholder="optional"
+                    onchange={(v: string) => setSpaceAlias(s.id, v)}
+                  />
+                  <Input
+                    label="Final display name"
+                    value={s.name}
+                    placeholder='Picked item appears here, or type a custom name'
+                    onchange={(v: string) => updateAptSpace(s.id, { name: v })}
+                  />
+                  {#if form.catalog && form.catalog !== 'custom'}
+                    <p class="text-[10px] italic text-emerald-300">→ also added to your character's equipment list (next step).</p>
+                  {/if}
+                {:else if s.kind === 'pet'}
+                  <Select
+                    label="Pick from catalog"
+                    options={APT_PET_OPTIONS}
+                    value={form.catalog}
+                    onchange={(v) => setSpacePetCatalog(s.id, v)}
+                  />
+                  <Input
+                    label='Cool name (alias) — e.g. "Stomper"'
+                    value={form.alias}
+                    placeholder="optional"
+                    onchange={(v: string) => setSpacePetAlias(s.id, v)}
+                  />
+                  <Input
+                    label="Final display name"
+                    value={s.name}
+                    placeholder='Picked pet appears here, or type a custom name'
+                    onchange={(v: string) => updateAptSpace(s.id, { name: v })}
+                  />
+                  {#if form.catalog && form.catalog !== 'custom'}
+                    <p class="text-[10px] italic text-emerald-300">→ also added to your character's pets list.</p>
+                  {/if}
+                {:else}
+                  <Input
+                    label={s.kind === 'master' ? 'Master name' : 'Place name'}
+                    value={s.name}
+                    placeholder={s.kind === 'master' ? 'Master Sho the bladesmith' : 'Cradle Lower Bath District'}
+                    onchange={(v: string) => updateAptSpace(s.id, { name: v })}
+                  />
+                {/if}
+
+                <Input
+                  label="Boost effect (which stack + when it applies)"
+                  value={s.effect}
+                  placeholder='e.g. "Boost Ranged 1/24h when using this"'
+                  onchange={(v: string) => updateAptSpace(s.id, { effect: v })}
+                />
+                <Input
+                  label="Notes (optional)"
+                  value={s.notes ?? ''}
+                  placeholder='Drawbacks, fluff, story hooks…'
+                  onchange={(v: string) => updateAptSpace(s.id, { notes: v })}
+                />
               </li>
             {/each}
           </ul>
         {/if}
-      {:else if character.type === 'apt'}
-        <p class="text-sm text-neutral-400">
-          Apt: spaces hold equipment, masters, places, or pets that boost a stack 1/24h.
-          Add via the full editor (Equipment / Identity / Notes) — these can be filled in
-          as your character finds them.
+
+        {#if !atCap}
+          <div class="mt-3">
+            <Button onclick={addAptSpace}>+ Add space content</Button>
+          </div>
+        {:else}
+          <p class="mt-3 text-xs italic text-neutral-500">Slot cap reached.</p>
+        {/if}
+
+      {:else if character.type === 'core'}
+        {@const coreFormulae = character.formulae}
+        {@const atCap = coreFormulae.length >= spaceCap * 2}
+        {@const subspaceUnlocked = character.coreBond === 'subspace_nanites'}
+        <p class="text-sm text-neutral-400 mb-2">
+          Core characters hold one space at origo, with both an
+          <strong>active</strong> and an <strong>inactive</strong> formula slot.
+          Switching active in play takes a long turn of concentration.
+          You may pick up to <strong>{spaceCap * 2}</strong> formulae
+          ({spaceCap} space × 2 slots).
         </p>
+        <p class="mb-3 text-xs text-neutral-500">
+          Bond: <strong class="text-neutral-300">{character.coreBond ?? '— not picked —'}</strong>
+          · Picked: <strong>{coreFormulae.length}</strong> / {spaceCap * 2}
+        </p>
+
+        <div class="mt-3 flex items-center justify-between gap-3 mb-2">
+          <h3 class="text-sm font-semibold text-neutral-100">Basic formulae</h3>
+          <input
+            type="search"
+            placeholder="Filter…"
+            bind:value={basicFormulaFilter}
+            class="w-40 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-xs text-neutral-200 placeholder-neutral-500 focus:border-cyan-600 focus:outline-none"
+          />
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {#each BASIC_FORMULAE.filter((f) => !basicFormulaFilter || f.name.toLowerCase().includes(basicFormulaFilter.toLowerCase()) || f.description.toLowerCase().includes(basicFormulaFilter.toLowerCase())) as f (f.id)}
+            {@const already = coreFormulae.some((p) => p.name === f.name)}
+            {@const picked = coreFormulae.find((p) => p.name === f.name)}
+            <div class={`relative rounded-lg border p-2 text-xs transition ${
+              already
+                ? (picked?.active ? 'border-cyan-400 bg-cyan-900/20' : 'border-neutral-600 bg-neutral-900/40')
+                : 'border-neutral-700 bg-neutral-900/30'
+            }`}>
+              <div class="mb-1 flex items-start justify-between gap-2">
+                <p class="font-semibold text-neutral-100 leading-tight flex-1 min-w-0">
+                  {f.name}
+                  <span class="ml-1 whitespace-nowrap text-[10px] font-medium text-neutral-400">{f.formulaCost} H</span>
+                </p>
+                {#if already}
+                  <div class="flex items-center gap-1 shrink-0">
+                    {#if picked?.active}
+                      <span class="rounded-full bg-cyan-700 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">active</span>
+                    {:else}
+                      <button
+                        type="button"
+                        title="Make active"
+                        onclick={() => picked && setActiveFormula(picked.id)}
+                        class="rounded-full border border-neutral-600 bg-neutral-800 px-1.5 py-0.5 text-[9px] font-medium text-neutral-300 hover:bg-neutral-700"
+                      >★</button>
+                    {/if}
+                    <button class="text-red-400 hover:text-red-300 text-base leading-none" onclick={() => picked && removeFormula(picked.id)} aria-label="Remove">×</button>
+                  </div>
+                {:else}
+                  <button
+                    type="button"
+                    disabled={atCap}
+                    onclick={() => addCoreFormula(f.id)}
+                    class={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium transition ${
+                      atCap
+                        ? 'border-neutral-800 bg-neutral-900 text-neutral-700 cursor-not-allowed'
+                        : 'border-cyan-600 bg-cyan-900/30 text-cyan-200 hover:bg-cyan-900/50'
+                    }`}
+                  >+ Pick</button>
+                {/if}
+              </div>
+              <p class="text-[10px] leading-snug text-neutral-400">{f.description}</p>
+            </div>
+          {/each}
+        </div>
+
+        <div class="mt-5 flex items-center justify-between gap-3 mb-2">
+          <h3 class="text-sm font-semibold text-neutral-100">
+            Subspace formulae
+            {#if !subspaceUnlocked}
+              <span class="ml-1 rounded-full bg-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white">locked</span>
+            {/if}
+          </h3>
+          <input
+            type="search"
+            placeholder="Filter…"
+            bind:value={subspaceFormulaFilter}
+            disabled={!subspaceUnlocked}
+            class="w-40 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-xs text-neutral-200 placeholder-neutral-500 focus:border-cyan-600 focus:outline-none disabled:opacity-50"
+          />
+        </div>
+        {#if !subspaceUnlocked}
+          <p class="mb-2 text-xs italic text-amber-300">
+            Subspace formulae require the <strong>Subspace Nanites</strong>
+            bond — change your bond on the Type step to unlock these.
+          </p>
+        {/if}
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {#each SUBSPACE_FORMULAE.filter((f) => !subspaceFormulaFilter || f.name.toLowerCase().includes(subspaceFormulaFilter.toLowerCase()) || f.description.toLowerCase().includes(subspaceFormulaFilter.toLowerCase())) as f (f.id)}
+            {@const already = coreFormulae.some((p) => p.name === f.name)}
+            {@const picked = coreFormulae.find((p) => p.name === f.name)}
+            <div class={`relative rounded-lg border p-2 text-xs transition ${
+              !subspaceUnlocked
+                ? 'border-neutral-800 bg-neutral-900/20 opacity-60'
+                : already
+                  ? (picked?.active ? 'border-cyan-400 bg-cyan-900/20' : 'border-neutral-600 bg-neutral-900/40')
+                  : 'border-neutral-700 bg-neutral-900/30'
+            }`}>
+              <div class="mb-1 flex items-start justify-between gap-2">
+                <p class="font-semibold text-neutral-100 leading-tight flex-1 min-w-0">
+                  {f.name}
+                  <span class="ml-1 whitespace-nowrap text-[10px] font-medium text-neutral-400">{f.bondedCost} H</span>
+                </p>
+                {#if already}
+                  <div class="flex items-center gap-1 shrink-0">
+                    {#if picked?.active}
+                      <span class="rounded-full bg-cyan-700 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">active</span>
+                    {:else}
+                      <button
+                        type="button"
+                        title="Make active"
+                        onclick={() => picked && setActiveFormula(picked.id)}
+                        class="rounded-full border border-neutral-600 bg-neutral-800 px-1.5 py-0.5 text-[9px] font-medium text-neutral-300 hover:bg-neutral-700"
+                      >★</button>
+                    {/if}
+                    <button class="text-red-400 hover:text-red-300 text-base leading-none" onclick={() => picked && removeFormula(picked.id)} aria-label="Remove">×</button>
+                  </div>
+                {:else}
+                  <button
+                    type="button"
+                    disabled={!subspaceUnlocked || atCap}
+                    onclick={() => addSubspaceFormula(f.id)}
+                    class={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium transition ${
+                      !subspaceUnlocked || atCap
+                        ? 'border-neutral-800 bg-neutral-900 text-neutral-700 cursor-not-allowed'
+                        : 'border-cyan-600 bg-cyan-900/30 text-cyan-200 hover:bg-cyan-900/50'
+                    }`}
+                  >+ Pick</button>
+                {/if}
+              </div>
+              <p class="text-[10px] leading-snug text-neutral-400">{f.description}</p>
+            </div>
+          {/each}
+        </div>
+
       {:else}
-        <p class="text-sm text-neutral-400">
-          Prime: spaces fill with bested-enemy memories during play. Leave empty at gen.
+        <p class="text-sm text-neutral-400 mb-2">
+          Prime characters hold one space at origo. It fills with
+          <strong>bested-enemy memories</strong> during play — single-handed
+          defeats only. When invoked (1/24h), treat a stack as if it were 9,
+          raise damage one step, or roll Bulk vs harm instead of clean.
         </p>
+        <div class="rounded-lg border border-dashed border-neutral-700 bg-neutral-900/40 p-3 text-sm italic text-neutral-500">
+          {spaceCap} space slot · empty at character generation, fills in play.
+        </div>
       {/if}
     </Card>
   {:else if STEPS[step].id === 'equipment'}
-    <Card title="Starter equipment & funds (rules/23–29)">
-      <p class="text-sm text-neutral-400">
-        Pick up to 5 free items, each ≤ 100 P. Roll d6 for starter Parts (per life-form table) and buy the rest.
+    {@const freeUsed = freePicksUsed()}
+    {@const freeFull = freeUsed >= 5}
+    <Card title="Starter funds">
+      <p class="text-sm text-neutral-400 mb-2">
+        Roll d6 for starter Parts (per life-form table). You can re-roll, type
+        the d6 result manually, or override the Parts amount directly.
       </p>
-      <div class="my-3 flex items-center gap-3">
-        <Button onclick={rollFunds}>Roll d6 for funds</Button>
-        {#if character.startingFundsRoll}
-          <span class="text-sm text-neutral-300">
-            d6 → {character.startingFundsRoll} → <strong>{character.startingFunds} P</strong>
-          </span>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div>
+          <p class="block text-xs font-medium text-neutral-400 mb-1">d6 roll</p>
+          <div class="flex items-center gap-2">
+            <Button onclick={rollFunds}>Roll</Button>
+            <input
+              type="number"
+              min="1"
+              max="6"
+              value={character.startingFundsRoll ?? ''}
+              oninput={(e) => setFundsRoll(parseInt((e.currentTarget as HTMLInputElement).value, 10))}
+              class="w-16 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-center text-neutral-100 focus:border-cyan-600 focus:outline-none"
+            />
+          </div>
+        </div>
+        <div>
+          <p class="block text-xs font-medium text-neutral-400 mb-1">Starting Parts (auto from d6, or override)</p>
+          <input
+            type="number"
+            min="0"
+            value={character.startingFunds ?? 0}
+            oninput={(e) => setFundsParts(parseInt((e.currentTarget as HTMLInputElement).value, 10))}
+            class="w-24 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-neutral-100 focus:border-cyan-600 focus:outline-none"
+          />
+        </div>
+        <div>
+          <p class="block text-xs font-medium text-neutral-400 mb-1">Cash on hand</p>
+          <p class={`mt-1 text-xl font-bold ${character.purse.parts < 0 ? 'text-red-400' : 'text-neutral-100'}`}>
+            {character.purse.parts} P
+          </p>
+        </div>
+      </div>
+    </Card>
+
+    <Card title="Starter equipment">
+      <p class="text-sm text-neutral-400 mb-2">
+        Pick up to <strong>5 free items</strong> (each ≤ 100 P) AND buy more
+        with your starting Parts. Items added here flow into your character
+        sheet's weapons / armor / inventory / pets lists.
+      </p>
+      <div class="mb-3 flex flex-wrap items-center gap-3 text-xs">
+        <span class={`rounded-full px-2 py-0.5 font-medium ${freeFull ? 'bg-emerald-700 text-white' : 'bg-neutral-800 text-neutral-300'}`}>
+          Free picks {freeUsed}/5
+        </span>
+        <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
+          Cash: <strong class="text-neutral-100">{character.purse.parts} P</strong>
+        </span>
+      </div>
+
+      <div class="mb-2 flex flex-wrap gap-1">
+        {#each [
+          { id: 'gear', label: '🎒 Gear' },
+          { id: 'weapon', label: '🗡 Weapons' },
+          { id: 'armor', label: '🛡 Armor' },
+          { id: 'pet', label: '🐾 Pets' }
+        ] as const as t}
+          <button
+            type="button"
+            onclick={() => (equipTab = t.id)}
+            class={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+              equipTab === t.id
+                ? 'border-cyan-400 bg-cyan-600 text-white'
+                : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+            }`}
+          >{t.label}</button>
+        {/each}
+      </div>
+      <input
+        type="search"
+        placeholder="Filter…"
+        bind:value={equipFilter}
+        class="mb-3 w-full rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-xs text-neutral-200 placeholder-neutral-500 focus:border-cyan-600 focus:outline-none"
+      />
+
+      {@const catalog =
+        equipTab === 'weapon' ? WEAPONS_DATA.filter((w) => w.cost > 0).map((w) => ({ id: w.id, name: w.name, cost: w.cost, slots: w.slots, extra: `${w.damage} ${w.damageType}, ${w.range}`, warning: weaponWarningForType(w, character.type) })) :
+        equipTab === 'armor' ? ARMOR_DATA.filter((a) => a.cost > 0).map((a) => ({ id: a.id, name: a.name, cost: a.cost, slots: a.slots, extra: a.strength ? `resists ${a.strength}` : '', warning: armorWarningForType(a, character.type) })) :
+        equipTab === 'gear' ? GEAR_DATA.filter((g) => g.cost > 0).map((g) => ({ id: g.id, name: g.name, cost: g.cost, slots: g.slots, extra: g.energy ?? g.notes ?? '', warning: null as string | null })) :
+        PETS_DATA.filter((p) => p.cost > 0).map((p) => ({ id: p.id, name: p.name, cost: p.cost, slots: 0, extra: `upkeep ${p.upkeepPerWeek}/wk`, warning: null as string | null }))
+      }
+      {@const filtered = catalog.filter((c) => !equipFilter || c.name.toLowerCase().includes(equipFilter.toLowerCase()))}
+
+      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 max-h-96 overflow-y-auto">
+        {#each filtered as item (item.id)}
+          {@const tooPricey = !isFreeEligible(item.cost)}
+          {@const cantAfford = character.purse.parts < item.cost}
+          <div class={`rounded-lg border p-2 text-xs ${item.warning ? 'border-amber-700/60 bg-amber-950/20' : 'border-neutral-700 bg-neutral-900/40'}`}>
+            <p class="font-semibold text-neutral-100">
+              {item.name}
+              <span class="ml-1 text-[10px] font-medium text-neutral-400">{item.cost} P · {item.slots} slot{item.slots === 1 ? '' : 's'}</span>
+            </p>
+            {#if item.extra}<p class="mt-1 text-[10px] text-neutral-400">{item.extra}</p>{/if}
+            {#if item.warning}
+              <p class="mt-1 text-[10px] font-medium text-amber-300">⚠ {item.warning}</p>
+            {/if}
+            <div class="mt-2 flex gap-1">
+              <button
+                type="button"
+                disabled={freeFull || tooPricey}
+                title={tooPricey ? 'Too expensive — over 100 P' : freeFull ? 'Free cap reached' : 'Add as a free starter pick'}
+                onclick={() => addStarterItem(equipTab, item.id, 'free')}
+                class={`flex-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition ${
+                  freeFull || tooPricey
+                    ? 'border-neutral-800 bg-neutral-900 text-neutral-700 cursor-not-allowed'
+                    : 'border-emerald-600 bg-emerald-900/30 text-emerald-200 hover:bg-emerald-900/50'
+                }`}
+              >+ Free</button>
+              <button
+                type="button"
+                disabled={cantAfford}
+                title={cantAfford ? `Not enough Parts (${item.cost} P needed)` : 'Buy with starting Parts'}
+                onclick={() => addStarterItem(equipTab, item.id, 'buy')}
+                class={`flex-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition ${
+                  cantAfford
+                    ? 'border-neutral-800 bg-neutral-900 text-neutral-700 cursor-not-allowed'
+                    : 'border-cyan-600 bg-cyan-900/30 text-cyan-200 hover:bg-cyan-900/50'
+                }`}
+              >+ Buy ({item.cost} P)</button>
+            </div>
+          </div>
+        {/each}
+        {#if filtered.length === 0}
+          <p class="col-span-full text-sm italic text-neutral-500">No matches.</p>
         {/if}
       </div>
-      <p class="text-xs text-neutral-500">
-        Build out weapons, armor, and inventory in detail using the editor on the next steps and after saving.
-      </p>
     </Card>
-  {:else if STEPS[step].id === 'implants'}
-    <Card title="Implants (rules/24)">
-      {#if character.type !== 'apt'}
-        <p class="text-sm text-neutral-400">
-          Only Apt characters can pre-install an implant at character generation
-          (via Artistic Modification, next step). Other types acquire implants in play.
-        </p>
+
+    <Card title="Your starter loadout">
+      {@const allItems = [
+        ...character.weapons.map((w) => ({ source: 'weapon' as const, id: w.id, name: w.name, cost: w.cost ?? 0, free: !!(w as any).freePick })),
+        ...character.armor.map((a) => ({ source: 'armor' as const, id: a.id, name: a.name, cost: a.cost ?? 0, free: !!(a as any).freePick })),
+        ...character.inventory.map((i) => ({ source: 'gear' as const, id: i.id, name: i.name, cost: i.cost ?? 0, free: !!i.freePick })),
+        ...character.pets.map((p) => ({ source: 'pet' as const, id: p.id, name: p.name, cost: 0, free: false }))
+      ]}
+      {#if allItems.length === 0}
+        <p class="text-sm italic text-neutral-500">Nothing picked yet.</p>
       {:else}
-        <p class="text-sm text-neutral-400">
-          Apt origo grants Implants 1. You may pre-install via Artistic Modification (next step) — note the implant name + drawback.
-        </p>
+        <ul class="space-y-1">
+          {#each allItems as it (`${it.source}-${it.id}`)}
+            <li class="flex items-center justify-between gap-2 rounded-lg bg-neutral-900/40 px-3 py-1.5 text-sm">
+              <div class="flex-1 min-w-0">
+                <span class="font-medium text-neutral-100">{it.name}</span>
+                <span class="ml-2 text-[10px] text-neutral-500">{it.source}</span>
+                {#if it.free}
+                  <span class="ml-2 rounded-full bg-emerald-700 px-2 py-0.5 text-[9px] font-bold uppercase text-white">free</span>
+                {:else if it.cost > 0}
+                  <span class="ml-2 text-[10px] text-neutral-400">{it.cost} P</span>
+                {/if}
+              </div>
+              <button
+                class="text-red-400 hover:text-red-300 text-lg leading-none"
+                onclick={() => removeStarterItem(it.source, it.id)}
+                aria-label="Remove"
+              >×</button>
+            </li>
+          {/each}
+        </ul>
       {/if}
     </Card>
   {:else if STEPS[step].id === 'identity'}
@@ -1291,7 +2888,7 @@
       </div>
     </Card>
   {:else if STEPS[step].id === 'artistic'}
-    <Card title="Artistic Modification (rules/30)">
+    <Card title="Artistic Modification">
       <p class="text-sm text-neutral-400 mb-3">
         Pick one mechanical modification. The wired effect is applied to your character on Next / Save.
         You can revisit this step to change your pick — the previous effect is undone first.
@@ -1471,6 +3068,14 @@
             Pick the slot location now (or default to Storage and adjust in the
             inventory editor later).
           </p>
+          <div class="mb-2">
+            <Select
+              label="Pick from catalog"
+              options={AM_EQUIP_CATALOG}
+              value={amEquipCatalogPick}
+              onchange={(v) => pickAmEquipCatalog(v as string)}
+            />
+          </div>
           <div class="grid gap-2 sm:grid-cols-2">
             <Input label="Item name" bind:value={amDraft.equipmentName} />
             <NumberInput
@@ -1531,7 +3136,7 @@
             </p>
           {:else}
             <p class="mb-2 text-xs text-neutral-500">
-              Drawback is required for powerful implants per rules/30.
+              Drawback is required for powerful implants.
             </p>
             <div class="grid gap-2 sm:grid-cols-2">
               <Input label="Implant name" bind:value={amDraft.implantName} />
@@ -1622,11 +3227,33 @@
   {/if}
 
   <div class="mt-6 flex items-center justify-between">
-    <Button variant="ghost" onclick={back} disabled={step === 0}>Back</Button>
+    {#if step > 0}
+      <Button variant="ghost" onclick={back}>Back</Button>
+    {:else}
+      <span></span>
+    {/if}
     {#if step < STEPS.length - 1}
-      <Button onclick={next}>Next</Button>
+      <Button onclick={next} disabled={
+        ((STEPS[step].id === 'background' || STEPS[step].id === 'keywords') && !backgroundChosen)
+        || (STEPS[step].id === 'type' && (!typeChosen || (character.type === 'core' && !character.coreBond)))
+        || (STEPS[step].id === 'lifeform' && !lifeFormChosen)
+      }>Next</Button>
     {:else}
       <Button onclick={finish} loading={saving}>Save character</Button>
     {/if}
   </div>
 </main>
+
+<style>
+  /* Roll buttons in the stack-rolls table need explicit padding because the
+     shared `.stacks-table .relative` rule (lives in CharacterEditForm.svelte)
+     zeroes internal padding to make NumberInputs flat — and the Button
+     component renders a <button class="... relative">, which the zeroing
+     rule also matches. We need higher specificity than `.stacks-table .relative`
+     to win — chain two .stacks-table classes via .stacks-table.stacks-table
+     to bump specificity above .stacks-table .relative. */
+  :global(.stacks-table button.relative) {
+    padding: 0.5rem 0.875rem !important;
+  }
+</style>
+

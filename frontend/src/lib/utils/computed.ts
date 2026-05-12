@@ -334,6 +334,178 @@ export function isNaniteCap(c: SWCharacter): boolean {
 }
 
 // ============================================
+// HARM STATE MACHINE  (rules/46, 50, 51)
+// ============================================
+//
+// Pure helpers — they receive the character + a delta and RETURN a patched
+// HarmTrackers object. Callers (UI handlers) are responsible for assigning
+// the patch back to character.harm. Keeping it pure makes the rules easy
+// to test and reason about.
+
+import type { HarmTrackers } from '$lib/models/SWCharacter';
+
+/** End-roll DN per rules/46:24 — max(physical, nanite). */
+export function endRollDN(h: HarmTrackers): number {
+  return Math.max(h.harmTaken, h.naniteTaken);
+}
+
+/** True when an end roll is required: physical harm has exceeded Bulk
+ *  (rules/46:24-26). Nanite harm doesn't trigger by itself. */
+export function isEndRollRequired(h: HarmTrackers, bulk: number): boolean {
+  return h.harmTaken > bulk;
+}
+
+/** Suspend is legal only while physical harm < 20 (rules/46:30). */
+export function canSuspend(h: HarmTrackers): boolean {
+  return h.harmTaken < h.harmCap;
+}
+
+/** True at the forced-roll point (physical harm = 20). No suspend allowed. */
+export function isForcedRoll(h: HarmTrackers): boolean {
+  return h.harmTaken >= h.harmCap;
+}
+
+/**
+ * Apply physical damage. Pure — returns a patched HarmTrackers.
+ * Caps at 20 (rules/46:3). Recomputes status:
+ *   - clean → harmed (1..bulk)
+ *   - harmed → at-risk (> bulk)
+ *   - at-risk stays at-risk (or forced-roll at 20)
+ *   - already injured-ko / dying / dead are NOT regressed by new damage —
+ *     they need their own resolution flow.
+ */
+export function applyPhysicalHarm(c: SWCharacter, dmg: number): HarmTrackers {
+  const h = { ...c.harm };
+  const bulk = c.stacks.bulk;
+  if (dmg <= 0) return h;
+  // No-op if already terminal.
+  if (h.status === 'dead') return h;
+  h.harmTaken = Math.min(h.harmTaken + dmg, h.harmCap);
+  if (h.status === 'dying' || h.status === 'injured-ko' || h.status === 'comatose') {
+    return h; // status unchanged by raw damage in these states
+  }
+  if (h.harmTaken >= h.harmCap) {
+    // Forced roll — kills any active suspend.
+    h.status = 'at-risk';
+    h.endRollSuspended = false;
+  } else if (h.harmTaken > bulk) {
+    h.status = h.endRollSuspended ? 'suspended' : 'at-risk';
+  } else if (h.harmTaken > 0) {
+    h.status = 'harmed';
+  }
+  return h;
+}
+
+/**
+ * Apply nanite cost. Pure — returns a patched HarmTrackers.
+ * At the cap (rules/50:36) the character goes comatose. ed6 days needs an
+ * actual roll — caller passes it in (keeps this pure).
+ */
+export function applyNaniteHarm(c: SWCharacter, cost: number, comaDaysIfMaxed?: number): HarmTrackers {
+  const h = { ...c.harm };
+  if (cost <= 0) return h;
+  if (h.status === 'dead' || h.status === 'comatose') return h;
+  h.naniteTaken = Math.min(h.naniteTaken + cost, h.naniteCap);
+  if (h.naniteTaken >= h.naniteCap) {
+    h.status = 'comatose';
+    h.comaDays = comaDaysIfMaxed ?? null;
+  }
+  return h;
+}
+
+/** Heal physical harm by N (clamped to 0). Pure. */
+export function healPhysicalHarm(c: SWCharacter, amount: number): HarmTrackers {
+  const h = { ...c.harm };
+  h.harmTaken = Math.max(0, h.harmTaken - amount);
+  if (h.status !== 'dying' && h.status !== 'injured-ko' && h.status !== 'comatose' && h.status !== 'dead') {
+    if (h.harmTaken === 0 && h.naniteTaken === 0) h.status = 'clean';
+    else if (h.harmTaken > 0 && h.harmTaken <= c.stacks.bulk) h.status = 'harmed';
+  }
+  return h;
+}
+
+/** Heal nanite harm by N (clamped to 0). Pure. */
+export function healNaniteHarm(c: SWCharacter, amount: number): HarmTrackers {
+  const h = { ...c.harm };
+  h.naniteTaken = Math.max(0, h.naniteTaken - amount);
+  if (h.status === 'comatose' && h.naniteTaken < h.naniteCap) {
+    h.status = h.harmTaken === 0 ? 'clean' : 'harmed';
+    h.comaDays = null;
+  }
+  return h;
+}
+
+/** End-roll passed (rules/46:28). All physical harm clears; nanite stays. */
+export function endRollPass(c: SWCharacter): HarmTrackers {
+  const h = { ...c.harm };
+  h.harmTaken = 0;
+  h.endRollSuspended = false;
+  h.suspendedAtHarm = 0;
+  h.status = h.naniteTaken > 0 ? 'harmed' : 'clean';
+  return h;
+}
+
+/**
+ * End-roll failed (rules/46:29 + rules/50). Branches by harm level:
+ *   - < 20 → injured-ko (but a True Grit Ghost roll comes next)
+ *   - = 20 → dying (start hidden d20 timer; Prime gets minutes)
+ */
+export function endRollFail(c: SWCharacter, dyingTimerD20?: number): HarmTrackers {
+  const h = { ...c.harm };
+  h.endRollSuspended = false;
+  if (h.harmTaken >= h.harmCap) {
+    h.status = 'dying';
+    h.dyingTimer = dyingTimerD20 ?? null;
+    h.dyingTimerUnit = c.type === 'prime' ? 'minute' : 'round';
+  } else {
+    h.status = 'injured-ko';
+  }
+  return h;
+}
+
+/** Suspend the pending end roll (rules/46:30). */
+export function suspendEndRoll(c: SWCharacter): HarmTrackers {
+  const h = { ...c.harm };
+  if (!canSuspend(h)) return h;
+  h.endRollSuspended = true;
+  h.suspendedAtHarm = h.harmTaken;
+  h.status = 'suspended';
+  return h;
+}
+
+/** Reset everything to clean (long-rest, GM override, etc.). */
+export function resetHarm(c: SWCharacter): HarmTrackers {
+  return {
+    ...c.harm,
+    harmTaken: 0,
+    naniteTaken: 0,
+    status: 'clean',
+    endRollSuspended: false,
+    suspendedAtHarm: 0,
+    dyingTimer: null,
+    dyingTimerUnit: null,
+    bleeding: false,
+    bloodShed: 0,
+    comaDays: null,
+    shiftUpPenalty: false
+  };
+}
+
+/** Friendly status label + color hint for the badge. */
+export function statusBadge(status: HarmTrackers['status']): { label: string; tone: 'ok' | 'warn' | 'danger' | 'critical' } {
+  switch (status) {
+    case 'clean':       return { label: 'Clean',       tone: 'ok' };
+    case 'harmed':      return { label: 'Harmed',      tone: 'warn' };
+    case 'at-risk':     return { label: 'At risk',     tone: 'danger' };
+    case 'suspended':   return { label: 'Suspended',   tone: 'danger' };
+    case 'injured-ko':  return { label: 'Injured · KO', tone: 'critical' };
+    case 'dying':       return { label: 'Dying',       tone: 'critical' };
+    case 'comatose':    return { label: 'Comatose',    tone: 'critical' };
+    case 'dead':        return { label: 'Dead',        tone: 'critical' };
+  }
+}
+
+// ============================================
 // EQUIPPED ARMOR
 // ============================================
 

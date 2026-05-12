@@ -54,7 +54,7 @@
   }
 </script>
 
-<div class="space-y-1">
+<div class="space-y-1 min-w-0">
   {#if label}
     <span class="block text-sm font-medium text-neutral-300">
       {label}
@@ -63,7 +63,7 @@
       {/if}
     </span>
   {/if}
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-2 min-w-0">
     {#if showControls}
       <button
         type="button"
@@ -87,7 +87,7 @@
       {required}
       oninput={handleInput}
       aria-label={label}
-      class="flex-1 rounded-lg border bg-neutral-800 px-3 py-2 text-center text-neutral-100 transition focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+      class="flex-1 min-w-0 w-full rounded-lg border bg-neutral-800 px-3 py-2 text-center text-neutral-100 transition focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
         {error ? 'border-red-500' : 'border-neutral-700 focus:border-cyan-500'}"
     />
     {#if showControls}

@@ -11,6 +11,7 @@
   } from '$lib/models/Enums';
   import { Input, Select, NumberInput, TextArea, Button, Card, Toggle } from '$lib/components/ui';
   import { recomputeStacks, type StackComposition } from '$lib/models';
+  import HarmTrackerPanel from './HarmTrackerPanel.svelte';
   import type { EditTab } from './editTabs';
   import LanguagesPanel from './LanguagesPanel.svelte';
   import EquipmentSection from './equipment/EquipmentSection.svelte';
@@ -243,14 +244,18 @@
       </div>
     </Card>
 
-    <Card title="Origo (rules/18 body)">
+    <Card title="Origo">
+      <p class="mb-3 text-xs text-neutral-500">
+        Type-derived starting values. Normally driven by your type + advancement
+        nodes — overrides are for GM tweaks.
+      </p>
       <div class="grid gap-3 sm:grid-cols-3">
-        <NumberInput label="Spaces" bind:value={character.origo.spaces} min={0} />
-        <NumberInput label="Implants (cap)" bind:value={character.origo.implants} min={0} />
-        <NumberInput label="Shadow" bind:value={character.origo.shadow} min={0} />
-        <NumberInput label="Gunta" bind:value={character.origo.gunta} min={0} />
-        <NumberInput label="Close start" bind:value={character.origo.closeStart} min={0} />
-        <NumberInput label="Ranged start" bind:value={character.origo.rangedStart} min={0} />
+        <NumberInput label="Spaces" bind:value={character.origo.spaces} min={0} showControls={false} />
+        <NumberInput label="Implants (cap)" bind:value={character.origo.implants} min={0} showControls={false} />
+        <NumberInput label="Shadow" bind:value={character.origo.shadow} min={0} showControls={false} />
+        <NumberInput label="Gunta" bind:value={character.origo.gunta} min={0} showControls={false} />
+        <NumberInput label="Close start" bind:value={character.origo.closeStart} min={0} showControls={false} />
+        <NumberInput label="Ranged start" bind:value={character.origo.rangedStart} min={0} showControls={false} />
       </div>
     </Card>
   {/if}
@@ -264,7 +269,7 @@
       pick up the new totals. On narrow screens the table collapses to a
       stacked-card layout (one card per stack with the inputs in a grid).
     -->
-    <Card title="Stack composition (rules/16, /18, /19)">
+    <Card title="Stack composition">
       <p class="mb-3 text-xs text-neutral-400">
         Each stack is the sum of base roll + life-form bonus + background bonus + implant bonus + other.
       </p>
@@ -472,7 +477,7 @@
     {#if character.artisticMod && character.artisticMod.chosen}
       {@const am = character.artisticMod}
       {@const links = amLinkedSummary()}
-      <Card title="Artistic Modification (rules/30) — read-only">
+      <Card title="Artistic Modification — read-only">
         <p class="mb-2 text-xs text-neutral-500">
           AM was wired during character creation. To change what's linked here,
           edit the underlying record directly (e.g. the Implant in the Implants
@@ -561,12 +566,10 @@
       <Button variant="secondary" onclick={addSpecialCoin}>Add special coin</Button>
     </Card>
 
-    <Card title="Trackers — Harm & Money">
+    <HarmTrackerPanel bind:character />
+
+    <Card title="Trackers — Money">
       <div class="grid gap-3 sm:grid-cols-2">
-        <NumberInput label="Harm taken" bind:value={character.harm.harmTaken} min={0} />
-        <NumberInput label="Harm cap" bind:value={character.harm.harmCap} min={1} />
-        <NumberInput label="Nanite harm" bind:value={character.harm.naniteTaken} min={0} />
-        <NumberInput label="Nanite cap" bind:value={character.harm.naniteCap} min={1} />
         <NumberInput label="Parts (P)" bind:value={character.purse.parts} min={0} />
         <NumberInput label="Energy (e)" bind:value={character.purse.energy} min={0} />
         <NumberInput label="E-credits (E)" bind:value={character.purse.eCredits} min={0} />
@@ -630,6 +633,16 @@
   :global(.stacks-table td) {
     padding-left: 4px !important;
     padding-right: 4px !important;
+  }
+  /* Roll buttons in the action column need breathing room — the global
+     `.stacks-table label/.relative` strip above zeroes their internal
+     padding too. Restore enough so the button text doesn't kiss the
+     border. */
+  :global(.stacks-table button) {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
   }
 </style>
 

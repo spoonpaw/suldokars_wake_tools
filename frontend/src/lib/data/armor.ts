@@ -180,3 +180,23 @@ export function armorAllowedForType(armor: ArmorDef, type: 'apt' | 'core' | 'pri
   if (type === 'prime') return true;
   return !armor.primeOnly && armor.weightRank <= 5;
 }
+
+/**
+ * Returns a player-facing warning string when the armor would impose a
+ * penalty on this type, or null if it's clean. Apt/Core that wear armor
+ * heavier than Force Armor lose their type bonuses (per rules/18).
+ */
+export function armorWarningForType(armor: ArmorDef, type: 'apt' | 'core' | 'prime'): string | null {
+  if (type === 'prime') return null;
+  if (armor.primeOnly) {
+    return type === 'apt'
+      ? 'Heavy/§ armor — Prime-only. Apt loses all type bonuses.'
+      : 'Heavy/§ armor — Prime-only. Core loses all type bonuses + nanites pay double.';
+  }
+  if (armor.weightRank > 5) {
+    return type === 'apt'
+      ? 'Heavier than Force Armor — Apt loses all type bonuses.'
+      : 'Heavier than Force Armor — Core nanites pay double for formulae and cloud negotiations.';
+  }
+  return null;
+}
