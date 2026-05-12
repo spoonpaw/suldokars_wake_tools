@@ -16,3 +16,9 @@ frontend/.svelte-kit/
 # Env
 .env
 .env.local
+
+# Tauri updater signing private key — never commit.
+.tauri/
+
+# Release-bundle output
+/dist/

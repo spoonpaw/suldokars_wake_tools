@@ -5,7 +5,7 @@
   "build": {
     "frontendDist": "../frontend/build",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "cd /Users/alexanderbardelmeier/Documents/apps/suldokars_wake_tools/frontend && npm run build"
+    "beforeBuildCommand": "npm run build:frontend"
   },
   "app": {
     "windows": [
@@ -25,6 +25,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": "all",
     "icon": [
       "icons/32x32.png",
@@ -38,6 +39,14 @@
     }
   },
   "plugins": {
-    "fs": {}
+    "fs": {},
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/spoonpaw/suldokars_wake_tools/releases/latest/download/latest.json"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNFNEJFMDBEQzcwMEFBREYKUldUZnFnREhEZUJMUHUzeGhKQUNsR0ZCZ21xNnljTjRrSEI0emxlWjRSQXlvQkVrdzFWMm1hTUQK"
+    }
   }
 }

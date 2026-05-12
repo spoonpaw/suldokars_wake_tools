@@ -24,6 +24,9 @@ serde_json = "1.0"
 tokio = { version = "1.42", features = ["full"] }
 rand = "0.8"
 
-# Desktop-only plugins (shell is unavailable on iOS / Android)
+# Desktop-only plugins (shell + updater are unavailable on iOS / Android —
+# mobile gets updates through the App Store / Play Store).
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-shell = "2.0"
+tauri-plugin-updater = "2.0"
+tauri-plugin-process = "2.0"

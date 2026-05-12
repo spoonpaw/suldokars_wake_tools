@@ -39,9 +39,15 @@ pub fn run() {
         .plugin(tauri_plugin_sql::Builder::default().build());
 
     // Desktop-only plugins
+    // Desktop-only plugins (mobile uses store-managed updates).
+    // process plugin gives the frontend the ability to relaunch the app
+    // after the updater swaps the binary.
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
-        builder = builder.plugin(tauri_plugin_shell::init());
+        builder = builder
+            .plugin(tauri_plugin_shell::init())
+            .plugin(tauri_plugin_updater::Builder::new().build())
+            .plugin(tauri_plugin_process::init());
     }
 
     builder

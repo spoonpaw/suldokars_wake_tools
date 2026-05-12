@@ -5,6 +5,7 @@
   import { loadCharacters } from '$lib/stores/characters.svelte';
   import { initTheme, getTheme, toggleTheme } from '$lib/stores/ui.svelte';
   import { initZoom, zoomIn, zoomOut, resetZoom } from '$lib/utils';
+  import { checkForAppUpdate } from '$lib/utils/updater';
 
   let { children }: { children: Snippet } = $props();
 
@@ -28,6 +29,10 @@
       initTheme(savedTheme ?? 'dark');
       await loadCharacters();
       isInitialized = true;
+      // Desktop auto-update check — fires after the app is usable so a slow
+      // network never blocks startup. No-op on mobile (App Store / Play
+      // Store handle updates there).
+      void checkForAppUpdate({ silentIfNone: true });
     } catch (e) {
       initError = e instanceof Error ? e.message : 'Failed to initialize app';
       console.error('[App] Init error:', e);
