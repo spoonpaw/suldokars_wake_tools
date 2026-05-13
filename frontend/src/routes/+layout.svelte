@@ -3,7 +3,7 @@
   import { onMount, type Snippet } from 'svelte';
   import { initDatabase, getSetting, setSetting } from '$lib/stores/database';
   import { loadCharacters } from '$lib/stores/characters.svelte';
-  import { initTheme, getTheme, toggleTheme } from '$lib/stores/ui.svelte';
+  import { initTheme, getTheme, toggleTheme, initUpdaterPrefs } from '$lib/stores/ui.svelte';
   import { initZoom, zoomIn, zoomOut, resetZoom } from '$lib/utils';
   import { checkForAppUpdate } from '$lib/utils/updater';
 
@@ -27,11 +27,17 @@
       await initDatabase();
       const savedTheme = await getSetting('theme');
       initTheme(savedTheme ?? 'dark');
+      const autoCheck = await getSetting('autoCheckUpdates');
+      const autoInstall = await getSetting('autoInstallUpdates');
+      initUpdaterPrefs({
+        autoCheck: autoCheck ?? undefined,
+        autoInstall: autoInstall ?? undefined
+      });
       await loadCharacters();
       isInitialized = true;
-      // Desktop auto-update check — fires after the app is usable so a slow
-      // network never blocks startup. No-op on mobile (App Store / Play
-      // Store handle updates there).
+      // Desktop auto-update check — gated by autoCheckUpdates pref + fires
+      // after the app is usable so a slow network never blocks startup.
+      // No-op on mobile (App Store / Play Store handle updates there).
       void checkForAppUpdate({ silentIfNone: true });
     } catch (e) {
       initError = e instanceof Error ? e.message : 'Failed to initialize app';
@@ -139,6 +145,17 @@
               </svg>
             {/if}
           </button>
+          <a
+            href="/settings"
+            class="rounded-full p-2 text-neutral-400 transition hover:bg-slate-300/60 hover:text-cyan-700 dark:hover:bg-neutral-800 dark:hover:text-white"
+            title="Settings & about"
+            aria-label="Settings & about"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </a>
         </nav>
       </div>
     </header>

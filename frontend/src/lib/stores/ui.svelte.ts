@@ -141,3 +141,29 @@ export function initTheme(savedTheme?: string): void {
   }
   applyTheme(theme);
 }
+
+// ============================================
+// UPDATER PREFERENCES (desktop only)
+// ============================================
+//
+// Two booleans persisted alongside theme in the same SQLite settings table:
+//   autoCheckUpdates  — at app boot, ping the manifest endpoint
+//   autoInstallUpdates — when an update is found, skip the confirm dialog
+//                       and install immediately (still prompts before
+//                       relaunch)
+//
+// Defaults: check ON, install OFF (user gets a confirm prompt).
+
+let autoCheckUpdates = $state(true);
+let autoInstallUpdates = $state(false);
+
+export function getAutoCheckUpdates(): boolean { return autoCheckUpdates; }
+export function getAutoInstallUpdates(): boolean { return autoInstallUpdates; }
+
+export function setAutoCheckUpdates(v: boolean): void { autoCheckUpdates = v; }
+export function setAutoInstallUpdates(v: boolean): void { autoInstallUpdates = v; }
+
+export function initUpdaterPrefs(opts: { autoCheck?: string; autoInstall?: string }): void {
+  if (opts.autoCheck !== undefined) autoCheckUpdates = opts.autoCheck === 'true';
+  if (opts.autoInstall !== undefined) autoInstallUpdates = opts.autoInstall === 'true';
+}

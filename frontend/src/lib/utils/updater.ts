@@ -17,9 +17,14 @@
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { ask, message } from '@tauri-apps/plugin-dialog';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { getAutoCheckUpdates, getAutoInstallUpdates } from '$lib/stores/ui.svelte';
 
-export async function checkForAppUpdate(opts?: { silentIfNone?: boolean }): Promise<void> {
+export async function checkForAppUpdate(opts?: { silentIfNone?: boolean; force?: boolean }): Promise<void> {
   const silentIfNone = opts?.silentIfNone ?? true;
+  const force = opts?.force ?? false;
+  // Auto-check pref only blocks the boot-time call. Manual button press
+  // (force=true) always runs.
+  if (!force && !getAutoCheckUpdates()) return;
   let update: Update | null = null;
   try {
     update = await check();
@@ -44,16 +49,21 @@ export async function checkForAppUpdate(opts?: { silentIfNone?: boolean }): Prom
     return;
   }
 
-  const proceed = await ask(
-    `Suldokar's Wake Tools ${update.version} is available. Download and install?`,
-    {
-      title: 'Update available',
-      kind: 'info',
-      okLabel: 'Update',
-      cancelLabel: 'Later'
-    }
-  );
-  if (!proceed) return;
+  // If user has opted into "auto install", skip the confirm dialog.
+  // Manual checks still always confirm.
+  const autoInstall = !force && getAutoInstallUpdates();
+  if (!autoInstall) {
+    const proceed = await ask(
+      `Suldokar's Wake Tools ${update.version} is available. Download and install?`,
+      {
+        title: 'Update available',
+        kind: 'info',
+        okLabel: 'Update',
+        cancelLabel: 'Later'
+      }
+    );
+    if (!proceed) return;
+  }
 
   try {
     await update.downloadAndInstall();
