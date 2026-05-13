@@ -13,6 +13,12 @@
   let appVersion = $state<string>('—');
   let checkingForUpdate = $state(false);
 
+  // Hide the Updates card on mobile — App Store / Play Store handle that.
+  // Cheap UA sniff is fine here; both iOS and Android Tauri WebViews carry
+  // their OS in the UA string.
+  const isMobile = typeof navigator !== 'undefined'
+    && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   // Read the version from Tauri at runtime so this page always shows the
   // installed binary's version (not a baked-in string we'd forget to bump).
   // On non-Tauri envs (e.g. browser preview), getVersion() throws — fall
@@ -55,8 +61,9 @@
     <a href="/" class="text-sm text-cyan-400 hover:underline">← Characters</a>
   </div>
 
-  <h1 class="text-2xl font-bold text-neutral-100">Settings & about</h1>
+  <h1 class="text-2xl font-bold text-neutral-100">{isMobile ? 'About' : 'Settings & about'}</h1>
 
+  {#if !isMobile}
   <Card title="Updates">
     <div class="space-y-2">
       <div class="flex items-center justify-between gap-3 rounded-lg border border-neutral-700 bg-neutral-900/40 px-3 py-2">
@@ -74,6 +81,7 @@
       </div>
     </div>
   </Card>
+  {/if}
 
   <Card title="About">
     <dl class="space-y-2 text-sm">
