@@ -60,21 +60,25 @@ The wiring is identical — same plugin, same pubkey, same endpoint. You just ne
 ### Windows
 On a Windows machine:
 1. Pull the repo.
-2. Copy `.tauri/sw_tools.key` from your Mac into `.tauri/` on Windows (the same private key signs all platforms).
-3. Run `cargo tauri build` with the env var:
+2. Copy `.tauri/sw_tools.key` from your Mac into `.tauri/` on Windows (same private key signs all platforms — never regenerate).
+3. From the repo root: `npm install` (creates the same root lockfile the build helper uses).
+4. Build a signed MSI (NSIS bundle currently broken — `nsis-tauri-utils` plugin/makensis incompat. MSI alone is enough for the updater):
    ```powershell
    $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content .tauri/sw_tools.key -Raw
-   cd backend; cargo tauri build
+   $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ""
+   cd backend
+   cargo tauri build --bundles msi
    ```
-4. Bundle ends up at `backend/target/release/bundle/msi/*.msi` plus `*.msi.zip` and `*.msi.zip.sig`.
-5. Add the windows entry to the existing `latest.json` (or rebuild it):
+5. Bundle ends up at `backend/target/release/bundle/msi/*.msi` plus `*.msi.sig`. With `bundle.createUpdaterArtifacts: true`, Tauri 2 produces a bare `.msi` + `.msi.sig` — there is no `.msi.zip` wrapper. The updater downloads the `.msi` directly.
+6. Rename to clean ASCII (avoid spaces/apostrophe in URLs): `SuldokarsWakeTools_<version>_x64-setup.msi` + `.sig`.
+7. Add the windows entry to the existing `latest.json`:
    ```json
    "windows-x86_64": {
-     "signature": "<contents of *.msi.zip.sig>",
-     "url": "https://github.com/spoonpaw/suldokars_wake_tools/releases/download/v0.1.0/<msi.zip filename>"
+     "signature": "<contents of *.msi.sig>",
+     "url": "https://github.com/spoonpaw/suldokars_wake_tools/releases/download/v<version>/SuldokarsWakeTools_<version>_x64-setup.msi"
    }
    ```
-6. Upload the `.msi`, `.msi.zip`, `.msi.zip.sig` to the same GitHub release and re-upload the merged `latest.json`.
+8. Upload the `.msi`, `.msi.sig`, and merged `latest.json` to the same GitHub release with `gh release upload v<version> <files...> --clobber`.
 
 ### Linux
 Same pattern. AppImage bundle:
