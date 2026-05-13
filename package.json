@@ -1,7 +1,7 @@
 {
   "name": "suldokars-wake-tools",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Root build/dev scripts. Tauri's beforeBuildCommand calls into here so it works the same on macOS / Windows / Linux without hard-coded paths.",
   "scripts": {
     "build:frontend": "npm --prefix frontend ci && npm --prefix frontend run build",
