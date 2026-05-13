@@ -76,10 +76,10 @@ Mobile and desktop have separate permission files because path semantics differ:
 
 `tauri-plugin-sql` writes the SQLite DB into the platform-appropriate app data dir:
 
-- macOS: `~/Library/Application Support/com.suldokarswake.character/sw-tools.db`
-- Windows: `%APPDATA%\com.suldokarswake.character\sw-tools.db`
-- Linux: `~/.local/share/com.suldokarswake.character/sw-tools.db`
-- Android: `/data/data/com.suldokarswake.character/databases/sw-tools.db`
+- macOS: `~/Library/Application Support/com.netartisancollective.suldokarswaketools/sw-tools.db`
+- Windows: `%APPDATA%\com.netartisancollective.suldokarswaketools\sw-tools.db`
+- Linux: `~/.local/share/com.netartisancollective.suldokarswaketools/sw-tools.db`
+- Android: `/data/data/com.netartisancollective.suldokarswaketools/databases/sw-tools.db`
 - iOS: `<app sandbox>/Library/Application Support/sw-tools.db`
 
 ## Known gotchas
@@ -91,4 +91,4 @@ Mobile and desktop have separate permission files because path semantics differ:
 - **WebView quirks** — iOS WKWebView and Android WebView differ on CSS,
   scrolling, file dialogs. Always test on a real device.
 - **iOS bundle identifier** can't end in `.app` (collides with macOS app
-  bundle extension). Currently `com.suldokarswake.character`.
+  bundle extension). Currently `com.netartisancollective.suldokarswaketools`.
