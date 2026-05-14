@@ -1,31 +1,34 @@
 # Suldokar's Wake Tools
 
-Cross-platform character manager for **Suldokar's Wake** (SW), the Zira-Kaan
-science-fiction tabletop RPG. Built with Tauri 2 + SvelteKit 2 + Svelte 5 +
-TypeScript. Targets macOS, Windows, Linux, iOS and Android from a single
-codebase.
+Cross-platform character management app for **Suldokar's Wake** (SW), the
+Zira-Kaan science-fiction tabletop RPG. Built with Tauri 2 + SvelteKit 2 +
+Svelte 5 + TypeScript.
 
 ## Status
 
-Early scaffold. App builds, character data model is complete and round-trips
-all three published PC sheets without loss.
+Working desktop app with offline character storage, JSON import/export, and
+release builds for macOS. The codebase is also configured for Windows, Linux,
+iOS, and Android through Tauri 2.
 
-## Features (planned)
+## Features
 
-- Create / edit / delete SW characters (Apt, Core, Prime)
+- Create, edit, export, import, and delete SW characters
+- Apt, Core, and Prime character support
 - Full life-form support: Blood, Palp Alien, Amphibious Alien, Tank Born,
   Droid, Holid
-- 8 backgrounds with bonuses + keyword tables (rules/19)
-- 13-step Creation Wizard following the from-scratch procedure (rules/16)
-- Stack tracker (6 primary + Close + Ranged), keyword tracker, language picker
-- Type-graph reference (Apt / Core / Prime advancement nodes)
-- Equipment with slots, ammo, currency (P / e / E), Gunta coins
-- Implants (head / body / limbs) with cost multipliers
-- Formulae (basic + subspace), Core spaces, Apt spaces, Prime bested-enemy
-- Identity, hooks, Artistic Modification
-- Inverted-action dice roller (clean / double / half / exploding / Odyn)
-- Reference browser (backgrounds, weapons, armor, formulae, type graphs, …)
-- SQLite persistence + JSON import / export — fully offline
+- Creation Wizard for the from-scratch character procedure
+- Stack tracking for the six primary stacks plus Close and Ranged
+- Life-form and background bonus handling
+- Keyword, language, space/formula, implant, identity, artistic modification,
+  and hook tracking
+- Equipment management for weapons, armor, gear, vehicles, pets, ammo, slots,
+  purse, special coins, and debts
+- Character advancement graph tracking, including graph library and custom
+  graph tools
+- Physical and nanite harm tracking
+- SQLite persistence and JSON import/export for fully offline use
+
+This focuses on character management and is not a replacement for the book.
 
 ## Stack
 
@@ -34,6 +37,7 @@ all three published PC sheets without loss.
 - Tailwind CSS 3
 - SQLite via `tauri-plugin-sql`
 - `tauri-plugin-fs`, `tauri-plugin-dialog` for import/export
+- `tauri-plugin-updater` for desktop update checks
 
 ## Project structure
 
@@ -41,13 +45,13 @@ all three published PC sheets without loss.
 suldokars_wake_tools/
 ├── frontend/                SvelteKit app
 │   ├── src/
-│   │   ├── routes/          Pages (home, character/*, dice, reference)
+│   │   ├── routes/          Pages (home, character/new, character/[id], settings)
 │   │   ├── lib/
 │   │   │   ├── components/  UI primitives + character UI
 │   │   │   ├── models/      SW types (SWCharacter, Enums)
 │   │   │   ├── stores/      Reactive state + SQLite layer
-│   │   │   ├── utils/       Derived stats, dice, import/export
-│   │   │   └── data/        Backgrounds, life-forms, weapons, armor, …
+│   │   │   ├── utils/       Derived stats, import/export, updater, zoom
+│   │   │   └── data/        Character options and equipment data
 │   │   ├── app.html / app.css
 ├── backend/                 Tauri / Rust
 │   ├── src/main.rs          Entry + commands
@@ -76,5 +80,8 @@ cd .. && cd backend && cargo tauri dev
 
 ## License
 
-App code: MIT. Suldokar's Wake rules content is © Christian Mehrstam and is
-not redistributed in this repository.
+App code: MIT.
+
+Suldokar's Wake, its names, and its game content are © Christian Mehrstam. This
+is an unofficial fan tool released with permission, and you need the published
+game to use it.
