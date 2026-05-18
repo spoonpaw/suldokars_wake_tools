@@ -1,43 +1,8 @@
 # Changelog
 
-## Unreleased
+## v1.0.0 — first public release (2026-05-19)
 
-Release-prep polish for the first public release.
-
-- README now describes the current character-management app instead of earlier
-  broader tool-suite plans.
-- README now includes desktop install notes and mobile store distribution notes.
-- Added release planning checklist for the first public release.
-- Added MIT license and Suldokar's Wake attribution/permission notice.
-- Updated Rust package metadata.
-- Added Prettier config/ignore rules and fixed the frontend lint/test gates.
-- Updated frontend lockfile to clear high/moderate npm audit advisories.
-- Fixed `build.sh` so local desktop builds load the updater signing key and do
-  not fail on an empty macOS signing identity.
-- Added a mobile release checklist for App Store and Google Play submission.
-- Fixed packaged/mobile client-side routing so non-home pages resolve through
-  the app shell instead of returning a 500.
-- Added canonical party import/export regression coverage for stack composition
-  round trips.
-- Refined the stack composition panel in view and edit modes with full
-  contribution labels, compact mobile rows, and quick stack descriptions.
-- Added explicit carried/equipped/stashed equipment states plus configurable
-  equipped-container slot bonuses in view, edit, import, and starter gear flows.
-- Added construction kits to equipment pickers, included vehicle/drone/bot stock
-  in starter equipment, and filled the missing Wet Suit gear entry.
-- Split RAW currency denominations (`P`, `p`, `E`, `e`) into on-hand and
-  stashed amounts, with on-hand money contributing carried slots per the
-  currency slot rules.
-- Reset the public character/export schema marker to version 1 for the first
-  release.
-- Renamed pre-release harm badge states to rules-facing language and fixed
-  nanite-only harm so it no longer displays as unharmed.
-- Added manual harm status selection and status notes for roll outcomes,
-  injuries, aid, bleeding, and GM rulings that are not purely meter-derived.
-
-## v0.1.0 — first public release (planned)
-
-Initial public release target for Suldokar's Wake Tools.
+Initial public release of Suldokar's Wake Tools.
 
 ### Character Management
 
@@ -45,43 +10,79 @@ Initial public release target for Suldokar's Wake Tools.
 - Supports Apt, Core, and Prime characters.
 - Supports Blood, Palp Alien, Amphibious Alien, Tank Born, Droid, and Holid
   life-forms.
-- Includes the from-scratch character creation wizard.
+- From-scratch character creation wizard covering all 14 steps (name, type,
+  stack rolls, life-form, bonus distribution, background, keywords, languages,
+  spaces, equipment, identity, artistic mod, hooks, review).
+- Life-form sub-systems (rules/18) including alien resistance / vulnerability /
+  feature tables, Tank Born corresponding-appearance trait, Droid Construct
+  Inspiration (use / optimization / since-creation history), and Holid
+  Construct Inspiration (original purpose / transformation effect).
+- Core deep-bond mechanics (HoloH / Nanite Cloud / Subspace) surfaced in the
+  type info panel and identity card with active-bond highlighting.
+- Custom formula creator for Core characters (homebrew / GM-given formulae)
+  with lock-step add/remove/set-active between character.formulae and
+  character.spaces.
 - Tracks primary stacks, Close, Ranged, life-form bonuses, background bonuses,
   keywords, languages, spaces/formulae, implants, identity, artistic
   modification, hooks, purse, special coins, and debts.
-- Manages weapons, armor, gear, vehicles, pets, ammo, and equipment slots.
-- Tracks character advancement graphs, including graph library and custom graph
+- Manages weapons, armor, gear, vehicles, pets, ammo, and equipment slots —
+  with carried / equipped / stashed states and configurable container slot
+  bonuses.
+- Construction kits in equipment pickers; vehicle/drone/bot stock in starter
+  equipment.
+- Split RAW currency denominations (`P`, `p`, `E`, `e`) into on-hand and
+  stashed amounts, with on-hand money contributing carried slots per the
+  currency slot rules.
+- Tracks character advancement graphs with graph library and custom graph
   tools.
-- Tracks physical and nanite harm.
+- Slot-machine cycling animation on every randomly-rolled value, plus manual
+  number entry for every rolled value (third-party / physical dice support).
+- Physical and nanite harm tracking with rules-facing status states
+  (unharmed / harmed / end-roll-pending / suspended / injured / dying /
+  comatose / dead), manual status overrides, and status notes.
+
+### Rules Correctness
+
+- Sticky-spaces and revisit-re-applies-bonuses rules pinned in pure helpers +
+  tests per Christian Mehrstam clarification (2026-05-18).
+- Tank Born cap-stack mutual exclusivity (cap pick auto-strips overlap with
+  +2/+1 lists).
+- Advancement rollback restores position, shadow/gunta, stack composition,
+  added spaces/keywords, bond + notes, and promoted-session label/degree/notes.
+- Intermediate type-graph cells do not bump shadow / gunta (rules/52).
 
 ### App
 
 - Offline SQLite persistence via `tauri-plugin-sql`.
 - JSON import/export via Tauri dialogs, with browser fallbacks for dev builds.
-- Dark and light themes.
-- Settings/About page with update preferences and attribution.
-- Desktop update checks via `tauri-plugin-updater`.
+- Canonical-party fixture round-trip regression coverage.
+- Dark and light themes with light-mode polish (white cards, white inputs,
+  badge contrast fixes, cyan button shade consistency).
+- Pinch-zoom blockers + non-selectable text for native-app feel.
+- Scroll-to-top on tab/route navigation.
+- Settings/About page with desktop update preferences and Christian Mehrstam
+  attribution.
+- Desktop auto-update via `tauri-plugin-updater` with GitHub Releases manifest.
+- Schema-version field on every character with `normalizeCharacter` migration
+  layer for forward-compatible save formats.
+
+### Test Coverage
+
+- 229 tests across 13 test files. 85.7 % statements / 73.7 % branches /
+  89.1 % functions on the tested logic layer (models + utils + data).
+- Pure helpers extracted from `AdvancementModal` and `AdvancementPanel` into
+  `utils/advancement.ts` so the apply + rollback state machine is
+  unit-testable.
 
 ### Distribution
 
-- macOS, Windows, and Linux desktop builds are supported through Tauri.
-- iOS and Android project configuration exists; App Store and Google Play
-  submission are part of the final public release process.
+- macOS (universal), Windows (MSI), and Linux (AppImage) desktop builds.
+- iOS and Android project configuration ready for App Store and Google Play
+  submission (mobile builds are not distributed through GitHub Releases).
 
 ### Known Limitations
 
-- This is a character manager, not a replacement for the published game.
+- Character manager, not a replacement for the published game.
 - PDF character-sheet export is not included.
-- Mobile builds still need real-device release validation and store submission.
-
-## v0.0.2 — updater test build (2026-05-13)
-
-- Internal auto-updater test build.
-- Added Settings/About page with desktop update preferences.
-- Uploaded macOS, Windows, and Linux test artifacts.
-
-## v0.0.1 — updater test build (2026-05-10)
-
-- Initial Tauri 2 + SvelteKit 2 + Svelte 5 + TypeScript + Tailwind scaffold.
-- Established the character data model, SQLite storage, import/export path, and
-  first desktop build flow.
+- Cross-platform desktop CI (GitHub Actions) is not yet wired — current
+  release flow uses local scripts per target machine.
