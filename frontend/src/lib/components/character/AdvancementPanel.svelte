@@ -41,6 +41,7 @@
     deleteGraph,
     renameGraph
   } from '$lib/utils/graphLibrary';
+  import { rollbackAdvancement } from '$lib/utils/advancement';
   import { getTypeGraph } from '$lib/data/typeGraphs';
   import TypeGraphView from './TypeGraphView.svelte';
   import TypeGraphLegend from './TypeGraphLegend.svelte';
@@ -462,133 +463,7 @@
 
   function rollback(entry: AdvancementLogEntry) {
     if (!entry.reversible) return;
-    const updated: SWCharacter = JSON.parse(JSON.stringify(character));
-
-    // Graph-swap entries — revert the active graph id to the fromGraphId.
-    // Stack-floor / space additions applied by the swap are already
-    // captured in beforeState (same shape as a normal advancement) and
-    // get reverted by the same code below.
-    //
-    // If the player deleted the prior graph between the swap and the
-    // undo (only inactive non-default graphs are deletable, so this is
-    // possible if fromGraph was custom/looted), fromGraphId no longer
-    // resolves. Fall back to the first remaining graph's id so we never
-    // leave activeGraphId pointing at a missing graph. The toGraph
-    // (currently active) is always present, so it's a safe fallback.
-    if (entry.kind === 'graph_swap' && entry.graphSwap) {
-      const stillExists = (updated.ownedGraphs ?? []).some(
-        (og) => og.id === entry.graphSwap!.fromGraphId
-      );
-      if (stillExists) {
-        updated.activeGraphId = entry.graphSwap.fromGraphId;
-      } else {
-        const fallback = (updated.ownedGraphs ?? [])[0]?.id;
-        if (fallback) updated.activeGraphId = fallback;
-        console.warn(
-          '[AdvancementPanel] Rollback: prior graph id missing — falling back to first owned graph.'
-        );
-      }
-    }
-
-    // Position reverts to the prior coord. Shadow/Gunta revert to the
-    // recorded beforeState — falling back to the CURRENT value if none was
-    // recorded (an intermediate-cell move, which never bumps Shadow/Gunta
-    // anyway, per rules/52).
-    updated.typeGraphPosition = { x: entry.fromNode.x, y: entry.fromNode.y };
-    updated.shadow = entry.beforeState?.shadow ?? character.shadow;
-    updated.guntaValue = entry.beforeState?.guntaValue ?? character.guntaValue;
-
-    // Revert raised stack floors.
-    if (entry.beforeState?.stacks) {
-      for (const [k, v] of Object.entries(entry.beforeState.stacks)) {
-        if (typeof v === 'number') {
-          (updated.stacks as unknown as Record<string, number>)[k] = v;
-        }
-      }
-    }
-    if (entry.beforeState?.implantsCap !== undefined) {
-      updated.origo.implants = entry.beforeState.implantsCap;
-    }
-
-    // Remove space slots this entry added (by id, not by name — only those).
-    if (entry.beforeState?.spacesAddedIds?.length) {
-      const drop = new Set(entry.beforeState.spacesAddedIds);
-      updated.spaces = updated.spaces.filter((s) => !drop.has(s.id));
-    }
-    // Remove keywords this entry added (by id).
-    if (entry.beforeState?.keywordsAddedIds?.length) {
-      const drop = new Set(entry.beforeState.keywordsAddedIds);
-      updated.keywords = updated.keywords.filter((k) => !drop.has(k.id));
-    }
-    // Restore prior keyword stack assignments (rearrange undo).
-    if (entry.beforeState?.keywordRearrangements?.length) {
-      const map = new Map(
-        entry.beforeState.keywordRearrangements.map((r) => [r.keywordId, r.previousStack])
-      );
-      updated.keywords = updated.keywords.map((k) =>
-        map.has(k.id) ? { ...k, stack: map.get(k.id)! } : k
-      );
-    }
-    // Restore prior bond + the prior notes (so a swap-then-undo round-trip
-    // brings back any notes the player wrote before the swap, instead of
-    // dropping them).
-    if (entry.beforeState?.coreBond !== undefined) {
-      updated.coreBond = entry.beforeState.coreBond;
-      updated.coreBondNotes = entry.beforeState.coreBondNotes ?? '';
-    }
-    // Restore prior composition slots (paired with `stacks` revert above).
-    if (entry.beforeState?.stackComposition) {
-      const restored = { ...(updated.stackComposition ?? {}) };
-      for (const [k, v] of Object.entries(entry.beforeState.stackComposition)) {
-        if (v) (restored as Record<string, typeof v>)[k] = v;
-      }
-      updated.stackComposition = restored as typeof updated.stackComposition;
-    }
-
-    // Flip the linked SessionLogEntry back to moved=false and clear the
-    // move-detail fields. The session itself stays in the log (the player
-    // logged it; the rollback only undoes the movement, not the record).
-    // For PROMOTE-flow advancements, also restore the pre-promote
-    // sessionLabel/degree/notes — the player may have edited them in the
-    // promote modal, and rollback should make the session look the way
-    // it did before the promote was applied.
-    if (entry.sessionLogEntryId) {
-      const targetId = entry.sessionLogEntryId;
-      const priorSession = entry.beforeState?.priorSession;
-      updated.sessionLog = (updated.sessionLog ?? []).map((e) =>
-        e.id === targetId
-          ? {
-              ...e,
-              moved: false,
-              fromNode: undefined,
-              toNode: undefined,
-              direction: undefined,
-              ...(priorSession
-                ? {
-                    sessionLabel: priorSession.sessionLabel,
-                    highestEncounterDegree: priorSession.highestEncounterDegree,
-                    notes: priorSession.notes
-                  }
-                : {})
-            }
-          : e
-      );
-    }
-
-    // Drop the rolled-back history entry; re-mark the new tail (if any)
-    // as reversible — but ONLY if it carries a beforeState snapshot we
-    // could actually revert. Legacy/incomplete entries lack beforeState
-    // and would only revert position+shadow+gunta, silently leaving
-    // stack/space/keyword/bond changes orphaned.
-    const remaining = (updated.advancementHistory ?? []).filter((e) => e.id !== entry.id);
-    if (remaining.length > 0) {
-      const tail = remaining[remaining.length - 1];
-      if (tail.beforeState) {
-        remaining[remaining.length - 1] = { ...tail, reversible: true };
-      }
-    }
-    updated.advancementHistory = remaining;
-    updated.updatedAt = new Date().toISOString();
+    const updated = rollbackAdvancement(character, entry);
     onadvance?.(updated, entry);
   }
 

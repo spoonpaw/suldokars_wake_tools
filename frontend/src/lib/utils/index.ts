@@ -9,3 +9,4 @@ export * from './zoom';
 export * from './equipment';
 export * from './graphLibrary';
 export * from './rollAnimation';
+export * from './advancement';

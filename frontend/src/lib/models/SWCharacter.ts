@@ -1192,8 +1192,16 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
     notes: c.notes ?? '',
     title: c.title ?? '',
     // Deep-merge nested objects so a partial saved version doesn't leave
-    // inner fields undefined.
-    identity: { ...d.identity, ...(c.identity ?? {}) },
+    // inner fields undefined. Explicit `undefined` in the imported identity
+    // would overwrite the default '' — restore '' per field so bindable
+    // TextAreas never see undefined.
+    identity: (() => {
+      const merged = { ...d.identity, ...(c.identity ?? {}) };
+      for (const k of ['age', 'gender', 'appearance', 'speech', 'habits', 'orientation', 'demeanor', 'notes'] as const) {
+        if (merged[k] === undefined) merged[k] = '';
+      }
+      return merged;
+    })(),
     harm: (() => {
       const merged = { ...d.harm, ...(c.harm ?? {}) };
       // Migration: old saves had naniteCap=5 (incorrect — rules/50:36 says 20).

@@ -5,6 +5,7 @@ backend/gen/
 frontend/node_modules/
 frontend/build/
 frontend/.svelte-kit/
+frontend/coverage/
 
 # OS / editor
 .DS_Store
