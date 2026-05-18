@@ -13,7 +13,7 @@ import {
   type StackScores
 } from './SWCharacter';
 
-const canonicalPartyText = readFileSync(new URL('./__fixtures__/canonical-party-2026-05-15.json', import.meta.url), 'utf8');
+const canonicalPartyText = readFileSync(new URL('./__fixtures__/canonical-party-2026-05-18.json', import.meta.url), 'utf8');
 
 const zeroSlot = (base: number, final = base): StackComposition => ({
   base,
@@ -115,7 +115,7 @@ describe('SWCharacter import/export stack composition', () => {
 
     const osric = firstImport.find((character) => character.name === 'Osric Ward');
 
-    expect(osric?.beginnerGuntaCoins).toBe(2);
+    expect(osric?.beginnerGuntaCoins).toBe(1);
     expect(osric?.stackComposition?.ranged).toMatchObject({
       base: 1,
       lifeFormBonus: 2,

@@ -1,7 +1,7 @@
 {
   "app": "sw-tools",
   "version": 1,
-  "exportedAt": "2026-05-15T09:52:24.050Z",
+  "exportedAt": "2026-05-18T19:27:00.000Z",
   "characters": [
     {
       "id": "91bcd422-3b6a-4e8f-ac0f-85a421b87439",
@@ -36,14 +36,8 @@
                 "closeFloor": 2,
                 "notes": "First advancement — both C/R 2. No new space.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "BR"
-                  }
+                  { "satellite": "ranged", "corner": "BL" },
+                  { "satellite": "close", "corner": "BR" }
                 ]
               },
               {
@@ -54,14 +48,8 @@
                 "rangedFloor": 3,
                 "closeFloor": 3,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "TR"
-                  }
+                  { "satellite": "ranged", "corner": "BL" },
+                  { "satellite": "close", "corner": "TR" }
                 ]
               },
               {
@@ -72,14 +60,8 @@
                 "rangedFloor": 4,
                 "closeFloor": 4,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "BL"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "BL" }
                 ]
               },
               {
@@ -90,10 +72,7 @@
                 "rangedFloor": 5,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  }
+                  { "satellite": "ranged", "corner": "TR" }
                 ]
               },
               {
@@ -103,10 +82,7 @@
                 "kind": "open",
                 "implantsFloor": 1,
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "TL"
-                  }
+                  { "satellite": "implants", "corner": "TL" }
                 ]
               },
               {
@@ -117,10 +93,7 @@
                 "implantsFloor": 2,
                 "notes": "New keyword + rearrange.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "TL"
-                  }
+                  { "satellite": "implants", "corner": "TL" }
                 ]
               },
               {
@@ -130,10 +103,7 @@
                 "kind": "open",
                 "implantsFloor": 3,
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "BL"
-                  }
+                  { "satellite": "implants", "corner": "BL" }
                 ]
               },
               {
@@ -144,14 +114,8 @@
                 "closeFloor": 3,
                 "rangedFloor": 2,
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "BL"
-                  }
+                  { "satellite": "close", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "BL" }
                 ]
               },
               {
@@ -162,14 +126,8 @@
                 "rangedFloor": 3,
                 "closeFloor": 4,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "TR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "TR" }
                 ]
               },
               {
@@ -180,14 +138,8 @@
                 "rangedFloor": 4,
                 "closeFloor": 5,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "TR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "TR" }
                 ]
               },
               {
@@ -199,14 +151,8 @@
                 "rangedFloor": 5,
                 "notes": "No new space.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  }
+                  { "satellite": "close", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "TR" }
                 ]
               },
               {
@@ -306,9 +252,10 @@
           "cost": 10,
           "kit": "weapons",
           "specials": ["range", "reach", "use as staff"],
-          "notes": "",
+          "notes": "Stored at Iy-Lan's adept-house — no room with Shellock.",
           "twoHanded": true,
-          "equipped": true
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "wpn-hadrian-kinrifle",
@@ -318,14 +265,15 @@
           "slots": 1,
           "range": "long_range",
           "clip": 5,
-          "ammoLoaded": 3,
-          "ammoSpare": 5,
+          "ammoLoaded": 5,
+          "ammoSpare": 25,
           "cost": 0,
           "kit": "weapons",
           "specials": ["scope", "range-step over kin-gun"],
-          "notes": "Salvaged from Sgt Halen. Fired 2 at Ferren; 3 loaded + 5 spare.",
+          "notes": "Salvaged from Sgt Halen. Slung backup — TEMP SLOT OVERLOAD (Bulk 5 absorbs). 29 shots remaining post Session 06 L2 (5 loaded + 5 belt + 20 pack).",
           "twoHanded": true,
-          "equipped": true
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "wpn-hadrian-shotgun",
@@ -340,9 +288,43 @@
           "cost": 60,
           "kit": "weapons",
           "specials": ["close-up burst"],
-          "notes": "Empty / 5 spare.",
+          "notes": "Stored at Iy-Lan's adept-house — no room with Shellock.",
           "twoHanded": true,
-          "equipped": true
+          "equipped": false,
+          "stashed": true
+        },
+        {
+          "id": "wpn-hadrian-slugrifle",
+          "name": "Slug-rifle (looted L2 slug-guard)",
+          "damage": "d6",
+          "damageType": "kinetic",
+          "slots": 1,
+          "range": "range",
+          "clip": 5,
+          "ammoLoaded": 5,
+          "ammoSpare": 5,
+          "cost": 0,
+          "kit": "weapons",
+          "specials": ["slug", "bypasses Aramid pair-immunity"],
+          "notes": "NEW Day 26 Sess06. d6 kinetic SLUG. 10 rounds total (5 loaded + 5 belt spare).",
+          "twoHanded": true,
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "wpn-hadrian-blade",
+          "name": "Blade",
+          "damage": "d6",
+          "damageType": "slashing",
+          "slots": 0.5,
+          "range": "melee",
+          "cost": 50,
+          "kit": "weapons",
+          "specials": [],
+          "notes": "NEW Day 26 Sess06 (Kira fronted). Replaces spare antirad slot.",
+          "twoHanded": false,
+          "equipped": true,
+          "stashed": false
         }
       ],
       "armor": [
@@ -354,9 +336,25 @@
           "slots": 1,
           "cost": 100,
           "kit": "armor",
-          "notes": "Kinetic resist.",
+          "notes": "Kinetic resist. Stored at Iy-Lan's adept-house — swapped out for Shellock Day 26 Sess06.",
           "primeOnly": false,
+          "equipped": false,
+          "stashed": true,
+          "isShield": false,
+          "isHelmet": false
+        },
+        {
+          "id": "arm-hadrian-shellock",
+          "name": "Shellock Plate",
+          "strength": "slashing",
+          "weakness": "energy",
+          "slots": 5,
+          "cost": 140,
+          "kit": "armor",
+          "notes": "NEW Day 26 Sess06 (Kira fronted). Slashing resist + kinetic step. Halves slug-round damage.",
+          "primeOnly": true,
           "equipped": true,
+          "stashed": false,
           "isShield": false,
           "isHelmet": false
         },
@@ -368,6 +366,7 @@
           "kit": "armor",
           "notes": "Avoids extra crit ed6.",
           "equipped": true,
+          "stashed": false,
           "isShield": false,
           "isHelmet": true,
           "strength": "",
@@ -377,22 +376,15 @@
       ],
       "inventory": [
         {
-          "id": "inv-hadrian-shotgun-mag",
-          "name": "Mag (Kinetic, 5-shot, shotgun spare)",
+          "id": "inv-hadrian-slug-mag",
+          "name": "Mag (Slug, 5-shot, slug-rifle belt spare)",
           "slots": 0.5,
-          "cost": 3,
+          "cost": 0,
           "location": "worn",
-          "notes": "Shotgun ammo: 5 shots, 0 loaded + 5 spare.",
-          "ammoLoaded": 5
-        },
-        {
-          "id": "inv-hadrian-rifle-mag",
-          "name": "Mag (Kinetic, 5-shot, rifle spare)",
-          "slots": 0.5,
-          "cost": 3,
-          "location": "worn",
-          "notes": "Rifle ammo: 8 shots, 3 loaded + 5 spare.",
-          "ammoLoaded": 5
+          "notes": "Looted L2. Slug rounds: 5 spare on belt.",
+          "ammoLoaded": 5,
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-stim-anti",
@@ -401,7 +393,9 @@
           "cost": 15,
           "location": "worn",
           "notes": "Wound infection.",
-          "kit": "chemical"
+          "kit": "chemical",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-stim-poison",
@@ -410,7 +404,9 @@
           "cost": 15,
           "location": "worn",
           "notes": "Poison guard.",
-          "kit": "chemical"
+          "kit": "chemical",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-stim-rad",
@@ -419,16 +415,19 @@
           "cost": 25,
           "location": "worn",
           "notes": "Radiation guard.",
-          "kit": "chemical"
+          "kit": "chemical",
+          "equipped": true,
+          "stashed": false
         },
         {
-          "id": "inv-hadrian-lighter",
-          "name": "Lighter",
-          "slots": 0.5,
-          "cost": 5,
-          "location": "worn",
-          "notes": "Fire start.",
-          "kit": "general"
+          "id": "inv-hadrian-heal-scroll",
+          "name": "Heal Scroll",
+          "slots": 0,
+          "cost": 80,
+          "location": "no_slot",
+          "notes": "NEW Day 26 Sess06 (Kira fronted). 1-use, restores d6 physical harm.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-backpack",
@@ -437,16 +436,64 @@
           "cost": 5,
           "location": "slot10",
           "notes": "+5 internal slots.",
-          "kit": "general"
+          "kit": "general",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-hadrian-rifle-mag-1",
+          "name": "Mag (Kinetic, 5-shot, rifle spare pack)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "notes": "Rifle pack ammo: spare mag (Kira fronted).",
+          "ammoLoaded": 5,
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-hadrian-rifle-mag-2",
+          "name": "Mag (Kinetic, 5-shot, rifle spare pack)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "notes": "Rifle pack ammo: spare mag (Kira fronted).",
+          "ammoLoaded": 5,
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-hadrian-rifle-mag-3",
+          "name": "Mag (Kinetic, 5-shot, rifle spare pack)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "notes": "Rifle pack ammo: spare mag (Kira fronted).",
+          "ammoLoaded": 5,
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-hadrian-rifle-mag-4",
+          "name": "Mag (Kinetic, 5-shot, rifle spare pack)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "notes": "Rifle pack ammo: spare mag (Kira fronted). Total rifle ammo: 30 shots (5 loaded + 5 belt + 20 pack).",
+          "ammoLoaded": 5,
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-blade-storage",
-          "name": "Blade",
+          "name": "Blade (spare)",
           "slots": 1,
           "cost": 50,
           "location": "storage",
           "notes": "Stored at Mira's apartment; backup melee.",
-          "kit": "weapons"
+          "kit": "weapons",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-hadrian-general-kit-storage",
@@ -455,7 +502,31 @@
           "cost": 10,
           "location": "storage",
           "notes": "Stored at Mira's apartment; kept for future missions.",
-          "kit": "general"
+          "kit": "general",
+          "equipped": false,
+          "stashed": true
+        },
+        {
+          "id": "inv-hadrian-shotgun-mag-storage",
+          "name": "Mag (Kinetic, 5-shot, shotgun spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house with shotgun.",
+          "ammoLoaded": 5,
+          "equipped": false,
+          "stashed": true
+        },
+        {
+          "id": "inv-hadrian-lighter-storage",
+          "name": "Lighter",
+          "slots": 0.5,
+          "cost": 5,
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house.",
+          "kit": "general",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-hadrian-sleeping-storage",
@@ -464,7 +535,9 @@
           "cost": 15,
           "location": "storage",
           "notes": "Stored at Iy-Lan's adept-house; dumped from backpack to make room for rifle.",
-          "kit": "general"
+          "kit": "general",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-hadrian-food-storage",
@@ -472,7 +545,9 @@
           "slots": 2,
           "cost": 3,
           "location": "storage",
-          "notes": "Stored at Iy-Lan's adept-house; dumped from backpack."
+          "notes": "Stored at Iy-Lan's adept-house; dumped from backpack.",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-hadrian-rope-storage",
@@ -481,7 +556,9 @@
           "cost": 8,
           "location": "storage",
           "notes": "Stored at Iy-Lan's adept-house; dumped from backpack.",
-          "kit": "tools"
+          "kit": "tools",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-hadrian-sigil",
@@ -489,7 +566,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Pinned on left lapel."
+          "notes": "Pinned on left lapel.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-icon",
@@ -497,7 +576,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Sewn into the inside of his coat."
+          "notes": "Sewn into the inside of his coat.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-ring",
@@ -505,7 +586,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Around neck."
+          "notes": "Around neck.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-hadrian-coat",
@@ -513,7 +596,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Worn."
+          "notes": "Worn.",
+          "equipped": true,
+          "stashed": false
         }
       ],
       "formulae": [],
@@ -521,29 +606,29 @@
       "pets": [],
       "vehicles": [],
       "purse": {
-        "parts": 900,
+        "parts": 50,
         "smallParts": 0,
         "energyPacks": 0,
         "energyCells": 0,
-        "stashedParts": 0,
+        "stashedParts": 850,
         "stashedSmallParts": 0,
         "stashedEnergyPacks": 0,
         "stashedEnergyCells": 0
       },
       "debts": [],
       "beginnerGuntaCoins": 0,
-      "guntaValue": 0,
+      "guntaValue": 1,
       "specialCoins": [
         {
           "id": "sc-hadrian-liturgy",
           "name": "The Last Liturgy",
           "effect": "Once per session, when Hadrian openly invokes Watchful Eye liturgy aloud in front of allies during a tense or pivotal moment (full chant in Old Imperial), he gains 1 Gunta Coin to spend immediately or save until end of scene.",
           "refresh": "session",
-          "refreshNotes": "Refreshed at Session 05 start, invoked once and spent in scene at Wick Row sniper shot. Refresh at Session 06 start. Ties to Religion (Ghost) + Old Imperial.",
+          "refreshNotes": "Invoked + spent Day 26 Sess06 chamber R2 — bumped Ranged 9 on G1 slug-shot. Refreshes at Session 07 start. Ties to Religion (Ghost) + Old Imperial.",
           "held": false
         }
       ],
-      "shadow": 0,
+      "shadow": 1,
       "reputation": 0,
       "harm": {
         "harmTaken": 0,
@@ -551,7 +636,7 @@
         "naniteTaken": 0,
         "naniteCap": 20,
         "status": "unharmed",
-        "statusNote": "",
+        "statusNote": "Took 2 harm Session 06 R1 slug from G1 (half-mitigated by Shellock). Clean by campaign end.",
         "endRollSuspended": false,
         "suspendedAtHarm": 0,
         "dyingTimer": null,
@@ -565,23 +650,36 @@
       },
       "sessionLog": [],
       "typeGraphPosition": {
-        "x": 0,
+        "x": 1,
         "y": 1
       },
       "advancementHistory": [
         {
           "id": "adv-hadrian-transit-01",
-          "fromNode": {
-            "x": 0,
-            "y": 0
-          },
-          "toNode": {
-            "x": 0,
-            "y": 1
-          },
+          "fromNode": { "x": 0, "y": 0 },
+          "toNode": { "x": 0, "y": 1 },
           "appliedAt": "2026-05-09T20:00:00.000Z",
           "changes": ["Moved (0, 0) → (0, 1) — intermediate cell (Shadow + Gunta unchanged)"],
           "reversible": false,
+          "beforeState": {
+            "shadow": 0,
+            "guntaValue": 0
+          }
+        },
+        {
+          "id": "adv-hadrian-node-01",
+          "fromNode": { "x": 0, "y": 1 },
+          "toNode": { "x": 1, "y": 1 },
+          "appliedAt": "2026-05-16T20:00:00.000Z",
+          "changes": [
+            "Moved (0, 1) → (1, 1) — first labeled Prime node",
+            "Close floored at 2 → 5 (already above floor)",
+            "Ranged floored at 2 → 5 (already above floor)",
+            "Shadow 0 → 1",
+            "Gunta 0 → 1"
+          ],
+          "notes": "End of Session 06 — degree-3 Shadow Encounter survival (Halt's chamber, clean win).",
+          "reversible": true,
           "beforeState": {
             "shadow": 0,
             "guntaValue": 0
@@ -657,7 +755,7 @@
       "identity": {
         "age": "late 30s/early 40s",
         "gender": "male",
-        "appearance": "Heavy-built. Clean-shaven, close-cut grey hair. Hard eyes, scarred forearms. Tall (~6'2\"). Aramid under a long traveling coat with a visible Watchful Eye sigil on the left lapel.",
+        "appearance": "Heavy-built. Clean-shaven, close-cut grey hair. Hard eyes, scarred forearms. Tall (~6'2\"). Aramid (now Shellock) under a long traveling coat with a visible Watchful Eye sigil on the left lapel.",
         "speech": "Old Imperial cadence — Watchful Eye education. Pidgin with formal emphasis. Hro-hro learned during a forced detour through Hynian territory in his soldier days.",
         "habits": "Speaks little. Clipped and direct. Prays three times a day silently — Watchful Eye liturgy. Cracks knuckles before action. Touches the Watchful Eye sigil before going through doors. Eats meals standing up. Sleeps light.",
         "orientation": "Was married. Widowed 8 years. Doesn't expect to be again.",
@@ -706,12 +804,17 @@
           "title": "Order's relics",
           "body": "Hadrian carries one icon. Where are the others?",
           "open": true
+        },
+        {
+          "id": "hk-hadrian-halen",
+          "title": "Sister Halen",
+          "body": "NEW Sess06: Watchful Eye chapterhouse abbess (Cradle, north district). Will share Brother Vell's old habits / support if Hadrian pursues vendetta. Ally.",
+          "open": true
         }
       ],
-      "notes": "Prime: any armor + any weapon. Two attacks once per combat in place of one. Protect ally for one round (enemies get Speed roll). Double Bulk vs poison/disease, double Ghost vs death. Acts as normal while injured but half rolls; if harmed while already injured, dies in d20 minutes on failed death Ghost roll. Cash on hand: 900 P.",
+      "notes": "Prime: any armor + any weapon. Two attacks once per combat in place of one. Protect ally for one round (enemies get Speed roll). Double Bulk vs poison/disease, double Ghost vs death. Acts as normal while injured but half rolls; if harmed while already injured, dies in d20 minutes on failed death Ghost roll. Cash on hand: 50 P working + 850 P stashed at Iy-Lan's safe (now Iy-Lan dead — funds inherited by adept-house per her wishes; access pending). Mira rent paid forward 2 months from Day 22.",
       "createdAt": "2026-05-09T19:51:00.000Z",
-      "updatedAt": "2026-05-15T09:52:24.050Z",
-      "shadowEncountersBanked": 0,
+      "updatedAt": "2026-05-18T19:27:00.000Z",
       "baseStackRolls": {
         "archive": 2,
         "bulk": 1,
@@ -763,10 +866,7 @@
                 "implantsFloor": 1,
                 "notes": "First advancement — spaces 2, implants 1.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "BL"
-                  }
+                  { "satellite": "implants", "corner": "BL" }
                 ]
               },
               {
@@ -778,14 +878,8 @@
                 "implantsFloor": 1,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "close", "corner": "BL" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -798,18 +892,9 @@
                 "implantsFloor": 2,
                 "notes": "Rearrange + bond swap.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "BL" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -821,18 +906,9 @@
                 "rangedFloor": 2,
                 "implantsFloor": 3,
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "close", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "TR" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -842,10 +918,7 @@
                 "kind": "open",
                 "implantsFloor": 2,
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "BL"
-                  }
+                  { "satellite": "implants", "corner": "BL" }
                 ]
               },
               {
@@ -856,10 +929,7 @@
                 "implantsFloor": 3,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "BL"
-                  }
+                  { "satellite": "implants", "corner": "BL" }
                 ]
               },
               {
@@ -878,10 +948,7 @@
                 "rangedFloor": 1,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "BL"
-                  }
+                  { "satellite": "ranged", "corner": "BL" }
                 ]
               },
               {
@@ -893,14 +960,8 @@
                 "closeFloor": 1,
                 "notes": "Rearrange + bond swap.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "TR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "TR" }
                 ]
               },
               {
@@ -912,18 +973,9 @@
                 "closeFloor": 2,
                 "implantsFloor": 2,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "BL" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -934,14 +986,8 @@
                 "implantsFloor": 3,
                 "rangedFloor": 3,
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  }
+                  { "satellite": "implants", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "TR" }
                 ]
               },
               {
@@ -968,7 +1014,7 @@
       "activeGraphId": "04e881df-a388-46e3-acfe-e30b8df0447a",
       "origo": {
         "spaces": 1,
-        "implants": 0,
+        "implants": 1,
         "shadow": 0,
         "gunta": 0,
         "closeStart": 0,
@@ -1035,7 +1081,7 @@
           "kind": "formula",
           "name": "Open Lock",
           "effect": "Open any mechanical or electronic lock with max DN 20. Nanite locks may pay ed6 extra Harm.",
-          "notes": "2 H"
+          "notes": "2 H. NEW space slot unlocked Sess06 advancement to (1,1) — Open Lock can now fill the new active slot."
         }
       ],
       "weapons": [
@@ -1048,13 +1094,29 @@
           "range": "range",
           "clip": 5,
           "ammoLoaded": 5,
-          "ammoSpare": 5,
+          "ammoSpare": 25,
           "cost": 50,
           "kit": "weapons",
           "specials": [],
-          "notes": "Standard sidearm.",
+          "notes": "Standard sidearm. Total ammo: 30 shots (5 loaded + 5 belt + 20 pack).",
           "twoHanded": false,
-          "equipped": true
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "wpn-kira-prybar",
+          "name": "Frontanium Pry-bar",
+          "damage": "d6",
+          "damageType": "piercing",
+          "slots": 1,
+          "range": "melee",
+          "cost": 80,
+          "kit": "tools",
+          "specials": ["breach", "+1 damage"],
+          "notes": "NEW Day 26 Sess06. Breach coffin glass + nanite filaments; close d6+1 piercing in pinch.",
+          "twoHanded": false,
+          "equipped": true,
+          "stashed": false
         }
       ],
       "armor": [
@@ -1069,6 +1131,7 @@
           "notes": "Kinetic resist. Force Armor or lighter for Core.",
           "primeOnly": false,
           "equipped": true,
+          "stashed": false,
           "isShield": false,
           "isHelmet": false
         },
@@ -1080,6 +1143,7 @@
           "kit": "armor",
           "notes": "Avoids extra crit ed6.",
           "equipped": true,
+          "stashed": false,
           "isShield": false,
           "isHelmet": true,
           "strength": "",
@@ -1096,7 +1160,9 @@
           "location": "worn",
           "energyDraw": "1e/w",
           "kit": "tools",
-          "notes": "Research, data, comms."
+          "notes": "Research, data, comms.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-binoculars",
@@ -1105,7 +1171,9 @@
           "cost": 40,
           "location": "worn",
           "kit": "tools",
-          "notes": "Drone spot, recon."
+          "notes": "Drone spot, recon.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-codebreaker",
@@ -1114,7 +1182,9 @@
           "cost": 180,
           "location": "worn",
           "kit": "tools",
-          "notes": "Hacking bonus tool."
+          "notes": "Hacking bonus tool.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-mag",
@@ -1123,7 +1193,9 @@
           "cost": 3,
           "location": "worn",
           "ammoLoaded": 5,
-          "notes": "Spare Kin-Gun mag."
+          "notes": "Spare Kin-Gun mag (belt).",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-stim-anti",
@@ -1132,7 +1204,9 @@
           "cost": 15,
           "location": "worn",
           "kit": "chemical",
-          "notes": "Wound infection."
+          "notes": "Wound infection.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-stim-poison",
@@ -1141,7 +1215,9 @@
           "cost": 15,
           "location": "worn",
           "kit": "chemical",
-          "notes": "Poison guard."
+          "notes": "Poison guard.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-stim-rad",
@@ -1150,7 +1226,9 @@
           "cost": 25,
           "location": "worn",
           "kit": "chemical",
-          "notes": "Radiation guard."
+          "notes": "Radiation guard.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-bne",
@@ -1159,7 +1237,9 @@
           "cost": 20,
           "location": "worn",
           "kit": "tools",
-          "notes": "Tower entry, picks."
+          "notes": "Tower entry, picks.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-cuberec",
@@ -1169,7 +1249,20 @@
           "location": "worn",
           "energyDraw": "1e/w",
           "kit": "tools",
-          "notes": "Audio + video evidence."
+          "notes": "Audio + video evidence.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-flashlight",
+          "name": "Flashlight",
+          "slots": 0.5,
+          "cost": 2,
+          "location": "worn",
+          "kit": "general",
+          "notes": "NEW Day 26 Sess06. Catacomb dark.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-backpack",
@@ -1178,7 +1271,9 @@
           "cost": 5,
           "location": "slot10",
           "kit": "general",
-          "notes": "+5 internal slots."
+          "notes": "+5 internal slots.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-rope",
@@ -1187,24 +1282,126 @@
           "cost": 8,
           "location": "backpack",
           "kit": "tools",
-          "notes": ""
+          "notes": "",
+          "equipped": true,
+          "stashed": false
         },
         {
-          "id": "inv-kira-sleeping",
+          "id": "inv-kira-mag-pack-1",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-mag-pack-2",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-mag-pack-3",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-mag-pack-4",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06. Total kin-gun ammo: 30 shots (5 loaded + 5 belt + 20 pack).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-stim-rad-spare",
+          "name": "Stim Antirad SPARE",
+          "slots": 0.5,
+          "cost": 25,
+          "location": "backpack",
+          "kit": "chemical",
+          "notes": "NEW Day 26 Sess06. Catacomb rad pockets.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-anti-nanite",
+          "name": "Anti-Nanite Stim",
+          "slots": 0.5,
+          "cost": 50,
+          "location": "backpack",
+          "kit": "chemical",
+          "notes": "NEW Day 26 Sess06. Nanite contamination scrub.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-comm-rig",
+          "name": "Encrypted Vatori comm-rig (Halen's)",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Cracked Day 26. LIVE on Halt's band, plus Vatori 7th Div tac chatter.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-military-id",
+          "name": "Vatori military ID (Sgt R. Halen, Sp. Recon, 7th Div)",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Bluff potential at Vatori-adjacent checkpoint.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-heal-scroll",
+          "name": "Heal Scroll",
+          "slots": 0,
+          "cost": 80,
+          "location": "no_slot",
+          "notes": "NEW Day 26 Sess06 (Kira's pocket). 1-use restores d6 physical harm.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-kira-sleeping-storage",
           "name": "Sleeping Bag",
           "slots": 2,
           "cost": 15,
-          "location": "backpack",
+          "location": "storage",
           "kit": "general",
-          "notes": ""
+          "notes": "Stored at Iy-Lan's adept-house — dumped Day 26 Sess06 for catacomb load.",
+          "equipped": false,
+          "stashed": true
         },
         {
-          "id": "inv-kira-food",
+          "id": "inv-kira-food-storage",
           "name": "Food & Water (5 days)",
           "slots": 2,
           "cost": 3,
-          "location": "backpack",
-          "notes": ""
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house — dumped Day 26 Sess06 for catacomb load.",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-kira-interface",
@@ -1213,7 +1410,9 @@
           "cost": 0,
           "location": "no_slot",
           "energyDraw": "1e/w",
-          "notes": "Artistic Mod gift. Maker-tier — normally unbuildable from scratch."
+          "notes": "Artistic Mod gift. Maker-tier — normally unbuildable from scratch.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-headphones",
@@ -1221,7 +1420,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Around neck. Feeds soft static / signal noise from local holofield."
+          "notes": "Around neck. Feeds soft static / signal noise from local holofield.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-stylus",
@@ -1229,7 +1430,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Sketches diagrams on left palm."
+          "notes": "Sketches diagrams on left palm.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-fatigues",
@@ -1237,7 +1440,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Worn."
+          "notes": "Worn.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-kira-satchel",
@@ -1245,7 +1450,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Worn."
+          "notes": "Worn.",
+          "equipped": true,
+          "stashed": false
         }
       ],
       "formulae": [
@@ -1270,20 +1477,20 @@
       "pets": [],
       "vehicles": [],
       "purse": {
-        "parts": 1215,
+        "parts": 50,
         "smallParts": 0,
         "energyPacks": 0,
         "energyCells": 0,
-        "stashedParts": 0,
+        "stashedParts": 362,
         "stashedSmallParts": 0,
         "stashedEnergyPacks": 0,
         "stashedEnergyCells": 0
       },
       "debts": [],
       "beginnerGuntaCoins": 0,
-      "guntaValue": 0,
+      "guntaValue": 1,
       "specialCoins": [],
-      "shadow": 0,
+      "shadow": 1,
       "reputation": 0,
       "harm": {
         "harmTaken": 0,
@@ -1291,7 +1498,7 @@
         "naniteTaken": 0,
         "naniteCap": 20,
         "status": "unharmed",
-        "statusNote": "",
+        "statusNote": "Used Heal scroll Day 26 Sess06 chamber R4 (self-heal d6=1).",
         "endRollSuspended": false,
         "suspendedAtHarm": 0,
         "dyingTimer": null,
@@ -1305,24 +1512,39 @@
       },
       "sessionLog": [],
       "typeGraphPosition": {
-        "x": 0,
+        "x": 1,
         "y": 1
       },
       "advancementHistory": [
         {
           "id": "adv-kira-transit-01",
-          "fromNode": {
-            "x": 0,
-            "y": 0
-          },
-          "toNode": {
-            "x": 0,
-            "y": 1
-          },
+          "fromNode": { "x": 0, "y": 0 },
+          "toNode": { "x": 0, "y": 1 },
           "appliedAt": "2026-05-09T20:00:00.000Z",
           "changes": ["Moved (0, 0) → (0, 1) — intermediate cell (Shadow + Gunta unchanged)"],
           "reversible": false,
           "beforeState": {
+            "shadow": 0,
+            "guntaValue": 0
+          }
+        },
+        {
+          "id": "adv-kira-node-01",
+          "fromNode": { "x": 0, "y": 1 },
+          "toNode": { "x": 1, "y": 1 },
+          "appliedAt": "2026-05-16T20:00:00.000Z",
+          "changes": [
+            "Moved (0, 1) → (1, 1) — first labeled Core node",
+            "Spaces cap 1 → 2 (Open Lock can now be simultaneously active with Heal)",
+            "Implants floor 0 → 1",
+            "Shadow 0 → 1",
+            "Gunta 0 → 1"
+          ],
+          "notes": "End of Session 06 — degree-3 Shadow Encounter survival (Halt's chamber, clean win).",
+          "reversible": true,
+          "beforeState": {
+            "implantsCap": 0,
+            "spacesAddedIds": [],
             "shadow": 0,
             "guntaValue": 0
           }
@@ -1460,12 +1682,11 @@
           "open": true
         }
       ],
-      "notes": "Core: Force Armor or lighter only. Half rolls with weapons taking up more than 1 slot. Recovers nanite harm at twice normal rate. Double rolls vs hostile formulae + mind effects. HoloH bond: easier access to cyber/electronic systems; chance of awaking dead artifacts; clean roll on retried failures (cyber/electronic). Cash on hand: 1,215 P. Cyber State debt to Tor Ka cleared Day 6.",
+      "notes": "Core: Force Armor or lighter only. Half rolls with weapons taking up more than 1 slot. Recovers nanite harm at twice normal rate. Double rolls vs hostile formulae + mind effects. HoloH bond: easier access to cyber/electronic systems; chance of awaking dead artifacts; clean roll on retried failures (cyber/electronic). Cash on hand: 50 P working + 362 P stashed at Iy-Lan's safe. Cyber State debt to Tor Ka cleared Day 6. Heal scroll USED Day 26 Sess06; frag grenade USED Day 26 Sess06 chamber R1 (missed, single-stone splash); frontanium pry-bar USED Day 26 Sess06 (L4 door breach + chamber R4 positioning).",
       "createdAt": "2026-05-09T19:51:00.000Z",
-      "updatedAt": "2026-05-15T09:52:24.050Z",
+      "updatedAt": "2026-05-18T19:27:00.000Z",
       "coreBond": "holoh",
       "coreBondNotes": "HoloH-listening — rare classification, identified by Cradle Cyber State adept-counselor Day 22. Calls it 'the song.'",
-      "shadowEncountersBanked": 0,
       "baseStackRolls": {
         "archive": 2,
         "bulk": 0,
@@ -1519,18 +1740,9 @@
                 "closeFloor": 1,
                 "notes": "First advancement node — implants 2, both C/R 1.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "implants",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "BR"
-                  }
+                  { "satellite": "implants", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "BL" },
+                  { "satellite": "close", "corner": "BR" }
                 ]
               },
               {
@@ -1541,14 +1753,8 @@
                 "closeFloor": 2,
                 "implantsFloor": 3,
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TR"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "close", "corner": "TR" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -1560,18 +1766,9 @@
                 "closeFloor": 3,
                 "implantsFloor": 4,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "BL"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "BL" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -1584,18 +1781,9 @@
                 "rangedFloor": 3,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BR"
-                  }
+                  { "satellite": "close", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "TR" },
+                  { "satellite": "implants", "corner": "BR" }
                 ]
               },
               {
@@ -1606,10 +1794,7 @@
                 "rangedFloor": 2,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  }
+                  { "satellite": "ranged", "corner": "TL" }
                 ]
               },
               {
@@ -1628,14 +1813,8 @@
                 "rangedFloor": 4,
                 "implantsFloor": 3,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  },
-                  {
-                    "satellite": "implants",
-                    "corner": "BL"
-                  }
+                  { "satellite": "ranged", "corner": "TR" },
+                  { "satellite": "implants", "corner": "BL" }
                 ]
               },
               {
@@ -1646,14 +1825,8 @@
                 "closeFloor": 2,
                 "rangedFloor": 2,
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "BL"
-                  }
+                  { "satellite": "close", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "BL" }
                 ]
               },
               {
@@ -1664,14 +1837,8 @@
                 "rangedFloor": 3,
                 "closeFloor": 2,
                 "satellitePlacements": [
-                  {
-                    "satellite": "ranged",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "close",
-                    "corner": "TR"
-                  }
+                  { "satellite": "ranged", "corner": "TL" },
+                  { "satellite": "close", "corner": "TR" }
                 ]
               },
               {
@@ -1682,10 +1849,7 @@
                 "closeFloor": 2,
                 "notes": "New keyword.",
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "BL"
-                  }
+                  { "satellite": "close", "corner": "BL" }
                 ]
               },
               {
@@ -1696,14 +1860,8 @@
                 "closeFloor": 3,
                 "rangedFloor": 5,
                 "satellitePlacements": [
-                  {
-                    "satellite": "close",
-                    "corner": "TL"
-                  },
-                  {
-                    "satellite": "ranged",
-                    "corner": "TR"
-                  }
+                  { "satellite": "close", "corner": "TL" },
+                  { "satellite": "ranged", "corner": "TR" }
                 ]
               },
               {
@@ -1789,7 +1947,7 @@
           "kind": "equipment",
           "name": "Kin-Gun \"Last Chance\"",
           "effect": "Once per 24 h: treat Ranged on adjacent higher scale for one action — when the action relates to the gun.",
-          "notes": "Customized over years. Frontanium-etched grip carries the same Imperial sigil as the bronze coin."
+          "notes": "USED Day 26 Sess06 L3 R2 (24hr cooldown). Customized over years. Frontanium-etched grip carries the same Imperial sigil as the bronze coin."
         }
       ],
       "weapons": [
@@ -1802,13 +1960,14 @@
           "range": "range",
           "clip": 5,
           "ammoLoaded": 5,
-          "ammoSpare": 10,
+          "ammoSpare": 40,
           "cost": 50,
           "kit": "weapons",
           "specials": ["Burst", "Full Auto", "Silencer"],
-          "notes": "SPACED. Apt crit on 19/20.",
+          "notes": "SPACED. Apt crit on 19/20. Total ammo Sess06: 45 shots (5 loaded + 10 belt + 30 pack).",
           "twoHanded": false,
-          "equipped": true
+          "equipped": true,
+          "stashed": false
         }
       ],
       "armor": [
@@ -1823,6 +1982,7 @@
           "notes": "Kinetic resist.",
           "primeOnly": false,
           "equipped": true,
+          "stashed": false,
           "isShield": false,
           "isHelmet": false
         },
@@ -1834,6 +1994,7 @@
           "kit": "armor",
           "notes": "Avoids extra crit ed6.",
           "equipped": true,
+          "stashed": false,
           "isShield": false,
           "isHelmet": true,
           "strength": "",
@@ -1850,7 +2011,9 @@
           "location": "worn",
           "freePick": true,
           "energyDraw": "1e/w",
-          "notes": "Hynian + Thaldean nav."
+          "notes": "Hynian + Thaldean nav.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-binoculars",
@@ -1859,7 +2022,9 @@
           "cost": 40,
           "location": "worn",
           "freePick": true,
-          "notes": "Drone spotting, scout."
+          "notes": "Drone spotting, scout.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-bne",
@@ -1869,7 +2034,9 @@
           "location": "worn",
           "freePick": true,
           "kit": "tools",
-          "notes": "Tower entry, picks."
+          "notes": "Tower entry, picks.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-spyfly",
@@ -1878,7 +2045,9 @@
           "cost": 100,
           "location": "worn",
           "kit": "tools",
-          "notes": "Spying drone — for Object 47-K shadow."
+          "notes": "Spying drone — for Object 47-K shadow.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-camera",
@@ -1887,7 +2056,9 @@
           "cost": 30,
           "location": "worn",
           "kit": "tools",
-          "notes": "Visual evidence recording."
+          "notes": "Visual evidence recording.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-mag1",
@@ -1896,7 +2067,9 @@
           "cost": 3,
           "location": "worn",
           "ammoLoaded": 5,
-          "notes": "Spare mag for Last Chance."
+          "notes": "Spare mag for Last Chance (belt).",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-mag2",
@@ -1905,7 +2078,9 @@
           "cost": 3,
           "location": "worn",
           "ammoLoaded": 5,
-          "notes": "Spare mag for Last Chance."
+          "notes": "Spare mag for Last Chance (belt).",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-stim-anti",
@@ -1914,7 +2089,9 @@
           "cost": 15,
           "location": "worn",
           "kit": "chemical",
-          "notes": "Wound infection guard."
+          "notes": "Wound infection guard.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-stim-poison",
@@ -1923,7 +2100,9 @@
           "cost": 15,
           "location": "worn",
           "kit": "chemical",
-          "notes": "Poison guard."
+          "notes": "Poison guard.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-stim-rad",
@@ -1932,7 +2111,9 @@
           "cost": 25,
           "location": "worn",
           "kit": "chemical",
-          "notes": "Radiation guard."
+          "notes": "Radiation guard.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-flashlight",
@@ -1941,7 +2122,9 @@
           "cost": 2,
           "location": "worn",
           "kit": "general",
-          "notes": ""
+          "notes": "",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-backpack",
@@ -1950,33 +2133,150 @@
           "cost": 5,
           "location": "slot10",
           "kit": "general",
-          "notes": "Holds 5 internal slots."
+          "notes": "Holds 5 internal slots.",
+          "equipped": true,
+          "stashed": false
         },
         {
-          "id": "inv-osric-rope",
+          "id": "inv-osric-mag-pack-1",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06 (Kira fronted).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-mag-pack-2",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06 (Kira fronted).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-mag-pack-3",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06 (Kira fronted).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-mag-pack-4",
+          "name": "Mag (Kinetic, 5-shot, pack spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "NEW Day 26 Sess06 (Kira fronted).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-mag-pack-5",
+          "name": "Mag (Kinetic, looted L2 small guard)",
+          "slots": 0.5,
+          "cost": 0,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "Looted Day 26 Sess06.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-mag-pack-6",
+          "name": "Mag (Kinetic, looted L2 small guard)",
+          "slots": 0.5,
+          "cost": 0,
+          "location": "backpack",
+          "ammoLoaded": 5,
+          "notes": "Looted Day 26 Sess06. Total kin-gun ammo: 45 shots (5 loaded + 10 belt + 30 pack).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-stim-rad-spare",
+          "name": "Stim Antirad SPARE",
+          "slots": 0.5,
+          "cost": 25,
+          "location": "backpack",
+          "kit": "chemical",
+          "notes": "NEW Day 26 Sess06 (Kira fronted). Catacomb rad pockets.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-frag-grenade",
+          "name": "Frag Grenade",
+          "slots": 0.5,
+          "cost": 40,
+          "location": "backpack",
+          "kit": "explosives",
+          "notes": "NEW Day 26 Sess06 (Kira fronted). d6 kinetic AOE; can break speaker stones in cluster.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-anti-nanite",
+          "name": "Anti-Nanite Stim",
+          "slots": 0.5,
+          "cost": 50,
+          "location": "backpack",
+          "kit": "chemical",
+          "notes": "NEW Day 26 Sess06 (Kira fronted). Nanite contamination scrub.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-rope-stashed",
           "name": "Hook & Wire (20 dots rope)",
           "slots": 1,
           "cost": 8,
-          "location": "backpack",
+          "location": "storage",
           "kit": "tools",
-          "notes": "Climbing, snare, landslide."
+          "notes": "Stashed at L2 corner Day 26 Sess06 (retrievable); dropped to fit looted ammo.",
+          "equipped": false,
+          "stashed": true
         },
         {
-          "id": "inv-osric-sleeping",
+          "id": "inv-osric-heal-scroll",
+          "name": "Heal Scroll",
+          "slots": 0,
+          "cost": 80,
+          "location": "no_slot",
+          "notes": "NEW Day 26 Sess06 (Kira fronted). 1-use, restores d6 physical harm. USED Day 26 Sess06 L3 R3 (self-heal d6=3).",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-sleeping-storage",
           "name": "Sleeping Bag",
           "slots": 2,
           "cost": 15,
-          "location": "backpack",
+          "location": "storage",
           "kit": "general",
-          "notes": "Cold mountain night."
+          "notes": "Stored at Iy-Lan's adept-house — dumped Day 26 Sess06 for catacomb load.",
+          "equipped": false,
+          "stashed": true
         },
         {
-          "id": "inv-osric-food",
+          "id": "inv-osric-food-storage",
           "name": "Food & Water (5 days)",
           "slots": 2,
           "cost": 3,
-          "location": "backpack",
-          "notes": "Wilderness travel."
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house — dumped Day 26 Sess06 for catacomb load.",
+          "equipped": false,
+          "stashed": true
         },
         {
           "id": "inv-osric-coin",
@@ -1984,7 +2284,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Pocket. Flips when undecided."
+          "notes": "Pocket. Flips when undecided.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-cloak",
@@ -1992,7 +2294,9 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Cloak, layered greys/browns."
+          "notes": "Cloak, layered greys/browns.",
+          "equipped": true,
+          "stashed": false
         },
         {
           "id": "inv-osric-ledger",
@@ -2000,7 +2304,29 @@
           "slots": 0,
           "cost": 0,
           "location": "no_slot",
-          "notes": "Old Imperial cursive."
+          "notes": "Old Imperial cursive.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-data-slate",
+          "name": "Solom's data-slate (mission)",
+          "slots": 0,
+          "cost": 0,
+          "location": "mission",
+          "notes": "Union Front intel + photographs + Solom's dead-drop / burst-comm protocols + Arkaven contact list.",
+          "equipped": true,
+          "stashed": false
+        },
+        {
+          "id": "inv-osric-blank-envelope",
+          "name": "Blank stuckram envelope for final report",
+          "slots": 0,
+          "cost": 0,
+          "location": "mission",
+          "notes": "Mission gear, Object 47-K shadow.",
+          "equipped": true,
+          "stashed": false
         }
       ],
       "formulae": [],
@@ -2012,10 +2338,7 @@
           "effect": "+2 Ranged (4 → 6). Cybernetic targeting eye.",
           "drawback": "Chronic photosensitive migraines. Half rolls Ranged in bright direct sunlight or strong artificial light.",
           "stackBonus": [
-            {
-              "stack": "ranged",
-              "bonus": 2
-            }
+            { "stack": "ranged", "bonus": 2 }
           ],
           "notes": "Mitigation: tinted goggles (~5 P, ½ slot) suppress drawback but dim peripheral vision."
         }
@@ -2023,20 +2346,20 @@
       "pets": [],
       "vehicles": [],
       "purse": {
-        "parts": 98,
+        "parts": 48,
         "smallParts": 0,
         "energyPacks": 0,
         "energyCells": 0,
-        "stashedParts": 0,
+        "stashedParts": 50,
         "stashedSmallParts": 0,
         "stashedEnergyPacks": 0,
         "stashedEnergyCells": 0
       },
       "debts": [],
-      "beginnerGuntaCoins": 2,
-      "guntaValue": 0,
+      "beginnerGuntaCoins": 1,
+      "guntaValue": 1,
       "specialCoins": [],
-      "shadow": 0,
+      "shadow": 1,
       "reputation": 0,
       "harm": {
         "harmTaken": 0,
@@ -2044,7 +2367,7 @@
         "naniteTaken": 0,
         "naniteCap": 20,
         "status": "unharmed",
-        "statusNote": "",
+        "statusNote": "Used Heal scroll Day 26 Sess06 L3 R3 (self-heal d6=3).",
         "endRollSuspended": false,
         "suspendedAtHarm": 0,
         "dyingTimer": null,
@@ -2058,24 +2381,40 @@
       },
       "sessionLog": [],
       "typeGraphPosition": {
-        "x": 0,
+        "x": 1,
         "y": 1
       },
       "advancementHistory": [
         {
           "id": "adv-osric-transit-01",
-          "fromNode": {
-            "x": 0,
-            "y": 0
-          },
-          "toNode": {
-            "x": 0,
-            "y": 1
-          },
+          "fromNode": { "x": 0, "y": 0 },
+          "toNode": { "x": 0, "y": 1 },
           "appliedAt": "2026-05-09T20:00:00.000Z",
           "changes": ["Moved (0, 0) → (0, 1) — intermediate cell (Shadow + Gunta unchanged)"],
           "reversible": false,
           "beforeState": {
+            "shadow": 0,
+            "guntaValue": 0
+          }
+        },
+        {
+          "id": "adv-osric-node-01",
+          "fromNode": { "x": 0, "y": 1 },
+          "toNode": { "x": 1, "y": 1 },
+          "appliedAt": "2026-05-16T20:00:00.000Z",
+          "changes": [
+            "Moved (0, 1) → (1, 1) — first labeled Apt node",
+            "Implants floor 1 → 2",
+            "Close floored at 1 (already at 3 above floor)",
+            "Ranged floored at 1 (already at 6 above floor)",
+            "Shadow 0 → 1",
+            "Gunta 0 → 1"
+          ],
+          "notes": "End of Session 06 — degree-3 Shadow Encounter survival (Halt's chamber, clean win).",
+          "reversible": true,
+          "beforeState": {
+            "implantsCap": 1,
+            "spacesAddedIds": [],
             "shadow": 0,
             "guntaValue": 0
           }
@@ -2187,12 +2526,17 @@
           "title": "Vatori operative",
           "body": "Past run-in with a Vatori operative who let him walk away — unfinished business.",
           "open": true
+        },
+        {
+          "id": "hk-osric-krell-letter",
+          "title": "Letter from Garon Krell",
+          "body": "NEW Day 23: Old Outrider commander wrote — family scandal. Unresolved thread.",
+          "open": true
         }
       ],
-      "notes": "Apt rules: crit on 19 AND 20. Build half parts. 1 H scrolls usable at 2 H. Armor: Force Armor or lighter; unarmored = full Apt bonuses. Cash on hand: 98 P. Vella treatment paid forward 12 months from Day 22.",
+      "notes": "Apt rules: crit on 19 AND 20. Build half parts. 1 H scrolls usable at 2 H. Armor: Force Armor or lighter; unarmored = full Apt bonuses. Cash on hand: 48 P working + 50 P stashed at Iy-Lan's (Kira fronted Day 26 Sess06 ammo + stim; no Osric outlay). Vella treatment paid forward 12 months from Day 22. Last Chance spaced ability USED Day 26 Sess06 L3 R2 (24hr cooldown). Heal scroll USED Day 26 Sess06 L3 R3 (self-heal d6=3).",
       "createdAt": "2026-05-09T19:51:00.000Z",
-      "updatedAt": "2026-05-15T09:52:24.050Z",
-      "shadowEncountersBanked": 0,
+      "updatedAt": "2026-05-18T19:27:00.000Z",
       "baseStackRolls": {
         "archive": 1,
         "bulk": 0,
