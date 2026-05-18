@@ -24,8 +24,49 @@
 
 import type { SWCharacter, AdvancementLogEntry, SessionLogEntry } from '$lib/models/SWCharacter';
 import type { TypeGraphNode } from '$lib/data/typeGraphs';
+import type { CharacterType } from '$lib/models/Enums';
 import { isLegalNextNode } from '$lib/data/typeGraphs';
 import { getActiveGraph } from './graphLibrary';
+
+// ============================================
+// NODE-EFFECT QUERIES (used by the wizard UI + tests)
+// ============================================
+
+/**
+ * Resolve the space count AFTER arriving at a node.
+ *
+ * Per Christian Mehrstam's rules clarification (2026-05-18): spaces are
+ * "sticky" — when a node has NO inner number (`spaces === null`), the
+ * character keeps their previous count. When a node DOES specify a value,
+ * the count is raised to that value (or kept higher if the character is
+ * already above it). Spaces never decrease through advancement, and
+ * revisiting a numbered node is a no-op for the count.
+ */
+export function computeSpaceCountAfter(currentSpaceCount: number, nodeSpaces: number | null): number {
+  if (nodeSpaces === null) return currentSpaceCount;
+  return Math.max(currentSpaceCount, nodeSpaces);
+}
+
+/** What a node grants by `kind` (and the character's type for bond-swap eligibility). */
+export interface NodeGrants {
+  grantsKeyword: boolean;
+  grantsRearrange: boolean;
+  /** Core characters only — bond swap fires on the same kinds as rearrange. */
+  grantsBondSwap: boolean;
+}
+
+/**
+ * Per Christian Mehrstam's rules clarification (2026-05-18): a character
+ * MAY revisit a previously-passed node, and its bonuses RE-APPLY each
+ * time. `nodeGrants` returns the per-kind grant set the wizard prompts
+ * for on every visit — there is no first-visit-only gate.
+ */
+export function nodeGrants(node: TypeGraphNode, characterType: CharacterType): NodeGrants {
+  const grantsKeyword = node.kind === 'double' || node.kind === 'double_filled';
+  const grantsRearrange = node.kind === 'filled' || node.kind === 'double_filled';
+  const grantsBondSwap = characterType === 'core' && grantsRearrange;
+  return { grantsKeyword, grantsRearrange, grantsBondSwap };
+}
 
 // ============================================
 // VALIDATION

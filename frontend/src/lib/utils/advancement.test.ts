@@ -5,6 +5,8 @@ import type { TypeGraphNode } from '$lib/data/typeGraphs';
 import { APT_GRAPH } from '$lib/data/typeGraphs';
 import {
   applyNodeAdvancement,
+  computeSpaceCountAfter,
+  nodeGrants,
   rollbackAdvancement,
   validateAdvancementMove
 } from './advancement';
@@ -522,6 +524,62 @@ describe('validateAdvancementMove — stale state guards', () => {
     const realTarget = aptNodeAt(1, 1);
     const session = buildSessionEntry('s1', { x: 0, y: 0 }, { x: 2, y: 2 });
     expect(validateAdvancementMove(character, session, realTarget)).toBe('wrong_target');
+  });
+});
+
+// ============================================
+// Sticky-spaces + revisit re-apply (Mehrstam 2026-05-18 clarification)
+// ============================================
+
+describe('computeSpaceCountAfter — sticky spaces rule', () => {
+  it('keeps the current count when the node has NO inner number (spaces=null)', () => {
+    expect(computeSpaceCountAfter(0, null)).toBe(0);
+    expect(computeSpaceCountAfter(3, null)).toBe(3);
+    expect(computeSpaceCountAfter(7, null)).toBe(7);
+  });
+
+  it('raises to the node value when the node specifies a higher count', () => {
+    expect(computeSpaceCountAfter(1, 3)).toBe(3);
+    expect(computeSpaceCountAfter(0, 1)).toBe(1);
+  });
+
+  it('keeps the higher current count on revisit (never decreases)', () => {
+    // Revisit: current is already 4, node says 2 — keep 4.
+    expect(computeSpaceCountAfter(4, 2)).toBe(4);
+    // Revisit numbered node at current count — no-op.
+    expect(computeSpaceCountAfter(3, 3)).toBe(3);
+  });
+});
+
+describe('nodeGrants — what re-applies on revisit (Mehrstam: bonuses re-apply)', () => {
+  function node(kind: 'open' | 'double' | 'filled' | 'double_filled'): TypeGraphNode {
+    return { x: 1, y: 1, spaces: null, kind };
+  }
+
+  it('open nodes grant nothing — no prompts on visit or revisit', () => {
+    const g = nodeGrants(node('open'), 'apt');
+    expect(g.grantsKeyword).toBe(false);
+    expect(g.grantsRearrange).toBe(false);
+    expect(g.grantsBondSwap).toBe(false);
+  });
+
+  it('double / double_filled nodes prompt for a new keyword (every visit)', () => {
+    expect(nodeGrants(node('double'), 'apt').grantsKeyword).toBe(true);
+    expect(nodeGrants(node('double_filled'), 'apt').grantsKeyword).toBe(true);
+  });
+
+  it('filled / double_filled nodes prompt for a rearrange (every visit)', () => {
+    expect(nodeGrants(node('filled'), 'apt').grantsRearrange).toBe(true);
+    expect(nodeGrants(node('double_filled'), 'apt').grantsRearrange).toBe(true);
+    expect(nodeGrants(node('double'), 'apt').grantsRearrange).toBe(false);
+  });
+
+  it('grantsBondSwap fires ONLY for Core characters on filled / double_filled nodes', () => {
+    expect(nodeGrants(node('filled'), 'core').grantsBondSwap).toBe(true);
+    expect(nodeGrants(node('double_filled'), 'core').grantsBondSwap).toBe(true);
+    expect(nodeGrants(node('filled'), 'apt').grantsBondSwap).toBe(false);
+    expect(nodeGrants(node('filled'), 'prime').grantsBondSwap).toBe(false);
+    expect(nodeGrants(node('double'), 'core').grantsBondSwap).toBe(false);
   });
 });
 

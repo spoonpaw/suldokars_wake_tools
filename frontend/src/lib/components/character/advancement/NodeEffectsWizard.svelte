@@ -52,6 +52,7 @@
   import { ALL_STACKS, STACK_LABELS } from '$lib/models/Enums';
   import { Button, Modal, Select } from '$lib/components/ui';
   import { BACKGROUNDS_DATA } from '$lib/data/backgrounds';
+  import { computeSpaceCountAfter, nodeGrants } from '$lib/utils/advancement';
 
   interface Props {
     open: boolean;
@@ -110,20 +111,13 @@
   );
 
   const currentSpaceCount = $derived(character.spaces.length);
-  const spaceCountAfter = $derived(
-    targetNode.spaces !== null
-      ? Math.max(currentSpaceCount, targetNode.spaces)
-      : currentSpaceCount
-  );
+  const spaceCountAfter = $derived(computeSpaceCountAfter(currentSpaceCount, targetNode.spaces));
   const spacesToAdd = $derived(Math.max(0, spaceCountAfter - currentSpaceCount));
 
-  const grantsKeyword = $derived(
-    targetNode.kind === 'double' || targetNode.kind === 'double_filled'
-  );
-  const grantsRearrange = $derived(
-    targetNode.kind === 'filled' || targetNode.kind === 'double_filled'
-  );
-  const grantsBondSwap = $derived(character.type === 'core' && grantsRearrange);
+  const grants = $derived(nodeGrants(targetNode, character.type));
+  const grantsKeyword = $derived(grants.grantsKeyword);
+  const grantsRearrange = $derived(grants.grantsRearrange);
+  const grantsBondSwap = $derived(grants.grantsBondSwap);
 
   /** True iff the node grants nothing — wizard auto-enables Confirm. */
   const hasNoEffects = $derived(
