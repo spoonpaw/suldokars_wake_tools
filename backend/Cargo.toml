@@ -1,6 +1,6 @@
 [package]
 name = "sw-tools-backend"
-version = "0.0.2"
+version = "1.0.0"
 description = "Suldokar's Wake Tools - SW character manager backend"
 authors = ["Alexander Saint Clair Bardelmeier <alexanderstclair@zoho.com>"]
 license = "MIT"

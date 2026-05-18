@@ -1,6 +1,6 @@
 {
   "productName": "Suldokar's Wake Tools",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "identifier": "com.netartisancollective.suldokarswaketools",
   "build": {
     "frontendDist": "../frontend/build",
