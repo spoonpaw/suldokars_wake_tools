@@ -1,68 +1,87 @@
 # Changelog
 
-## v0.0.1 — initial scaffold (2026-05-10)
+## Unreleased
 
-First commit. Tauri 2 + SvelteKit 2 + Svelte 5 + TypeScript 5 + Tailwind 3.
-SQLite via `tauri-plugin-sql`.
+Release-prep polish for the first public release.
 
-### Domain coverage
+- README now describes the current character-management app instead of earlier
+  broader tool-suite plans.
+- README now includes desktop install notes and mobile store distribution notes.
+- Added release planning checklist for the first public release.
+- Added MIT license and Suldokar's Wake attribution/permission notice.
+- Updated Rust package metadata.
+- Added Prettier config/ignore rules and fixed the frontend lint/test gates.
+- Updated frontend lockfile to clear high/moderate npm audit advisories.
+- Fixed `build.sh` so local desktop builds load the updater signing key and do
+  not fail on an empty macOS signing identity.
+- Added a mobile release checklist for App Store and Google Play submission.
+- Fixed packaged/mobile client-side routing so non-home pages resolve through
+  the app shell instead of returning a 500.
+- Added canonical party import/export regression coverage for stack composition
+  round trips.
+- Refined the stack composition panel in view and edit modes with full
+  contribution labels, compact mobile rows, and quick stack descriptions.
+- Added explicit carried/equipped/stashed equipment states plus configurable
+  equipped-container slot bonuses in view, edit, import, and starter gear flows.
+- Added construction kits to equipment pickers, included vehicle/drone/bot stock
+  in starter equipment, and filled the missing Wet Suit gear entry.
+- Split RAW currency denominations (`P`, `p`, `E`, `e`) into on-hand and
+  stashed amounts, with on-hand money contributing carried slots per the
+  currency slot rules.
+- Reset the public character/export schema marker to version 1 for the first
+  release.
+- Renamed pre-release harm badge states to rules-facing language and fixed
+  nanite-only harm so it no longer displays as unharmed.
+- Added manual harm status selection and status notes for roll outcomes,
+  injuries, aid, bleeding, and GM rulings that are not purely meter-derived.
 
-- **Character types:** Apt, Core, Prime — with origo values from rules/18 body
-- **Life-forms:** Blood, Palp Alien, Amphibious Alien, Tank Born, Droid, Holid
-- **Backgrounds:** all 8 (Enforcer, Diplomat, Entertainer, Cultist, Fixer,
-  Outrider, Archivist, Worker) with bonuses + 6-keyword tables + d20
-  tangentials
-- **Stacks:** 6 primary (Archive, Bulk, Ghost, Morph, Speed, Tech) + Close +
-  Ranged
-- **Languages:** 19 from rules/20 with mandatory-by-life-form auto-pick
-- **Type graphs:** Apt / Core / Prime advancement nodes (origo at (0,0))
-- **Weapons:** full rules/29 table (21 entries)
-- **Armor:** full rules/29 table (12 entries) with Apt/Core/Prime gating
-- **Adventuring gear:** full rules/26 table (50+ entries)
-- **Vehicles & drones:** full rules/27 table (17 entries)
-- **Pets & mounts:** full rules/28 table (7 entries)
-- **Implants:** all body-part variants from rules/24 with cost multipliers
-- **Basic formulae:** full three-mode listing from rules/21 (25 entries)
-- **Subspace formulae:** all subspace formulae from rules/22 (16 entries)
-- **Construction kits:** full rules/24 table
+## v0.1.0 — first public release (planned)
 
-### Mechanics
+Initial public release target for Suldokar's Wake Tools.
 
-- Inverted-action roll resolver (regular ≤ stack, special > DN, fumble = 13
-  when DN ≥ 13, crit on 20 / Apt also on 19)
-- Clean / double / half / exploding d20 / Odyn rollers
-- Encumbrance check (slot total vs Bulk-vs-overflow)
-- Implant cost calculator (×1 blood / ×1 construct / ×1.5 tank-born / ×2 alien;
-  each +1 increment doubles)
-- Starter Parts (d6 by life-form)
+### Character Management
 
-### UI
+- Create, edit, import, export, and delete Suldokar's Wake characters.
+- Supports Apt, Core, and Prime characters.
+- Supports Blood, Palp Alien, Amphibious Alien, Tank Born, Droid, and Holid
+  life-forms.
+- Includes the from-scratch character creation wizard.
+- Tracks primary stacks, Close, Ranged, life-form bonuses, background bonuses,
+  keywords, languages, spaces/formulae, implants, identity, artistic
+  modification, hooks, purse, special coins, and debts.
+- Manages weapons, armor, gear, vehicles, pets, ammo, and equipment slots.
+- Tracks character advancement graphs, including graph library and custom graph
+  tools.
+- Tracks physical and nanite harm.
 
-- Home: card list with delete + import + export
-- New character: 14-step Creation Wizard (Name → Type → Stack rolls →
-  Life-form → Background → Keywords → Languages → Spaces → Equipment →
-  Implants → Identity → Artistic Mod → Hooks → Review)
-- Character sheet view with 10 tabs (Overview, Stacks, Keywords,
-  Languages, Space, Equipment, Implants, Identity, Hooks, Trackers)
-- Character edit (single-page editor)
-- Dice roller page
-- Reference browser (12 topics with search/filter)
-- Theme toggle (dark default, light optional)
+### App
 
-### Persistence
+- Offline SQLite persistence via `tauri-plugin-sql`.
+- JSON import/export via Tauri dialogs, with browser fallbacks for dev builds.
+- Dark and light themes.
+- Settings/About page with update preferences and attribution.
+- Desktop update checks via `tauri-plugin-updater`.
 
-- SQLite via `tauri-plugin-sql` (cross-platform; same schema desktop + mobile)
-- JSON import / export with schema versioning + Tauri dialog or browser
-  download fallback
+### Distribution
 
-### Verified
+- macOS, Windows, and Linux desktop builds are supported through Tauri.
+- iOS and Android project configuration exists; App Store and Google Play
+  submission are part of the final public release process.
 
-- `npm install` + `npm run check` clean
-- `cargo check` clean
+### Known Limitations
 
-### Not yet
+- This is a character manager, not a replacement for the published game.
+- PDF character-sheet export is not included.
+- Mobile builds still need real-device release validation and store submission.
 
-- Mobile build (iOS + Android) — config in place, not exercised
-- Combat tracker (placeholder; carry-over from OSE template removed)
-- PDF character-sheet export
-- Real-device touch UX validation
+## v0.0.2 — updater test build (2026-05-13)
+
+- Internal auto-updater test build.
+- Added Settings/About page with desktop update preferences.
+- Uploaded macOS, Windows, and Linux test artifacts.
+
+## v0.0.1 — updater test build (2026-05-10)
+
+- Initial Tauri 2 + SvelteKit 2 + Svelte 5 + TypeScript + Tailwind scaffold.
+- Established the character data model, SQLite storage, import/export path, and
+  first desktop build flow.

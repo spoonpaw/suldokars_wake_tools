@@ -6,7 +6,7 @@
     - Status badge
     - Damage in (presets + custom)
     - Heal (-1 / -d6 long rest stub / -d6 quick rest stub)
-    - End-roll trigger (when at-risk or forced)
+    - End-roll trigger (when pending or forced)
     - Suspend / unsuspend
     - Quick reset
 
@@ -16,7 +16,7 @@
   handlers; the underlying transitions all already work.
 -->
 <script lang="ts">
-  import type { SWCharacter } from '$lib/models/SWCharacter';
+  import type { SWCharacter, HarmStatus } from '$lib/models/SWCharacter';
   import {
     endRollDN,
     isEndRollRequired,
@@ -33,7 +33,7 @@
     statusBadge
   } from '$lib/utils/computed';
   import HarmMeter from './HarmMeter.svelte';
-  import { Card, Button } from '$lib/components/ui';
+  import { Card, Button, Select, TextArea } from '$lib/components/ui';
 
   interface Props {
     character: SWCharacter;
@@ -44,7 +44,9 @@
   }
 
   let { character = $bindable(), readOnly = false, onMutate }: Props = $props();
-  function notify() { onMutate?.(); }
+  function notify() {
+    onMutate?.();
+  }
 
   // ---- Single damage input ----
   let amount = $state(1);
@@ -56,12 +58,26 @@
   const forced = $derived(isForcedRoll(character.harm));
   const suspendOk = $derived(canSuspend(character.harm));
   const badge = $derived(statusBadge(character.harm.status));
+  const statusNote = $derived((character.harm.statusNote ?? '').trim());
+
+  const STATUS_OPTIONS: { value: HarmStatus; label: string }[] = [
+    { value: 'unharmed', label: 'Unharmed' },
+    { value: 'harmed', label: 'Harmed' },
+    { value: 'end-roll-pending', label: 'End roll pending' },
+    { value: 'suspended', label: 'End roll suspended' },
+    { value: 'injured', label: 'Injured' },
+    { value: 'injured-knocked-down', label: 'Injured + knocked down' },
+    { value: 'injured-knocked-out', label: 'Injured + knocked out' },
+    { value: 'dying', label: 'Dying' },
+    { value: 'comatose', label: 'Comatose' },
+    { value: 'dead', label: 'Dead' }
+  ];
 
   // Tone → Tailwind colour helper.
   const toneClasses: Record<string, string> = {
-    ok:       'bg-emerald-700 text-white',
-    warn:     'bg-amber-700 text-white',
-    danger:   'bg-orange-700 text-white',
+    ok: 'bg-emerald-700 text-white',
+    warn: 'bg-amber-700 text-white',
+    danger: 'bg-orange-700 text-white',
     critical: 'bg-red-700 text-white'
   };
 
@@ -100,6 +116,23 @@
     character.harm = suspendEndRoll(character);
     notify();
   }
+  function setStatus(value: string) {
+    const status = value as HarmStatus;
+    character.harm.status = status;
+    character.harm.endRollSuspended = status === 'suspended';
+    if (status === 'suspended') character.harm.suspendedAtHarm = character.harm.harmTaken;
+    if (status === 'dying' && !character.harm.dyingTimerUnit)
+      character.harm.dyingTimerUnit = character.type === 'prime' ? 'minute' : 'round';
+    if (status !== 'dying') {
+      character.harm.dyingTimer = null;
+      character.harm.dyingTimerUnit = null;
+    }
+    notify();
+  }
+  function setStatusNote(value: string) {
+    character.harm.statusNote = value;
+    notify();
+  }
   function reset() {
     character.harm = resetHarm(character);
     notify();
@@ -118,9 +151,7 @@
         </span>
       {/if}
       {#if character.harm.naniteTaken > 0}
-        <span class="rounded-full bg-cyan-900/40 px-3 py-1 text-xs font-medium text-cyan-200">
-          ⚠ Nanite harm raises hit risk
-        </span>
+        <span class="rounded-full bg-cyan-900/40 px-3 py-1 text-xs font-medium text-cyan-200"> ⚠ Nanite harm raises hit risk </span>
       {/if}
       {#if character.harm.endRollSuspended}
         <span class="rounded-full bg-amber-900/40 px-3 py-1 text-xs font-medium text-amber-200">
@@ -137,6 +168,9 @@
           Coma · {character.harm.comaDays ?? '?'} days · daily DN 20 Ghost
         </span>
       {/if}
+      {#if statusNote}
+        <span class="rounded-full bg-neutral-800 px-3 py-1 text-xs font-medium text-neutral-300">{statusNote}</span>
+      {/if}
     </div>
   </div>
 
@@ -144,6 +178,19 @@
 
   {#if !readOnly}
     <div class="mt-4 space-y-3">
+      <div class="rounded-lg border border-neutral-800 bg-neutral-950/30 p-3">
+        <div class="grid gap-3 grid-cols-1 sm:grid-cols-[minmax(12rem,16rem)_1fr]">
+          <Select label="Status" options={STATUS_OPTIONS} value={character.harm.status} onchange={setStatus} />
+          <TextArea
+            label="Status note"
+            rows={2}
+            value={character.harm.statusNote ?? ''}
+            placeholder="True Grit, aid, bleeding, injury, GM ruling…"
+            onchange={setStatusNote}
+          />
+        </div>
+      </div>
+
       <div>
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">Apply harm</p>
         <div class="flex flex-wrap items-center gap-2">
@@ -157,7 +204,7 @@
           <Button variant="ghost" onclick={() => heal(amount)} disabled={amount <= 0}>− Physical</Button>
           <Button variant="secondary" onclick={() => nano(amount)} disabled={amount <= 0}>+ Nanite</Button>
           <Button variant="ghost" onclick={() => healNano(amount)} disabled={amount <= 0}>− Nanite</Button>
-          <Button variant="ghost" onclick={reset}>Reset to clean</Button>
+          <Button variant="ghost" onclick={reset}>Reset to unharmed</Button>
         </div>
       </div>
 

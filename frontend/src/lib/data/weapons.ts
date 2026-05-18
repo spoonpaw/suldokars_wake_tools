@@ -96,7 +96,7 @@ export const WEAPONS_DATA: WeaponDef[] = [
     range: 'melee',
     cost: 30,
     kit: 'W',
-    specials: ['Shields don\'t work']
+    specials: ["Shields don't work"]
   },
   {
     id: 'crossbow_bow',

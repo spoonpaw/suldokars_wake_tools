@@ -20,8 +20,7 @@ export const SUBSPACE_FORMULAE: SubspaceFormulaDef[] = [
     id: 'commune_orug_spirit',
     name: 'Commune with Orug Spirit',
     bondedCost: '4',
-    description:
-      'Summons a long-dead orug spirit to talk to. Targeted spirit raises cost to ed6+2.'
+    description: 'Summons a long-dead orug spirit to talk to. Targeted spirit raises cost to ed6+2.'
   },
   {
     id: 'detect_shadow',
@@ -35,8 +34,7 @@ export const SUBSPACE_FORMULAE: SubspaceFormulaDef[] = [
     name: 'Hack Insurance',
     bondedCost: '3',
     unbondedCost: '3ed6',
-    description:
-      'An existing insurance pattern or strand can be hacked to back up someone else; Maker roll shifted up once.'
+    description: 'An existing insurance pattern or strand can be hacked to back up someone else; Maker roll shifted up once.'
   },
   {
     id: 'identify_aeonic',
@@ -48,7 +46,7 @@ export const SUBSPACE_FORMULAE: SubspaceFormulaDef[] = [
     id: 'imprint_soul',
     name: 'Imprint Soul',
     bondedCost: 'd6+3',
-    description: 'Someone\'s existence imprinted on an empty Zyu Maker strand — serves as insurance.'
+    description: "Someone's existence imprinted on an empty Zyu Maker strand — serves as insurance."
   },
   {
     id: 'mend_plant',
@@ -73,8 +71,7 @@ export const SUBSPACE_FORMULAE: SubspaceFormulaDef[] = [
     id: 'predict_holoh',
     name: 'Predict HoloH',
     bondedCost: '2',
-    description:
-      "Tells the character about upcoming changes in HoloH's mood. AI rolls and tells the player."
+    description: "Tells the character about upcoming changes in HoloH's mood. AI rolls and tells the player."
   },
   {
     id: 'protect_colossus',
@@ -93,8 +90,7 @@ export const SUBSPACE_FORMULAE: SubspaceFormulaDef[] = [
     id: 'project_mainframe',
     name: 'Project Mainframe',
     bondedCost: '3',
-    description:
-      'Projects a mainframe OS as a non-solid hologram of the AI\'s choosing — interactable, in original language.'
+    description: "Projects a mainframe OS as a non-solid hologram of the AI's choosing — interactable, in original language."
   },
   {
     id: 'regeneration',
@@ -118,7 +114,6 @@ export const SUBSPACE_FORMULAE: SubspaceFormulaDef[] = [
     id: 'visualize',
     name: 'Visualize',
     bondedCost: 'd6',
-    description:
-      'Visualize a person or place that you have seen before, at the present time. Visualize past = 2ed6.'
+    description: 'Visualize a person or place that you have seen before, at the present time. Visualize past = 2ed6.'
   }
 ];

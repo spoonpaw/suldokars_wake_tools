@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import { onMount, type Snippet } from 'svelte';
+  import { afterNavigate } from '$app/navigation';
   import { initDatabase, getSetting, setSetting } from '$lib/stores/database';
   import { loadCharacters } from '$lib/stores/characters.svelte';
   import { initTheme, getTheme, toggleTheme, initUpdaterPrefs } from '$lib/stores/ui.svelte';
@@ -19,6 +20,16 @@
 
   const isDark = $derived(getTheme() === 'dark');
 
+  // Snap to top on every client-side route change. SvelteKit doesn't do
+  // this by default; without it the new page inherits the previous page's
+  // scroll position, which is jarring (e.g. scroll deep into character sheet
+  // → tap settings gear → land mid-page).
+  afterNavigate(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  });
+
   // Mobile gets a "?" (info) icon since the page is purely About — no
   // settings to tweak. Desktop gets the gear since there's an Updates
   // section. Cheap UA sniff is fine: both iOS + Android Tauri WebViews
@@ -26,10 +37,35 @@
   const isMobile = typeof navigator !== 'undefined'
     && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+  // Block pinch-zoom + trackpad-pinch + double-tap zoom across the app.
+  // - iOS WKWebView ignores `user-scalable=no` since iOS 10 — only way to
+  //   stop pinch there is to swallow gesturestart/change/end events.
+  // - macOS trackpad pinch fires as `wheel` with `ctrlKey: true` — block.
+  // - Kbd Ctrl/Cmd-+/-/0 zoom STAYS (deliberate desktop feature, see
+  //   handleZoomKey below) — these blockers only target gesture input.
+  function blockGesture(e: Event) { e.preventDefault(); }
+  function blockPinchWheel(e: WheelEvent) {
+    if (e.ctrlKey) e.preventDefault();
+  }
+  let lastTouchEnd = 0;
+  function blockDoubleTapZoom(e: TouchEvent) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+  }
+
   onMount(async () => {
     // Apply persisted zoom before any layout work happens — avoids a
     // flash from default 16px to the user's preferred size on reload.
     initZoom();
+
+    // Attach the gesture blockers. passive:false required to call
+    // preventDefault on these touch/wheel events.
+    document.addEventListener('gesturestart', blockGesture);
+    document.addEventListener('gesturechange', blockGesture);
+    document.addEventListener('gestureend', blockGesture);
+    document.addEventListener('wheel', blockPinchWheel, { passive: false });
+    document.addEventListener('touchend', blockDoubleTapZoom, { passive: false });
     try {
       await initDatabase();
       const savedTheme = await getSetting('theme');

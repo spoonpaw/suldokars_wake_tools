@@ -14,4 +14,4 @@ set -e
 cd "$(dirname "$0")"
 # Use LAN IP so the phone can reach the host's vite server.
 export FORCE_LAN_IP=1
-exec scripts/launch-dev.sh ios --target aarch64
+exec scripts/launch-dev.sh ios

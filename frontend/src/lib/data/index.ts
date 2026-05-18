@@ -18,3 +18,4 @@ export * from './types';
 export * from './kits';
 export * from './starterFunds';
 export * from './keywords';
+export * from './lifeFormTables';

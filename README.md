@@ -30,6 +30,19 @@ iOS, and Android through Tauri 2.
 
 This focuses on character management and is not a replacement for the book.
 
+## Install
+
+Desktop installers are published through
+[GitHub Releases](https://github.com/spoonpaw/suldokars_wake_tools/releases).
+
+- macOS: download the `.dmg`
+- Windows: download the `.msi`
+- Linux: download the `.AppImage` or `.deb`
+
+iOS and Android releases are planned through the Apple App Store and Google Play
+Store. Mobile builds are not distributed through GitHub Releases. See
+[MOBILE_RELEASE.md](MOBILE_RELEASE.md) for the store-submission checklist.
+
 ## Stack
 
 - Tauri 2.x (Rust backend, WebView frontend)
@@ -84,4 +97,4 @@ App code: MIT.
 
 Suldokar's Wake, its names, and its game content are © Christian Mehrstam. This
 is an unofficial fan tool released with permission, and you need the published
-game to use it.
+game to use it. See [NOTICE](NOTICE) for attribution details.

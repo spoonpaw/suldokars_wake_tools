@@ -4,13 +4,7 @@
 
 import type { SWCharacter } from '$lib/models';
 import { createDefaultCharacter, normalizeCharacter } from '$lib/models';
-import {
-  getAllCharacters,
-  getCharacterById,
-  insertCharacter,
-  updateCharacter as dbUpdateCharacter,
-  deleteCharacterById
-} from './database';
+import { getAllCharacters, getCharacterById, insertCharacter, updateCharacter as dbUpdateCharacter, deleteCharacterById } from './database';
 
 // Schema migration / shape normalization lives in the model layer
 // (normalizeCharacter in $lib/models/SWCharacter.ts). It seeds defaults,
@@ -75,8 +69,7 @@ export async function loadCharacters(): Promise<void> {
 }
 
 export async function createCharacter(data?: Partial<SWCharacter>): Promise<SWCharacter> {
-  const baseId =
-    typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `sw-${Date.now()}`;
+  const baseId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `sw-${Date.now()}`;
   const newCharacter: SWCharacter = {
     ...createDefaultCharacter(),
     ...data,

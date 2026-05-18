@@ -15,7 +15,14 @@ if [[ -f "${ENV_FILE}" ]]; then
 fi
 
 # macOS Code Signing & Notarization
-export APPLE_SIGNING_IDENTITY="${APPLE_SIGNING_IDENTITY:-}"
+# Only export APPLE_SIGNING_IDENTITY when it has a real value. Exporting an
+# empty string makes Tauri try to codesign with identity "", which breaks local
+# unsigned verification builds.
+if [[ -n "${APPLE_SIGNING_IDENTITY:-}" ]]; then
+  export APPLE_SIGNING_IDENTITY
+else
+  unset APPLE_SIGNING_IDENTITY
+fi
 KEYCHAIN_PROFILE="${APPLE_KEYCHAIN_PROFILE:-}"
 
 # Notarization knobs:
@@ -57,6 +64,21 @@ fi
 if [[ ! -d "${ROOT_DIR}/frontend/node_modules" ]]; then
   echo "[build] Frontend deps not found. Installing (npm ci) ..."
   (cd "${ROOT_DIR}/frontend" && npm ci)
+fi
+
+# Tauri's updater artifacts are enabled in tauri.conf.json, so desktop builds
+# need the updater signing private key. Load the local gitignored key when the
+# environment hasn't provided one already.
+UPDATER_KEY_PATH="${ROOT_DIR}/.tauri/sw_tools.key"
+if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]]; then
+  if [[ -f "${UPDATER_KEY_PATH}" ]]; then
+    export TAURI_SIGNING_PRIVATE_KEY="$(cat "${UPDATER_KEY_PATH}")"
+    export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}"
+  else
+    echo "[build] ERROR: updater signing key missing at ${UPDATER_KEY_PATH}."
+    echo "[build] Set TAURI_SIGNING_PRIVATE_KEY or restore the local .tauri key before building updater artifacts."
+    exit 1
+  fi
 fi
 
 echo "[build] Building frontend (SvelteKit/Vite) -> frontend/build ..."

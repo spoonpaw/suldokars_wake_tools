@@ -26,6 +26,14 @@ export interface TypeBondOption {
   label: string;
   /** Short narrative + mechanical summary. */
   description: string;
+  /** Bullet list of mechanical rules unique to this bond (rules/18). */
+  mechanics: string[];
+  /** Optional sub-section — used for Beginner Cloud (under Nanite Cloud bond). */
+  subSection?: {
+    title: string;
+    intro?: string;
+    bullets: string[];
+  };
 }
 
 export interface TypeDef {
@@ -107,24 +115,51 @@ export const CORE_TYPE: TypeDef = {
       id: 'holoh',
       label: 'The HoloH',
       description:
-        'Bond with the ancient holofield that pervades Zira-Ka. Easier access to cybersystems, computer systems and electronic facilities — spontaneous, exclusive, or simply more likely. Chance of awaking dead artifacts. The character may sense a guiding force (destiny, luck, ancestor, god). After failing yourself, retrying the above kinds of action is a clean roll.'
+        'Bond with the ancient holofield that pervades Zira-Ka. The character senses a guiding presence — a force, destiny, luck, an aiding god or ancestor — that helps her hand and mind. Why is up to her interpretation.',
+      mechanics: [
+        'Easier access to cybersystems, computer systems, and electronic facilities — access may be spontaneous, exclusive, or simply more likely than for others.',
+        'Chance of awaking dead artifacts.',
+        'Can go places, learn things, and use artifacts that others cannot.',
+        'After failing yourself on one of the above kinds of actions, retrying becomes a clean roll (unless otherwise stated).'
+      ]
     },
     {
       id: 'nanite_cloud',
       label: 'A Nanite Cloud',
       description:
-        'Bond with a sentient cluster of nanites. Starts with a beginner cloud, can later find and bond with a major cloud — each major cloud is individual (degraded hologram, orug soul, SAI fragment, evolved beginner cloud, etc.).'
+        'Bond with a sentient cluster of nanites. The character starts bonded to a beginner cloud (AI-roleplayed). She can find and bond with a major cloud later in play — each is individual (a degraded non-solid hologram, an orug soul, a fragment of a destroyed SAI, an evolved beginner cloud, etc.).',
+      mechanics: [
+        'Starts with a Beginner Cloud (see below) — usually invisible, communicates via mood-driven sparks.',
+        'May find and bond with a Major Cloud once play begins. The Beginner Cloud merges with the Major Cloud to seal the deal.',
+        'Breaking with a Major Cloud reemerges the Beginner Cloud.',
+        'Switching bond type (HoloH or Subspace) makes the Beginner Cloud disappear; it may return at a future black node if you re-bond Nanite Cloud.'
+      ],
+      subSection: {
+        title: 'Beginner Cloud (rules/18)',
+        intro:
+          'The simplest usable cloud — emerged spontaneously from the nanite-saturated atmosphere. AI roleplays it. Usually invisible; can do three things:',
+        bullets: [
+          'Appear as a candle-bright spark (free). Moves with the character; takes on different colors, jumps agitatedly, dims/brightens — its mood-language.',
+          'Sense nearby (100 dots) larger clouds AND identify scrolls or cans (1 H). Identifying a scroll/can needs a clean DN 10 roll — a fumble destroys the item.',
+          'Taunt a larger cloud (free). Makes the larger cloud visible and bondable per its individual description.'
+        ]
+      }
     },
     {
       id: 'subspace_nanites',
       label: 'Subspace Nanites',
       description:
-        'Bond with a special type of nanite. Unlocks subspace formulae — quirkier and often more powerful than ordinary formulae. May occasionally also boost ordinary formulae (specified in the formula description).'
+        'Bond with a special type of nanite. Grants access to quirkier, often more powerful formulae others cannot use.',
+      mechanics: [
+        'Unlocks subspace formulae (rules/22) — usable any number of times at the indicated H-cost.',
+        'Subspace nanites may occasionally also boost ordinary formulae — when applicable, the boost is specified in the individual formula description.',
+        'Without this bond, subspace formulae are inaccessible (or pay the rare unbonded cost when listed).'
+      ]
     }
   ],
   spaceContent: 'Basic formulae (any regular formula).',
   spacesDoWhat:
-    "Each space holds one active formula usable any number of times at its H-cost; can also hold one inactive formula (swap active = long turn of concentration). Subspace formulae require the Subspace Nanites bond."
+    'Each space holds one active formula usable any number of times at its H-cost; can also hold one inactive formula (swap active = long turn of concentration). Subspace formulae require the Subspace Nanites bond.'
 };
 
 export const PRIME_TYPE: TypeDef = {
@@ -132,7 +167,7 @@ export const PRIME_TYPE: TypeDef = {
   label: 'Prime',
   tagline: 'Combat & physique',
   description:
-    'Prime characters aren\'t afraid of conflict and tend to solve problems by standing fast, taking what harm comes their way and removing any obstacle by force — at least if necessary. A typical Prime character could be a Tank Born Mob Enforcer, a Droid Ex-Factory Worker or an Archivist Death Collector.',
+    "Prime characters aren't afraid of conflict and tend to solve problems by standing fast, taking what harm comes their way and removing any obstacle by force — at least if necessary. A typical Prime character could be a Tank Born Mob Enforcer, a Droid Ex-Factory Worker or an Archivist Death Collector.",
   origo: {
     spaces: 1,
     implants: 0,
@@ -148,12 +183,12 @@ export const PRIME_TYPE: TypeDef = {
     'Double Bulk vs. poison and disease, double Ghost vs. death, double rolls vs. any attack that allows a counter-action roll.',
     'Can act as normal while injured but get half rolls for everything; if harmed while already injured, gets a regular Ghost roll instead of dying immediately, and on failed death-Ghost dies in d20 minutes (not rounds).',
     'When the Prime takes down an enemy single-handedly, she can place the memory in one of her spaces.',
-    'Some enemies have transferable nanite abilities — on the Prime\'s killing blow, those abilities may transfer to one of her spaces.'
+    "Some enemies have transferable nanite abilities — on the Prime's killing blow, those abilities may transfer to one of her spaces."
   ],
   examples: ['Tank Born Mob Enforcer', 'Droid Ex-Factory Worker', 'Archivist Death Collector'],
   spaceContent: 'Bested-enemy memories (filled during play).',
   spacesDoWhat:
-    'Call upon a memory once per 24 hours, in a way relating to the specifics of the enemy or fight, to: treat a stack score as if it were 9, raise damage 1 step, or make a Bulk roll instead of a clean roll vs. harm. Some enemies\' nanite abilities transfer on killing blow — once per 24 h, in a manner specified by the enemy entry.'
+    "Call upon a memory once per 24 hours, in a way relating to the specifics of the enemy or fight, to: treat a stack score as if it were 9, raise damage 1 step, or make a Bulk roll instead of a clean roll vs. harm. Some enemies' nanite abilities transfer on killing blow — once per 24 h, in a manner specified by the enemy entry."
 };
 
 export const TYPES_DATA: TypeDef[] = [APT_TYPE, CORE_TYPE, PRIME_TYPE];

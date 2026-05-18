@@ -2,23 +2,24 @@
   /**
    * AddEquipmentModal — searchable catalog picker for SW equipment.
    *
-   * Six tabs across the top:
-   *   Weapons / Armor / Gear / Vehicles / Pets / Custom
+   * Seven tabs across the top:
+   *   Weapons / Armor / Gear / Kits / Vehicles / Pets / Custom
    *
-   * The first five list the matching catalog (`WEAPONS_DATA` etc.) filtered
+   * The catalog tabs list the matching data (`WEAPONS_DATA` etc.) filtered
    * by the search input. Click a row → calls the matching `onadd*` callback
    * with a freshly-built character item (id generated, all stats copied).
    * The Custom tab spawns a blank record so the player can free-form a
    * weapon / armor / gear that's not in the catalog.
    *
-   * Vehicles and Pets are stored as inventory items (no first-class slot
-   * on the character schema yet) — see helpers in utils/equipment.ts.
+   * Vehicles and pets are stored as visible inventory rows in this panel so
+   * the player can edit their cost, carried state, energy/upkeep notes, etc.
    */
   import { Modal, Input } from '$lib/components/ui';
   import {
     WEAPONS_DATA,
     ARMOR_DATA,
     GEAR_DATA,
+    KITS_DATA,
     VEHICLES_DATA,
     PETS_DATA
   } from '$lib/data';
@@ -26,6 +27,7 @@
     weaponFromDef,
     armorFromDef,
     gearFromDef,
+    kitFromDef,
     vehicleFromDef,
     petFromDef,
     blankWeapon,
@@ -36,7 +38,7 @@
   } from '$lib/utils/equipment';
   import type { CharacterWeapon, CharacterArmor, EquipmentItem } from '$lib/models';
 
-  type Tab = 'weapons' | 'armor' | 'gear' | 'vehicles' | 'pets' | 'custom';
+  type Tab = 'weapons' | 'armor' | 'gear' | 'kits' | 'vehicles' | 'pets' | 'custom';
   type CustomKind = 'weapon' | 'armor' | 'gear';
 
   interface Props {
@@ -72,7 +74,7 @@
     if (open) {
       tab = initialTab;
       search = '';
-      customKind = initialTab === 'armor' ? 'armor' : initialTab === 'gear' ? 'gear' : 'weapon';
+      customKind = initialTab === 'armor' ? 'armor' : initialTab === 'weapons' ? 'weapon' : 'gear';
     }
   });
 
@@ -81,6 +83,9 @@
   const filteredWeapons = $derived(WEAPONS_DATA.filter((w) => matches(w.name) || w.specials.some(matches)));
   const filteredArmor = $derived(ARMOR_DATA.filter((a) => matches(a.name) || matches(a.strength) || matches(a.weakness)));
   const filteredGear = $derived(GEAR_DATA.filter((g) => matches(g.name) || (g.notes ? matches(g.notes) : false)));
+  const filteredKits = $derived(
+    KITS_DATA.filter((k) => matches(k.name) || matches(k.id) || (k.notes ? matches(k.notes) : false))
+  );
   const filteredVehicles = $derived(VEHICLES_DATA.filter((v) => matches(v.name) || matches(v.use)));
   const filteredPets = $derived(PETS_DATA.filter((p) => matches(p.name) || matches(p.use)));
 
@@ -99,6 +104,12 @@
   function pickGear(def: typeof GEAR_DATA[number]) {
     const g = gearFromDef(def);
     onaddgear?.(g);
+    onclose();
+  }
+
+  function pickKit(def: typeof KITS_DATA[number]) {
+    const k = kitFromDef(def);
+    onaddgear?.(k);
     onclose();
   }
 
@@ -129,6 +140,7 @@
     { id: 'weapons', label: 'Weapons' },
     { id: 'armor', label: 'Armor' },
     { id: 'gear', label: 'Gear' },
+    { id: 'kits', label: 'Kits' },
     { id: 'vehicles', label: 'Vehicles' },
     { id: 'pets', label: 'Pets' },
     { id: 'custom', label: 'Custom' }
@@ -226,6 +238,26 @@
         </button>
       {:else}
         <p class="py-6 text-center text-sm text-neutral-500">No gear matches "{search}".</p>
+      {/each}
+    {:else if tab === 'kits'}
+      {#each filteredKits as def (def.id)}
+        <button
+          type="button"
+          onclick={() => pickKit(def)}
+          class="w-full p-3 text-left rounded-lg bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700 hover:border-cyan-600 transition"
+        >
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="font-medium text-neutral-100">{def.id === 'M' ? 'Maker' : def.name} <span class="text-neutral-500">({def.id})</span></span>
+            <span class="text-sm text-cyan-400 tabular-nums">{formatCost(def.cost)}</span>
+          </div>
+          <div class="text-xs text-neutral-500 mt-1 flex flex-wrap gap-x-3 gap-y-1 tabular-nums">
+            <span>{formatSlots(def.slots)}</span>
+            {#if def.buildableWithKit}<span>build with kit {def.buildableWithKit}</span>{/if}
+            {#if def.notes}<span>{def.notes}</span>{/if}
+          </div>
+        </button>
+      {:else}
+        <p class="py-6 text-center text-sm text-neutral-500">No kits match "{search}".</p>
       {/each}
     {:else if tab === 'vehicles'}
       {#each filteredVehicles as def (def.id)}

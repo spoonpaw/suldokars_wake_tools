@@ -2,9 +2,9 @@
 name = "sw-tools-backend"
 version = "0.0.2"
 description = "Suldokar's Wake Tools - SW character manager backend"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["Alexander Saint Clair Bardelmeier <alexanderstclair@zoho.com>"]
+license = "MIT"
+repository = "https://github.com/spoonpaw/suldokars_wake_tools"
 edition = "2021"
 
 [lib]

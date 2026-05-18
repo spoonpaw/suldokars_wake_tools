@@ -19,7 +19,7 @@ export const GEAR_DATA: GearDef[] = [
   { id: 'arrows_bolts', name: 'Arrows or Bolts (20)', slots: 1, cost: 8, kit: 'W' },
   { id: 'autocleaner', name: 'Autocleaner', slots: 1, cost: 50, kit: 'B' },
   { id: 'be_tools', name: 'B & E Tools', slots: 1, cost: 20, kit: 'T' },
-  { id: 'backpack', name: 'Backpack (5 slots)', slots: 1, cost: 5, kit: 'G', notes: 'Slot 10 → +5 carry slots.' },
+  { id: 'backpack', name: 'Backpack (5 slots)', slots: 1, cost: 5, kit: 'G', notes: 'Uses 1 slot; holds 5 slots.' },
   { id: 'binoculars', name: 'Binoculars (HUD)', slots: 0.5, cost: 40, kit: 'B' },
   { id: 'camera_instagraphic', name: 'Camera (Instagraphic)', slots: 0.5, cost: 30, kit: 'B' },
   { id: 'carrier_bot', name: 'Carrier Bot (10 slots)', slots: 8, cost: 120, kit: 'B', energy: '1e/d' },
@@ -66,5 +66,6 @@ export const GEAR_DATA: GearDef[] = [
   { id: 'valise', name: 'Valise (Suitcase, 5 slots)', slots: 1, cost: 15, kit: 'G' },
   { id: 'voice_simulator', name: 'Voice Simulator', slots: 0.5, cost: 120, kit: 'M', energy: '1e/w' },
   { id: 'water_flask', name: 'Water Flask', slots: 1, cost: 1, kit: 'G' },
-  { id: 'weather_detector', name: 'Weather Detector', slots: 1, cost: 250, kit: 'B' }
+  { id: 'weather_detector', name: 'Weather Detector', slots: 1, cost: 250, kit: 'B' },
+  { id: 'wet_suit', name: 'Wet Suit', slots: 3, cost: 30, kit: 'B' }
 ];

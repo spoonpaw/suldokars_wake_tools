@@ -12,7 +12,7 @@ export interface KitDef {
   id: ConstructionKit;
   name: string;
   slots: number; // ½ = 0.5
-  cost: number;  // Parts; − for not buyable
+  cost: number; // Parts; − for not buyable
   buildableWithKit: ConstructionKit | null; // What kit you need to build THIS kit
   notes?: string;
 }

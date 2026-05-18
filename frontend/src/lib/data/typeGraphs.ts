@@ -50,7 +50,7 @@ export interface TypeGraphDef {
     implants: number;
     shadow: number;
     gunta: number;
-    closeStart: number;  // Default starting Close at origo
+    closeStart: number; // Default starting Close at origo
     rangedStart: number; // Default starting Ranged at origo
   };
   nodes: TypeGraphNode[];
@@ -68,8 +68,13 @@ export const APT_GRAPH: TypeGraphDef = {
   },
   nodes: [
     {
-      x: 1, y: 1, spaces: 1, kind: 'open',
-      implantsFloor: 2, rangedFloor: 1, closeFloor: 1,
+      x: 1,
+      y: 1,
+      spaces: 1,
+      kind: 'open',
+      implantsFloor: 2,
+      rangedFloor: 1,
+      closeFloor: 1,
       notes: 'First advancement node — implants 2, both C/R 1.',
       satellitePlacements: [
         { satellite: 'implants', corner: 'TL' },
@@ -78,16 +83,25 @@ export const APT_GRAPH: TypeGraphDef = {
       ]
     },
     {
-      x: 3, y: 1, spaces: 2, kind: 'open',
-      closeFloor: 2, implantsFloor: 3,
+      x: 3,
+      y: 1,
+      spaces: 2,
+      kind: 'open',
+      closeFloor: 2,
+      implantsFloor: 3,
       satellitePlacements: [
         { satellite: 'close', corner: 'TR' },
         { satellite: 'implants', corner: 'BR' }
       ]
     },
     {
-      x: 5, y: 1, spaces: 3, kind: 'open',
-      rangedFloor: 2, closeFloor: 3, implantsFloor: 4,
+      x: 5,
+      y: 1,
+      spaces: 3,
+      kind: 'open',
+      rangedFloor: 2,
+      closeFloor: 3,
+      implantsFloor: 4,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'BL' },
@@ -95,8 +109,13 @@ export const APT_GRAPH: TypeGraphDef = {
       ]
     },
     {
-      x: 7, y: 1, spaces: 4, kind: 'double',
-      closeFloor: 4, implantsFloor: 5, rangedFloor: 3,
+      x: 7,
+      y: 1,
+      spaces: 4,
+      kind: 'double',
+      closeFloor: 4,
+      implantsFloor: 5,
+      rangedFloor: 3,
       notes: 'New keyword.',
       satellitePlacements: [
         { satellite: 'close', corner: 'TL' },
@@ -105,65 +124,92 @@ export const APT_GRAPH: TypeGraphDef = {
       ]
     },
     {
-      x: 2, y: 2, spaces: 2, kind: 'double',
+      x: 2,
+      y: 2,
+      spaces: 2,
+      kind: 'double',
       rangedFloor: 2,
       notes: 'New keyword.',
-      satellitePlacements: [
-        { satellite: 'ranged', corner: 'TL' }
-      ]
+      satellitePlacements: [{ satellite: 'ranged', corner: 'TL' }]
     },
     {
-      x: 4, y: 2, spaces: 3, kind: 'double_filled',
+      x: 4,
+      y: 2,
+      spaces: 3,
+      kind: 'double_filled',
       notes: 'New keyword + rearrange.',
       satellitePlacements: []
     },
     {
-      x: 6, y: 2, spaces: 4, kind: 'open',
-      rangedFloor: 4, implantsFloor: 3,
+      x: 6,
+      y: 2,
+      spaces: 4,
+      kind: 'open',
+      rangedFloor: 4,
+      implantsFloor: 3,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TR' },
         { satellite: 'implants', corner: 'BL' }
       ]
     },
     {
-      x: 1, y: 3, spaces: 2, kind: 'open',
-      closeFloor: 2, rangedFloor: 2,
+      x: 1,
+      y: 3,
+      spaces: 2,
+      kind: 'open',
+      closeFloor: 2,
+      rangedFloor: 2,
       satellitePlacements: [
         { satellite: 'close', corner: 'TL' },
         { satellite: 'ranged', corner: 'BL' }
       ]
     },
     {
-      x: 3, y: 3, spaces: 3, kind: 'open',
-      rangedFloor: 3, closeFloor: 2,
+      x: 3,
+      y: 3,
+      spaces: 3,
+      kind: 'open',
+      rangedFloor: 3,
+      closeFloor: 2,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'TR' }
       ]
     },
     {
-      x: 5, y: 3, spaces: 4, kind: 'double',
+      x: 5,
+      y: 3,
+      spaces: 4,
+      kind: 'double',
       closeFloor: 2,
       notes: 'New keyword.',
-      satellitePlacements: [
-        { satellite: 'close', corner: 'BL' }
-      ]
+      satellitePlacements: [{ satellite: 'close', corner: 'BL' }]
     },
     {
-      x: 7, y: 3, spaces: 4, kind: 'open',
-      closeFloor: 3, rangedFloor: 5,
+      x: 7,
+      y: 3,
+      spaces: 4,
+      kind: 'open',
+      closeFloor: 3,
+      rangedFloor: 5,
       satellitePlacements: [
         { satellite: 'close', corner: 'TL' },
         { satellite: 'ranged', corner: 'TR' }
       ]
     },
     {
-      x: 2, y: 4, spaces: null, kind: 'filled',
+      x: 2,
+      y: 4,
+      spaces: null,
+      kind: 'filled',
       notes: 'Rearrange (no spaces).',
       satellitePlacements: []
     },
     {
-      x: 6, y: 4, spaces: 4, kind: 'double_filled',
+      x: 6,
+      y: 4,
+      spaces: 4,
+      kind: 'double_filled',
       notes: 'New keyword + rearrange (4 spaces).',
       satellitePlacements: []
     }
@@ -181,61 +227,118 @@ export const CORE_GRAPH: TypeGraphDef = {
     rangedStart: 0
   },
   nodes: [
-    { x: 1, y: 1, spaces: 2, kind: 'open', implantsFloor: 1, notes: 'First advancement — spaces 2, implants 1.',
-      satellitePlacements: [
-        { satellite: 'implants', corner: 'BL' }
-      ] },
-    { x: 3, y: 1, spaces: 3, kind: 'double', closeFloor: 1, implantsFloor: 1, notes: 'New keyword.',
+    {
+      x: 1,
+      y: 1,
+      spaces: 2,
+      kind: 'open',
+      implantsFloor: 1,
+      notes: 'First advancement — spaces 2, implants 1.',
+      satellitePlacements: [{ satellite: 'implants', corner: 'BL' }]
+    },
+    {
+      x: 3,
+      y: 1,
+      spaces: 3,
+      kind: 'double',
+      closeFloor: 1,
+      implantsFloor: 1,
+      notes: 'New keyword.',
       satellitePlacements: [
         { satellite: 'close', corner: 'BL' },
         { satellite: 'implants', corner: 'BR' }
-      ] },
-    { x: 5, y: 1, spaces: null, kind: 'filled', rangedFloor: 1, closeFloor: 2, implantsFloor: 2, notes: 'Rearrange + bond swap.',
+      ]
+    },
+    {
+      x: 5,
+      y: 1,
+      spaces: null,
+      kind: 'filled',
+      rangedFloor: 1,
+      closeFloor: 2,
+      implantsFloor: 2,
+      notes: 'Rearrange + bond swap.',
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'BL' },
         { satellite: 'implants', corner: 'BR' }
-      ] },
-    { x: 7, y: 1, spaces: 4, kind: 'open', closeFloor: 3, rangedFloor: 2, implantsFloor: 3,
+      ]
+    },
+    {
+      x: 7,
+      y: 1,
+      spaces: 4,
+      kind: 'open',
+      closeFloor: 3,
+      rangedFloor: 2,
+      implantsFloor: 3,
       satellitePlacements: [
         { satellite: 'close', corner: 'TL' },
         { satellite: 'ranged', corner: 'TR' },
         { satellite: 'implants', corner: 'BR' }
-      ] },
-    { x: 2, y: 2, spaces: 3, kind: 'open', implantsFloor: 2,
-      satellitePlacements: [
-        { satellite: 'implants', corner: 'BL' }
-      ] },
-    { x: 4, y: 2, spaces: 4, kind: 'double', implantsFloor: 3, notes: 'New keyword.',
-      satellitePlacements: [
-        { satellite: 'implants', corner: 'BL' }
-      ] },
-    { x: 6, y: 2, spaces: 5, kind: 'double', notes: 'New keyword.',
-      satellitePlacements: [] },
-    { x: 1, y: 3, spaces: 3, kind: 'double', rangedFloor: 1, notes: 'New keyword.',
-      satellitePlacements: [
-        { satellite: 'ranged', corner: 'BL' }
-      ] },
-    { x: 3, y: 3, spaces: null, kind: 'filled', rangedFloor: 2, closeFloor: 1, notes: 'Rearrange + bond swap.',
+      ]
+    },
+    { x: 2, y: 2, spaces: 3, kind: 'open', implantsFloor: 2, satellitePlacements: [{ satellite: 'implants', corner: 'BL' }] },
+    {
+      x: 4,
+      y: 2,
+      spaces: 4,
+      kind: 'double',
+      implantsFloor: 3,
+      notes: 'New keyword.',
+      satellitePlacements: [{ satellite: 'implants', corner: 'BL' }]
+    },
+    { x: 6, y: 2, spaces: 5, kind: 'double', notes: 'New keyword.', satellitePlacements: [] },
+    {
+      x: 1,
+      y: 3,
+      spaces: 3,
+      kind: 'double',
+      rangedFloor: 1,
+      notes: 'New keyword.',
+      satellitePlacements: [{ satellite: 'ranged', corner: 'BL' }]
+    },
+    {
+      x: 3,
+      y: 3,
+      spaces: null,
+      kind: 'filled',
+      rangedFloor: 2,
+      closeFloor: 1,
+      notes: 'Rearrange + bond swap.',
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'TR' }
-      ] },
-    { x: 5, y: 3, spaces: 4, kind: 'open', rangedFloor: 3, closeFloor: 2, implantsFloor: 2,
+      ]
+    },
+    {
+      x: 5,
+      y: 3,
+      spaces: 4,
+      kind: 'open',
+      rangedFloor: 3,
+      closeFloor: 2,
+      implantsFloor: 2,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'BL' },
         { satellite: 'implants', corner: 'BR' }
-      ] },
-    { x: 7, y: 3, spaces: 5, kind: 'open', implantsFloor: 3, rangedFloor: 3,
+      ]
+    },
+    {
+      x: 7,
+      y: 3,
+      spaces: 5,
+      kind: 'open',
+      implantsFloor: 3,
+      rangedFloor: 3,
       satellitePlacements: [
         { satellite: 'implants', corner: 'TL' },
         { satellite: 'ranged', corner: 'TR' }
-      ] },
-    { x: 2, y: 4, spaces: null, kind: 'double_filled', notes: 'New keyword + rearrange + bond swap.',
-      satellitePlacements: [] },
-    { x: 6, y: 4, spaces: null, kind: 'double_filled', notes: 'New keyword + rearrange + bond swap.',
-      satellitePlacements: [] }
+      ]
+    },
+    { x: 2, y: 4, spaces: null, kind: 'double_filled', notes: 'New keyword + rearrange + bond swap.', satellitePlacements: [] },
+    { x: 6, y: 4, spaces: null, kind: 'double_filled', notes: 'New keyword + rearrange + bond swap.', satellitePlacements: [] }
   ]
 };
 
@@ -250,61 +353,114 @@ export const PRIME_GRAPH: TypeGraphDef = {
     rangedStart: 1
   },
   nodes: [
-    { x: 1, y: 1, spaces: null, kind: 'open', rangedFloor: 2, closeFloor: 2, notes: 'First advancement — both C/R 2. No new space.',
+    {
+      x: 1,
+      y: 1,
+      spaces: null,
+      kind: 'open',
+      rangedFloor: 2,
+      closeFloor: 2,
+      notes: 'First advancement — both C/R 2. No new space.',
       satellitePlacements: [
         { satellite: 'ranged', corner: 'BL' },
         { satellite: 'close', corner: 'BR' }
-      ] },
-    { x: 3, y: 1, spaces: 2, kind: 'open', rangedFloor: 3, closeFloor: 3,
+      ]
+    },
+    {
+      x: 3,
+      y: 1,
+      spaces: 2,
+      kind: 'open',
+      rangedFloor: 3,
+      closeFloor: 3,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'BL' },
         { satellite: 'close', corner: 'TR' }
-      ] },
-    { x: 5, y: 1, spaces: 3, kind: 'open', rangedFloor: 4, closeFloor: 4,
+      ]
+    },
+    {
+      x: 5,
+      y: 1,
+      spaces: 3,
+      kind: 'open',
+      rangedFloor: 4,
+      closeFloor: 4,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'BL' }
-      ] },
-    { x: 7, y: 1, spaces: 4, kind: 'double', rangedFloor: 5, notes: 'New keyword.',
-      satellitePlacements: [
-        { satellite: 'ranged', corner: 'TR' }
-      ] },
-    { x: 2, y: 2, spaces: 2, kind: 'open', implantsFloor: 1,
-      satellitePlacements: [
-        { satellite: 'implants', corner: 'TL' }
-      ] },
-    { x: 4, y: 2, spaces: 3, kind: 'double_filled', implantsFloor: 2, notes: 'New keyword + rearrange.',
-      satellitePlacements: [
-        { satellite: 'implants', corner: 'TL' }
-      ] },
-    { x: 6, y: 2, spaces: 4, kind: 'open', implantsFloor: 3,
-      satellitePlacements: [
-        { satellite: 'implants', corner: 'BL' }
-      ] },
-    { x: 1, y: 3, spaces: 2, kind: 'open', closeFloor: 3, rangedFloor: 2,
+      ]
+    },
+    {
+      x: 7,
+      y: 1,
+      spaces: 4,
+      kind: 'double',
+      rangedFloor: 5,
+      notes: 'New keyword.',
+      satellitePlacements: [{ satellite: 'ranged', corner: 'TR' }]
+    },
+    { x: 2, y: 2, spaces: 2, kind: 'open', implantsFloor: 1, satellitePlacements: [{ satellite: 'implants', corner: 'TL' }] },
+    {
+      x: 4,
+      y: 2,
+      spaces: 3,
+      kind: 'double_filled',
+      implantsFloor: 2,
+      notes: 'New keyword + rearrange.',
+      satellitePlacements: [{ satellite: 'implants', corner: 'TL' }]
+    },
+    { x: 6, y: 2, spaces: 4, kind: 'open', implantsFloor: 3, satellitePlacements: [{ satellite: 'implants', corner: 'BL' }] },
+    {
+      x: 1,
+      y: 3,
+      spaces: 2,
+      kind: 'open',
+      closeFloor: 3,
+      rangedFloor: 2,
       satellitePlacements: [
         { satellite: 'close', corner: 'TL' },
         { satellite: 'ranged', corner: 'BL' }
-      ] },
-    { x: 3, y: 3, spaces: 3, kind: 'open', rangedFloor: 3, closeFloor: 4,
+      ]
+    },
+    {
+      x: 3,
+      y: 3,
+      spaces: 3,
+      kind: 'open',
+      rangedFloor: 3,
+      closeFloor: 4,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'TR' }
-      ] },
-    { x: 5, y: 3, spaces: 4, kind: 'open', rangedFloor: 4, closeFloor: 5,
+      ]
+    },
+    {
+      x: 5,
+      y: 3,
+      spaces: 4,
+      kind: 'open',
+      rangedFloor: 4,
+      closeFloor: 5,
       satellitePlacements: [
         { satellite: 'ranged', corner: 'TL' },
         { satellite: 'close', corner: 'TR' }
-      ] },
-    { x: 7, y: 3, spaces: null, kind: 'open', closeFloor: 6, rangedFloor: 5, notes: 'No new space.',
+      ]
+    },
+    {
+      x: 7,
+      y: 3,
+      spaces: null,
+      kind: 'open',
+      closeFloor: 6,
+      rangedFloor: 5,
+      notes: 'No new space.',
       satellitePlacements: [
         { satellite: 'close', corner: 'TL' },
         { satellite: 'ranged', corner: 'TR' }
-      ] },
-    { x: 2, y: 4, spaces: 3, kind: 'double', notes: 'New keyword.',
-      satellitePlacements: [] },
-    { x: 6, y: 4, spaces: 4, kind: 'double', notes: 'New keyword.',
-      satellitePlacements: [] }
+      ]
+    },
+    { x: 2, y: 4, spaces: 3, kind: 'double', notes: 'New keyword.', satellitePlacements: [] },
+    { x: 6, y: 4, spaces: 4, kind: 'double', notes: 'New keyword.', satellitePlacements: [] }
   ]
 };
 
@@ -341,10 +497,7 @@ export function getTypeGraph(type: CharacterType): TypeGraphDef {
 //
 // Origo (0,0) is unplotted; the same rule applies (only (1,1) is within
 // Manhattan 2 of origo for all three type-graphs).
-export function legalNextNodes(
-  graph: TypeGraphDef,
-  pos: { x: number; y: number }
-): TypeGraphNode[] {
+export function legalNextNodes(graph: TypeGraphDef, pos: { x: number; y: number }): TypeGraphNode[] {
   return graph.nodes.filter((n) => {
     if (n.x === pos.x && n.y === pos.y) return false;
     const dist = Math.abs(n.x - pos.x) + Math.abs(n.y - pos.y);
@@ -352,11 +505,7 @@ export function legalNextNodes(
   });
 }
 
-export function isLegalNextNode(
-  graph: TypeGraphDef,
-  pos: { x: number; y: number },
-  target: { x: number; y: number }
-): boolean {
+export function isLegalNextNode(graph: TypeGraphDef, pos: { x: number; y: number }, target: { x: number; y: number }): boolean {
   if (target.x === pos.x && target.y === pos.y) return false;
   const dist = Math.abs(target.x - pos.x) + Math.abs(target.y - pos.y);
   if (dist === 0 || dist > 2) return false;
@@ -386,10 +535,7 @@ export const ORTHOGONAL_DIRS: { dir: OrthogonalDir; dx: number; dy: number; symb
 ];
 
 /** Apply a one-step direction to a position; clamps to grid bounds. */
-export function applyDir(
-  pos: { x: number; y: number },
-  dir: OrthogonalDir
-): { x: number; y: number } | null {
+export function applyDir(pos: { x: number; y: number }, dir: OrthogonalDir): { x: number; y: number } | null {
   const offset = ORTHOGONAL_DIRS.find((d) => d.dir === dir);
   if (!offset) return null;
   const nx = pos.x + offset.dx;
@@ -399,9 +545,6 @@ export function applyDir(
 }
 
 /** Look up a plotted node at an exact (x, y); null if the cell is intermediate. */
-export function findNodeAt(
-  graph: TypeGraphDef,
-  pos: { x: number; y: number }
-): TypeGraphNode | null {
+export function findNodeAt(graph: TypeGraphDef, pos: { x: number; y: number }): TypeGraphNode | null {
   return graph.nodes.find((n) => n.x === pos.x && n.y === pos.y) ?? null;
 }

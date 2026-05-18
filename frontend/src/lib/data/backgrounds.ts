@@ -337,7 +337,7 @@ export const BACKGROUNDS_DATA: BackgroundDef[] = [
     label: 'Worker',
     blurb: 'Hardship-tested labourer; improviser; sometimes an organiser.',
     description:
-      'Used to dealing with plenty of hardships and good at improvising. Ready to make a pile of e-credits whenever possible. Sometimes an idealist or a faction (union) representative, but more often someone who does not care for politicians or diplomacy.',
+      'Used to dealing with plenty of hardships and good at improvising. Ready to make a pile of parts whenever possible. Sometimes an idealist or a faction (union) representative, but more often someone who does not care for politicians or diplomacy.',
     bonusSummary: '+2 Bulk, Tech and Close',
     examples: ['Miner', 'Builder', 'Mender', 'Demolitions worker', 'Union upstart'],
     closeBonus: 2,

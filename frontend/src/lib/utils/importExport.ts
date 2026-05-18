@@ -8,11 +8,7 @@
 import { save, open } from '@tauri-apps/plugin-dialog';
 import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
 import type { SWCharacter } from '$lib/models/SWCharacter';
-import {
-  cloneCharacterWithNewIds,
-  CURRENT_SCHEMA_VERSION,
-  normalizeCharacter
-} from '$lib/models/SWCharacter';
+import { cloneCharacterWithNewIds, CURRENT_SCHEMA_VERSION, normalizeCharacter } from '$lib/models/SWCharacter';
 import { CHARACTER_TYPES, LIFE_FORMS, BACKGROUNDS } from '$lib/models/Enums';
 
 // ============================================
@@ -132,9 +128,7 @@ export function parseImportText(text: string): SWCharacter[] {
   // enum strings are rejected outright.
   const valid = raw.filter(isValidCharacterShape) as SWCharacter[];
   if (raw.length > 0 && valid.length === 0) {
-    throw new Error(
-      "JSON parsed, but no record matches the SW character schema (check 'type', 'lifeForm', and 'background' fields)."
-    );
+    throw new Error("JSON parsed, but no record matches the SW character schema (check 'type', 'lifeForm', and 'background' fields).");
   }
   return valid.map((c) => cloneCharacterWithNewIds(normalizeCharacter(c)));
 }

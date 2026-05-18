@@ -19,6 +19,25 @@
 
   // See WeaponEditor — `untrack` makes the "initial value only" intent explicit.
   let expanded = $state(untrack(() => startExpanded));
+
+  const carriedState = $derived(armor.stashed ? 'Stashed' : armor.equipped ? 'Equipped' : 'Carried');
+  const carriedStateClass = $derived(
+    armor.stashed
+      ? 'bg-violet-500/15 text-violet-300 border border-violet-500/30'
+      : armor.equipped
+        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+        : 'bg-neutral-700/50 text-neutral-400 border border-neutral-600'
+  );
+
+  function setEquipped(next: boolean) {
+    armor.equipped = next;
+    if (next) armor.stashed = false;
+  }
+
+  function setStashed(next: boolean) {
+    armor.stashed = next;
+    if (next) armor.equipped = false;
+  }
 </script>
 
 <div class="rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
@@ -39,23 +58,33 @@
           role="switch"
           tabindex="0"
           aria-checked={armor.equipped}
-          onclick={(e) => { e.stopPropagation(); armor.equipped = !armor.equipped; }}
+          onclick={(e) => {
+            e.stopPropagation();
+            setEquipped(!armor.equipped);
+          }}
           onkeydown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               e.stopPropagation();
-              armor.equipped = !armor.equipped;
+              setEquipped(!armor.equipped);
             }
           }}
-          class="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition cursor-pointer {armor.equipped ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-neutral-700/50 text-neutral-500 border border-neutral-600'}"
+          class="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition cursor-pointer {carriedStateClass}"
         >
           {#if armor.equipped}
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-            Equipped
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"
+              ><path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              /></svg
+            >
           {:else}
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
-            Not equipped
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
+              ><circle cx="12" cy="12" r="10" stroke-width="2" /></svg
+            >
           {/if}
+          {carriedState}
         </span>
         <span class="font-semibold text-neutral-100">{armor.name || 'Unnamed armor'}</span>
         {#if armor.isShield}
@@ -117,7 +146,8 @@
       <TextArea label="Notes" rows={2} placeholder="Notes — design, finish, stitched runes…" bind:value={armor.notes as string} />
 
       <div class="flex flex-wrap items-center gap-4">
-        <Toggle label="Equipped" bind:checked={armor.equipped} />
+        <Toggle label="Equipped" checked={armor.equipped} onchange={setEquipped} />
+        <Toggle label="Stashed" checked={armor.stashed} onchange={setStashed} />
         <Toggle label="Shield" bind:checked={armor.isShield as boolean} />
         <Toggle label="Helmet" bind:checked={armor.isHelmet as boolean} />
         <Toggle label="§ Prime-only" bind:checked={armor.primeOnly as boolean} />

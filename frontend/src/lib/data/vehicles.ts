@@ -6,7 +6,7 @@ export interface VehicleDef {
   id: string;
   name: string;
   use: string;
-  cost: number;        // Parts; "k" notation handled in UI ("8k" → 8000).
+  cost: number; // Parts; "k" notation handled in UI ("8k" → 8000).
   energyPerDay: number; // 0 = none / passive
   /** "vehicle", "drone", "bot". */
   category: 'vehicle' | 'drone' | 'bot';
@@ -22,7 +22,15 @@ export const VEHICLES_DATA: VehicleDef[] = [
   { id: 'submarine', name: 'Submarine', use: 'Exploration, hunting', cost: 500000, energyPerDay: 30, category: 'vehicle' },
   { id: 'walker', name: 'Walker', use: 'Riding machine', cost: 3000, energyPerDay: 5, category: 'vehicle' },
   { id: 'crawler', name: 'Crawler', use: 'Transportation, work', cost: 80000, energyPerDay: 10, category: 'vehicle' },
-  { id: 'roller', name: 'Roller', use: 'Fast personal transports', cost: 2000, energyPerDay: 6, category: 'vehicle', notes: 'Mono-wheel antigrav.' },
+  {
+    id: 'roller',
+    name: 'Roller',
+    use: 'Fast personal transports',
+    cost: 2000,
+    energyPerDay: 6,
+    category: 'vehicle',
+    notes: 'Mono-wheel antigrav.'
+  },
   { id: 'copter_drone', name: 'Copter Drone', use: 'Standard propeller drone', cost: 200, energyPerDay: 1, category: 'drone' },
   { id: 'scorpion_drone', name: 'Scorpion Drone', use: 'Small, crawling drone', cost: 180, energyPerDay: 1, category: 'drone' },
   { id: 'eye_drone', name: 'Eye Drone', use: 'Surveillance drone', cost: 160, energyPerDay: 1, category: 'drone' },

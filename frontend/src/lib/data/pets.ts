@@ -6,7 +6,7 @@ export interface PetDef {
   id: string;
   name: string;
   use: string;
-  cost: number;        // Parts
+  cost: number; // Parts
   upkeepPerWeek: number; // Parts per week
   notes?: string;
 }

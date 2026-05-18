@@ -31,7 +31,10 @@
   // Centralised opt lists — same vocabulary as CharacterEditForm previously
   // used so the data round-trips cleanly with old characters.
   const DAMAGE_OPTS = ['d3', 'd4', 'd6', 'd8', 'd10', 'd12', 'special', 'none'].map((d) => ({ value: d, label: d }));
-  const DAMAGE_TYPE_OPTS = ['slashing', 'piercing', 'bludgeoning', 'kinetic', 'energy', 'non-injuring', 'varies'].map((d) => ({ value: d, label: d }));
+  const DAMAGE_TYPE_OPTS = ['slashing', 'piercing', 'bludgeoning', 'kinetic', 'energy', 'non-injuring', 'varies'].map((d) => ({
+    value: d,
+    label: d
+  }));
   const RANGE_OPTS = [
     { value: 'melee', label: 'Melee' },
     { value: 'room', label: 'Room' },
@@ -55,14 +58,32 @@
       lastSyncedId = weapon.id;
     }
   });
+
+  const carriedState = $derived(weapon.stashed ? 'Stashed' : weapon.equipped ? 'Equipped' : 'Carried');
+  const carriedStateClass = $derived(
+    weapon.stashed
+      ? 'bg-violet-500/15 text-violet-300 border border-violet-500/30'
+      : weapon.equipped
+        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+        : 'bg-neutral-700/50 text-neutral-400 border border-neutral-600'
+  );
+
+  function setEquipped(next: boolean) {
+    weapon.equipped = next;
+    if (next) weapon.stashed = false;
+  }
+
+  function setStashed(next: boolean) {
+    weapon.stashed = next;
+    if (next) weapon.equipped = false;
+  }
 </script>
 
 <div class="rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
   <!--
     Header is a real <button> so keyboard users (Tab + Enter/Space) can
-    expand the card. The equipped pill below is a nested <button>; we
-    set `type="button"` on both and `stopPropagation` on the inner so
-    toggling Equipped doesn't also flip the expansion.
+    expand the card. The state pill below is a role="switch" span with
+    `stopPropagation` so toggling Equipped doesn't also flip expansion.
   -->
   <button
     type="button"
@@ -76,23 +97,33 @@
           role="switch"
           tabindex="0"
           aria-checked={weapon.equipped}
-          onclick={(e) => { e.stopPropagation(); weapon.equipped = !weapon.equipped; }}
+          onclick={(e) => {
+            e.stopPropagation();
+            setEquipped(!weapon.equipped);
+          }}
           onkeydown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               e.stopPropagation();
-              weapon.equipped = !weapon.equipped;
+              setEquipped(!weapon.equipped);
             }
           }}
-          class="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition cursor-pointer {weapon.equipped ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-neutral-700/50 text-neutral-500 border border-neutral-600'}"
+          class="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition cursor-pointer {carriedStateClass}"
         >
           {#if weapon.equipped}
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-            Equipped
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"
+              ><path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              /></svg
+            >
           {:else}
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
-            Not equipped
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
+              ><circle cx="12" cy="12" r="10" stroke-width="2" /></svg
+            >
           {/if}
+          {carriedState}
         </span>
         <span class="font-semibold text-neutral-100">{weapon.name || 'Unnamed weapon'}</span>
       </div>
@@ -123,7 +154,8 @@
 
     {#if specialsText}
       <div class="mt-2 p-2 rounded bg-yellow-500/10 border border-yellow-500/20 text-xs text-yellow-300">
-        <span class="font-medium">Specials:</span> {specialsText}
+        <span class="font-medium">Specials:</span>
+        {specialsText}
       </div>
     {/if}
 
@@ -160,10 +192,16 @@
         committed array is rebuilt on every keystroke so the header summary
         reflects the value, but the input box reads from the buffer.
       -->
-      <Input label="Specials (comma-separated)" placeholder="Burst, Silencer" bind:value={specialsBuffer}
+      <Input
+        label="Specials (comma-separated)"
+        placeholder="Burst, Silencer"
+        bind:value={specialsBuffer}
         onchange={(v: string) => {
           specialsBuffer = v;
-          const parts = v.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+          const parts = v
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
           weapon.specials = parts.length > 0 ? parts : [];
         }}
       />
@@ -171,7 +209,10 @@
       <TextArea label="Notes" rows={2} placeholder="Notes — location, condition, marks…" bind:value={weapon.notes as string} />
 
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <Toggle label="Equipped" bind:checked={weapon.equipped} />
+        <div class="flex flex-wrap items-center gap-4">
+          <Toggle label="Equipped" checked={weapon.equipped} onchange={setEquipped} />
+          <Toggle label="Stashed" checked={weapon.stashed} onchange={setStashed} />
+        </div>
         <button
           type="button"
           onclick={ondelete}

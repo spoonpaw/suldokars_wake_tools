@@ -9,10 +9,10 @@ import type { LifeForm } from '$lib/models/Enums';
 
 /** d6 → P, indexed by life-form group. */
 export const STARTING_PARTS: Record<'blood' | 'alien' | 'tank_born' | 'construct', number[]> = {
-  blood:      [50, 100, 150, 200, 250, 300],
-  alien:      [25,  50,  75, 100, 125, 150],
-  tank_born:  [50,  80, 110, 140, 170, 200],
-  construct:  [75, 100, 125, 150, 175, 200]
+  blood: [50, 100, 150, 200, 250, 300],
+  alien: [25, 50, 75, 100, 125, 150],
+  tank_born: [50, 80, 110, 140, 170, 200],
+  construct: [75, 100, 125, 150, 175, 200]
 };
 
 /** Group used to look up the d6 row. */

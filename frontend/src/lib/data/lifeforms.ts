@@ -60,10 +60,7 @@ export const LIFE_FORMS_DATA: LifeFormDef[] = [
     closeBonus: 2,
     rangedBonus: 2,
     combatBonusMode: 'both',
-    notes: [
-      '+2 to four stacks, +1 to two stacks (player assigns).',
-      'Most implants designed for bloods — easiest to upgrade.'
-    ]
+    notes: ['+2 to four stacks, +1 to two stacks (player assigns).', 'Most implants designed for bloods — easiest to upgrade.']
   },
   {
     id: 'palp_alien',
@@ -95,7 +92,7 @@ export const LIFE_FORMS_DATA: LifeFormDef[] = [
     group: 'alien',
     blurb: "Gills, webbing, scaled skin. Speaks K'lsixla. Needs water.",
     description:
-      "The Amphibious Alien has gills on the sides of the neck, webbing and scaled skin. She can breathe under water and needs to do so at least one half hour per day or become lethargic (only clean rolls) and pass out into a coma in d days. Aliens look like bloods in most respects but live in symbiosis with the XLA, resulting in physical variations.",
+      'The Amphibious Alien has gills on the sides of the neck, webbing and scaled skin. She can breathe under water and needs to do so at least one half hour per day or become lethargic (only clean rolls) and pass out into a coma in d days. Aliens look like bloods in most respects but live in symbiosis with the XLA, resulting in physical variations.',
     bonusSummary: '(Two stacks +2, four stacks +1, +2 to Close and Ranged)',
     plus2Count: 2,
     plus1Count: 4,

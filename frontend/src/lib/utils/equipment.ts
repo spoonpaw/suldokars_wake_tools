@@ -1,6 +1,6 @@
 /**
  * equipment.ts - Helpers to add a character item from one of the SW catalogs
- * (weapons / armor / gear / vehicles / pets). Each helper:
+ * (weapons / armor / gear / kits / vehicles / pets). Each helper:
  *   - Generates a fresh `id`.
  *   - Copies all relevant stat fields from the catalog entry.
  *   - Returns the freshly built item — caller appends it to the character.
@@ -10,19 +10,14 @@
  *     ammoLoaded/ammoSpare seeds (player fills in).
  *   - ArmorDef → CharacterArmor preserves isShield/isHelmet/primeOnly flags
  *     and starts unequipped (player toggles).
- *   - GearDef / VehicleDef / PetDef → EquipmentItem with sensible defaults
+ *   - GearDef / KitDef / VehicleDef / PetDef → EquipmentItem with sensible defaults
  *     for location/cost. Energy draw label is mirrored verbatim from
  *     `GearDef.energy` so the sheet shows e.g. "1e/d" or "1e/w" as-is.
  */
 
-import type { WeaponDef, ArmorDef, GearDef, VehicleDef, PetDef } from '$lib/data';
-import { WEAPONS_DATA, ARMOR_DATA, GEAR_DATA, VEHICLES_DATA, PETS_DATA } from '$lib/data';
-import type {
-  CharacterWeapon,
-  CharacterArmor,
-  EquipmentItem,
-  EquipmentLocation
-} from '$lib/models';
+import type { WeaponDef, ArmorDef, GearDef, KitDef, VehicleDef, PetDef } from '$lib/data';
+import { WEAPONS_DATA, ARMOR_DATA, GEAR_DATA } from '$lib/data';
+import type { CharacterWeapon, CharacterArmor, EquipmentItem, EquipmentLocation } from '$lib/models';
 
 /** Stable id helper — UUID where available, fallback for older runtimes. */
 export function newItemId(): string {
@@ -56,6 +51,7 @@ export function weaponFromDef(def: WeaponDef): CharacterWeapon {
     specials: def.specials.length > 0 ? [...def.specials] : [],
     notes: def.notes ?? '',
     equipped: true,
+    stashed: false,
     // ammo seeded to "full clip loaded, no spare" so a freshly-picked
     // weapon is immediately usable in play.
     ammoLoaded: def.clip,
@@ -86,7 +82,8 @@ export function armorFromDef(def: ArmorDef): CharacterArmor {
     primeOnly: def.primeOnly,
     isShield: def.isShield ?? false,
     isHelmet: def.isHelmet ?? false,
-    equipped: false
+    equipped: false,
+    stashed: false
   };
 }
 
@@ -103,22 +100,43 @@ export function gearFromDef(def: GearDef): EquipmentItem {
   // re-target after add. `notes` is always seeded as '' (catalog notes
   // mirrored verbatim) so the GearEditor TextArea bind doesn't see undefined.
   const isBackpackish = /backpack|valise/i.test(def.name);
-  const defaultLocation: EquipmentLocation = isBackpackish
-    ? 'slot10'
-    : def.slots === 0
-      ? 'no_slot'
-      : 'worn';
+  const isCarrierBot = /carrier bot/i.test(def.name);
+  const defaultLocation: EquipmentLocation = isBackpackish ? 'slot10' : def.slots === 0 ? 'no_slot' : 'worn';
+  const isContainer = isBackpackish || isCarrierBot;
   return {
     id: newItemId(),
     name: def.name,
     slots: def.slots,
     cost: def.cost,
     location: defaultLocation,
+    equipped: true,
+    stashed: false,
+    isContainer,
+    containerSlots: isCarrierBot ? 10 : isBackpackish ? 5 : 0,
     notes: def.notes ?? '',
     kit: def.kit,
     // Catalog energy is a free string ("1e/d", "2e/w", etc.); leave undefined
     // when absent so the editor doesn't display "" as if "no draw configured".
     energyDraw: def.energy
+  };
+}
+
+export function kitFromDef(def: KitDef): EquipmentItem {
+  const isPortable = def.slots > 0;
+  const buildNote = def.buildableWithKit ? `Buildable with ${def.buildableWithKit} kit.` : 'Not field-buildable from a kit.';
+  const notes = [def.notes, buildNote].filter(Boolean).join(' ');
+  return {
+    id: newItemId(),
+    name: def.id === 'M' ? 'Maker (M)' : def.id === 'B' ? 'Blueprint (B)' : `${def.name} Kit (${def.id})`,
+    slots: def.slots,
+    cost: def.cost,
+    location: isPortable ? 'worn' : 'storage',
+    equipped: false,
+    stashed: !isPortable,
+    isContainer: false,
+    containerSlots: 0,
+    notes,
+    kit: def.buildableWithKit ?? undefined
   };
 }
 
@@ -136,6 +154,10 @@ export function vehicleFromDef(def: VehicleDef): EquipmentItem {
     slots: 0,
     cost: def.cost,
     location: 'storage',
+    equipped: false,
+    stashed: true,
+    isContainer: false,
+    containerSlots: 0,
     notes: `${baseNotes}${def.use}${energyNote}`,
     energyDraw: def.energyPerDay > 0 ? `${def.energyPerDay}e/d` : undefined
   };
@@ -150,6 +172,10 @@ export function petFromDef(def: PetDef): EquipmentItem {
     slots: 0,
     cost: def.cost,
     location: 'storage',
+    equipped: false,
+    stashed: true,
+    isContainer: false,
+    containerSlots: 0,
     notes: `${baseNotes}${def.use}${upkeepNote}`
   };
 }
@@ -171,6 +197,7 @@ export function blankWeapon(): CharacterWeapon {
     range: 'range',
     cost: 0,
     equipped: true,
+    stashed: false,
     notes: '',
     specials: []
   };
@@ -186,6 +213,7 @@ export function blankArmor(): CharacterArmor {
     slots: 1,
     cost: 0,
     equipped: false,
+    stashed: false,
     notes: '',
     isShield: false,
     isHelmet: false,
@@ -201,6 +229,10 @@ export function blankGear(): EquipmentItem {
     slots: 1,
     cost: 0,
     location: 'worn',
+    equipped: true,
+    stashed: false,
+    isContainer: false,
+    containerSlots: 0,
     notes: ''
   };
 }

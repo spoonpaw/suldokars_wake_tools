@@ -48,8 +48,7 @@ export const BASIC_FORMULAE: BasicFormulaDef[] = [
     formulaCost: '2',
     alien: { name: 'Roots', cost: '1' },
     construct: { name: '(Force) Net', cost: '2' },
-    description:
-      'Nanite or actual cords entangle and hold a victim for 3 rounds. A DN 20 Speed roll negates this effect.'
+    description: 'Nanite or actual cords entangle and hold a victim for 3 rounds. A DN 20 Speed roll negates this effect.'
   },
   {
     id: 'build',
@@ -87,8 +86,7 @@ export const BASIC_FORMULAE: BasicFormulaDef[] = [
     formulaCost: '1',
     alien: { name: 'Poison', cost: '1' },
     construct: { name: 'Poison', cost: '1' },
-    description:
-      'Give a victim 1 point of damage per round, for d10 rounds. A Bulk roll halves the duration.'
+    description: 'Give a victim 1 point of damage per round, for d10 rounds. A Bulk roll halves the duration.'
   },
   {
     id: 'force_armor',
@@ -135,8 +133,7 @@ export const BASIC_FORMULAE: BasicFormulaDef[] = [
     name: 'Open Lock',
     formulaCost: '2',
     construct: { name: 'Unikey', cost: '1' },
-    description:
-      'Open any mechanical or electronic lock with max DN 20. Nanite locks may succeed but pay ed6 extra Harm.'
+    description: 'Open any mechanical or electronic lock with max DN 20. Nanite locks may succeed but pay ed6 extra Harm.'
   },
   {
     id: 'purify',
@@ -152,8 +149,7 @@ export const BASIC_FORMULAE: BasicFormulaDef[] = [
     formulaCost: '1',
     alien: { name: 'Resistance', cost: '0' },
     construct: { name: 'Resistance', cost: '0' },
-    description:
-      'Gain resistance for 1 hour against heat, cold, radiation, or disease (choose each use).'
+    description: 'Gain resistance for 1 hour against heat, cold, radiation, or disease (choose each use).'
   },
   {
     id: 'send_thought',
@@ -183,8 +179,7 @@ export const BASIC_FORMULAE: BasicFormulaDef[] = [
     name: 'Split Space',
     formulaCost: '1',
     construct: { name: 'Neural Overclock', cost: '1' },
-    description:
-      'Split a space in two for 1 turn; afterwards reverts and the original space is used for the day.'
+    description: 'Split a space in two for 1 turn; afterwards reverts and the original space is used for the day.'
   },
   {
     id: 'spot_eyes',

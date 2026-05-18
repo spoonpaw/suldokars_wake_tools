@@ -6,8 +6,8 @@ prerequisites and the project-init flow.
 
 ## Build status
 
-Mobile builds are configured but not yet exercised in this repo. The desktop
-build is the immediate focus.
+Mobile project scaffolding exists. The final public release requires App Store
+and Google Play submission; track that process in `MOBILE_RELEASE.md`.
 
 ## Android
 
@@ -48,7 +48,7 @@ Already configured in `tauri.conf.json`:
 
 ```json
 "bundle": {
-  "iOS": { "developmentTeam": "322C52MLFV" }
+  "iOS": { "developmentTeam": "Y4ZK5B3854" }
 }
 ```
 

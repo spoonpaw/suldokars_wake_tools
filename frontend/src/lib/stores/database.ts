@@ -82,17 +82,12 @@ export interface CharacterRow {
 
 export async function getAllCharacters(): Promise<CharacterRow[]> {
   const database = await getDatabase();
-  return await database.select<CharacterRow[]>(
-    'SELECT * FROM sw_characters ORDER BY updated_at DESC'
-  );
+  return await database.select<CharacterRow[]>('SELECT * FROM sw_characters ORDER BY updated_at DESC');
 }
 
 export async function getCharacterById(id: string): Promise<CharacterRow | null> {
   const database = await getDatabase();
-  const result = await database.select<CharacterRow[]>(
-    'SELECT * FROM sw_characters WHERE id = ?',
-    [id]
-  );
+  const result = await database.select<CharacterRow[]>('SELECT * FROM sw_characters WHERE id = ?', [id]);
   return result[0] ?? null;
 }
 
@@ -147,19 +142,13 @@ export async function deleteAllCharacters(): Promise<void> {
 
 export async function getSetting(key: string): Promise<string | null> {
   const database = await getDatabase();
-  const result = await database.select<{ value: string }[]>(
-    'SELECT value FROM settings WHERE key = ?',
-    [key]
-  );
+  const result = await database.select<{ value: string }[]>('SELECT value FROM settings WHERE key = ?', [key]);
   return result[0]?.value ?? null;
 }
 
 export async function setSetting(key: string, value: string): Promise<void> {
   const database = await getDatabase();
-  await database.execute(
-    `INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`,
-    [key, value]
-  );
+  await database.execute(`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`, [key, value]);
 }
 
 export async function deleteSetting(key: string): Promise<void> {

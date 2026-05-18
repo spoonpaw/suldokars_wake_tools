@@ -15,9 +15,13 @@
     type: CharacterType;
     /** When true, render expanded with all rules + bonds. */
     expanded?: boolean;
+    /** For Core characters — currently chosen deep bond. The matching
+     *  bond card is highlighted + auto-expanded so the player sees their
+     *  active bond's mechanics first. */
+    activeBond?: 'holoh' | 'nanite_cloud' | 'subspace_nanites' | undefined;
   }
 
-  let { type, expanded = $bindable(true) }: Props = $props();
+  let { type, expanded = $bindable(true), activeBond = undefined }: Props = $props();
 
   const def = $derived(getType(type));
 </script>
@@ -77,11 +81,38 @@
       {#if def.bonds && def.bonds.length > 0}
         <div>
           <h4 class="mb-1 font-semibold text-neutral-100">Deep bonds (Core)</h4>
+          <p class="mb-2 text-[11px] italic text-neutral-500">Switch bond at any black-fill node on the type graph.</p>
           <ul class="space-y-2">
             {#each def.bonds as b (b.id)}
-              <li class="rounded-lg border border-neutral-800 bg-neutral-900/40 p-2">
-                <p class="text-sm font-semibold text-neutral-100">{b.label}</p>
-                <p class="text-xs text-neutral-400">{b.description}</p>
+              {@const isActive = activeBond === b.id}
+              <li class={`rounded-lg border p-2 ${isActive ? 'border-cyan-400 bg-cyan-900/20' : 'border-neutral-800 bg-neutral-900/40'}`}>
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-sm font-semibold text-neutral-100">{b.label}</p>
+                  {#if isActive}
+                    <Badge variant="info">active</Badge>
+                  {/if}
+                </div>
+                <p class="mt-1 text-xs text-neutral-300">{b.description}</p>
+                {#if b.mechanics && b.mechanics.length > 0}
+                  <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-neutral-400">
+                    {#each b.mechanics as m}
+                      <li>{m}</li>
+                    {/each}
+                  </ul>
+                {/if}
+                {#if b.subSection}
+                  <div class="mt-2 rounded-md border border-neutral-800/80 bg-neutral-950/40 p-2">
+                    <p class="text-xs font-semibold text-cyan-300">{b.subSection.title}</p>
+                    {#if b.subSection.intro}
+                      <p class="mt-1 text-[11px] text-neutral-400">{b.subSection.intro}</p>
+                    {/if}
+                    <ul class="mt-1 list-disc space-y-1 pl-5 text-[11px] text-neutral-300">
+                      {#each b.subSection.bullets as sb}
+                        <li>{sb}</li>
+                      {/each}
+                    </ul>
+                  </div>
+                {/if}
               </li>
             {/each}
           </ul>

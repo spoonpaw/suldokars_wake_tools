@@ -218,18 +218,38 @@
   <title>Suldokar's Wake Tools</title>
 </svelte:head>
 
-<main class="mx-auto max-w-4xl px-4 py-6 pb-24">
-  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-2xl font-bold text-neutral-100">Characters</h1>
-    <div class="flex flex-wrap gap-2">
+<main class="mx-auto max-w-4xl px-4 pb-24">
+  <div
+    class="sticky z-30 -mx-4 mb-4 border-b border-neutral-800/70 px-4 pt-4 pb-3 shadow-sm"
+    style="top: var(--navbar-h, 0px); background: var(--sticky-bg, #0b0c0e);"
+  >
+    <div class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-bold leading-tight text-neutral-100">
+          Characters
+          {#if characters.length > 0}
+            <span
+              class="ml-2 inline-flex align-middle rounded-full bg-neutral-800 px-2 py-0.5 text-sm font-medium text-neutral-400"
+            >
+              {characters.length}
+            </span>
+          {/if}
+        </h1>
+      </div>
+      <Button onclick={handleNew} size="sm">
+        <span class="sm:hidden">New</span>
+        <span class="hidden sm:inline">New Character</span>
+      </Button>
+    </div>
+
+    <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
       {#if characters.length > 0}
-        <Button variant="ghost" onclick={toggleSelectMode}>
+        <Button variant="ghost" size="sm" onclick={toggleSelectMode}>
           {selectMode ? 'Done' : 'Select'}
         </Button>
       {/if}
-      <Button variant="ghost" onclick={() => (showImport = true)}>Import</Button>
-      <Button variant="ghost" onclick={handleExport} disabled={!characters.length}>Export</Button>
-      <Button onclick={handleNew}>New Character</Button>
+      <Button variant="ghost" size="sm" onclick={() => (showImport = true)}>Import</Button>
+      <Button variant="ghost" size="sm" onclick={handleExport} disabled={!characters.length}>Export</Button>
     </div>
   </div>
 
@@ -248,7 +268,7 @@
         {@const isSelected = selected.has(c.id)}
         <li>
           <div
-            class="relative rounded-xl border bg-neutral-900/60 p-4 transition hover:bg-neutral-900/80 {isSelected
+            class="relative rounded-lg border bg-neutral-900/60 p-3 transition hover:bg-neutral-900/80 {isSelected
               ? 'border-cyan-500/70 ring-1 ring-cyan-500/40'
               : 'border-neutral-800 hover:border-cyan-700/50'}"
           >
@@ -276,31 +296,47 @@
                 : `Open ${c.name || 'character'}`}
             >
               <div class="min-w-0 pr-8">
-                {#if c.title}
-                  <p class="text-xs uppercase tracking-wider text-cyan-400/80">{c.title}</p>
-                {/if}
-                <h2 class="truncate text-lg font-semibold text-neutral-100">
-                  {c.name || 'Unnamed Character'}
-                </h2>
-                <p class="text-sm text-neutral-400">{lineFor(c)}</p>
+                <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <h2 class="truncate text-base font-semibold leading-snug text-neutral-100">
+                    {c.name || 'Unnamed Character'}
+                  </h2>
+                  {#if c.title}
+                    <span class="text-[11px] uppercase text-cyan-400/80">{c.title}</span>
+                  {/if}
+                </div>
+                <p class="text-xs leading-snug text-neutral-400">{lineFor(c)}</p>
               </div>
-              <dl class="mt-3 space-y-2 text-xs text-neutral-400">
+              <dl class="mt-2 space-y-1.5 text-xs leading-snug text-neutral-400">
                 <div>
                   <dt class="text-neutral-500">Stacks</dt>
-                  <dd class="mt-0.5 text-neutral-200">
-                    Archive {c.stacks.archive} · Bulk {c.stacks.bulk} · Ghost {c.stacks.ghost} ·
-                    Morph {c.stacks.morph} · Speed {c.stacks.speed} · Tech {c.stacks.tech}
+                  <dd class="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-neutral-200 tabular-nums">
+                    <span>Archive {c.stacks.archive}</span>
+                    <span>Bulk {c.stacks.bulk}</span>
+                    <span>Ghost {c.stacks.ghost}</span>
+                    <span>Morph {c.stacks.morph}</span>
+                    <span>Speed {c.stacks.speed}</span>
+                    <span>Tech {c.stacks.tech}</span>
                   </dd>
                 </div>
-                <div>
-                  <dt class="text-neutral-500">Combat</dt>
-                  <dd class="mt-0.5 text-neutral-200">Close {c.stacks.close} · Ranged {c.stacks.ranged}</dd>
-                </div>
-                <div>
-                  <dt class="text-neutral-500">Trackers</dt>
-                  <dd class="mt-0.5 text-neutral-200">
-                    Shadow {c.shadow} · Gunta {c.guntaValue} · Beginner Coins {c.beginnerGuntaCoins}
-                  </dd>
+                <div class="flex flex-wrap gap-x-3 gap-y-1 tabular-nums">
+                  <div>
+                    <dt class="text-neutral-500">Combat</dt>
+                    <dd>
+                      <span class="text-neutral-200">Close {c.stacks.close}</span>
+                      <span class="mx-1 text-neutral-600">·</span>
+                      <span class="text-neutral-200">Ranged {c.stacks.ranged}</span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-neutral-500">Trackers</dt>
+                    <dd>
+                      <span class="text-neutral-200">Shadow {c.shadow}</span>
+                      <span class="mx-1 text-neutral-600">·</span>
+                      <span class="text-neutral-200">Gunta {c.guntaValue}</span>
+                      <span class="mx-1 text-neutral-600">·</span>
+                      <span class="text-neutral-200">Beginner Coins {c.beginnerGuntaCoins}</span>
+                    </dd>
+                  </div>
                 </div>
               </dl>
             </button>

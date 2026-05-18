@@ -1,0 +1,2216 @@
+{
+  "app": "sw-tools",
+  "version": 1,
+  "exportedAt": "2026-05-15T09:52:24.050Z",
+  "characters": [
+    {
+      "id": "91bcd422-3b6a-4e8f-ac0f-85a421b87439",
+      "schemaVersion": 1,
+      "name": "Hadrian Volk",
+      "title": "The Stone Templar",
+      "type": "prime",
+      "lifeForm": "blood",
+      "background": "enforcer",
+      "ownedGraphs": [
+        {
+          "id": "4a1e77f0-f9e4-44cf-8b94-5d3203399148",
+          "name": "Default Prime",
+          "source": "default",
+          "graph": {
+            "type": "prime",
+            "origo": {
+              "spaces": 1,
+              "implants": 0,
+              "shadow": 0,
+              "gunta": 0,
+              "closeStart": 1,
+              "rangedStart": 1
+            },
+            "nodes": [
+              {
+                "x": 1,
+                "y": 1,
+                "spaces": null,
+                "kind": "open",
+                "rangedFloor": 2,
+                "closeFloor": 2,
+                "notes": "First advancement — both C/R 2. No new space.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 3,
+                "y": 1,
+                "spaces": 2,
+                "kind": "open",
+                "rangedFloor": 3,
+                "closeFloor": 3,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 5,
+                "y": 1,
+                "spaces": 3,
+                "kind": "open",
+                "rangedFloor": 4,
+                "closeFloor": 4,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 7,
+                "y": 1,
+                "spaces": 4,
+                "kind": "double",
+                "rangedFloor": 5,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 2,
+                "y": 2,
+                "spaces": 2,
+                "kind": "open",
+                "implantsFloor": 1,
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "TL"
+                  }
+                ]
+              },
+              {
+                "x": 4,
+                "y": 2,
+                "spaces": 3,
+                "kind": "double_filled",
+                "implantsFloor": 2,
+                "notes": "New keyword + rearrange.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "TL"
+                  }
+                ]
+              },
+              {
+                "x": 6,
+                "y": 2,
+                "spaces": 4,
+                "kind": "open",
+                "implantsFloor": 3,
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 1,
+                "y": 3,
+                "spaces": 2,
+                "kind": "open",
+                "closeFloor": 3,
+                "rangedFloor": 2,
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "spaces": 3,
+                "kind": "open",
+                "rangedFloor": 3,
+                "closeFloor": 4,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 5,
+                "y": 3,
+                "spaces": 4,
+                "kind": "open",
+                "rangedFloor": 4,
+                "closeFloor": 5,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 7,
+                "y": 3,
+                "spaces": null,
+                "kind": "open",
+                "closeFloor": 6,
+                "rangedFloor": 5,
+                "notes": "No new space.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 2,
+                "y": 4,
+                "spaces": 3,
+                "kind": "double",
+                "notes": "New keyword.",
+                "satellitePlacements": []
+              },
+              {
+                "x": 6,
+                "y": 4,
+                "spaces": 4,
+                "kind": "double",
+                "notes": "New keyword.",
+                "satellitePlacements": []
+              }
+            ]
+          },
+          "acquiredAt": "2026-05-12T21:43:41.626Z"
+        }
+      ],
+      "activeGraphId": "4a1e77f0-f9e4-44cf-8b94-5d3203399148",
+      "origo": {
+        "spaces": 1,
+        "implants": 0,
+        "shadow": 0,
+        "gunta": 0,
+        "closeStart": 1,
+        "rangedStart": 1
+      },
+      "stacks": {
+        "archive": 3,
+        "bulk": 5,
+        "ghost": 7,
+        "morph": 1,
+        "speed": 3,
+        "tech": 3,
+        "close": 5,
+        "ranged": 5
+      },
+      "aptCombatPick": "ranged",
+      "keywords": [
+        {
+          "id": "kw-hadrian-tactics",
+          "name": "Tactics",
+          "stack": "archive",
+          "source": "background",
+          "fromBackground": "enforcer",
+          "notes": "Battlefield analysis, formations."
+        },
+        {
+          "id": "kw-hadrian-threats",
+          "name": "Threats",
+          "stack": "bulk",
+          "source": "background",
+          "fromBackground": "enforcer",
+          "notes": "Raw intimidation through size/strength."
+        },
+        {
+          "id": "kw-hadrian-military",
+          "name": "Military",
+          "stack": "archive",
+          "source": "background",
+          "fromBackground": "enforcer",
+          "notes": "Military lore, Vatori army patterns, equipment."
+        },
+        {
+          "id": "kw-hadrian-religion",
+          "name": "Religion",
+          "stack": "ghost",
+          "source": "cross",
+          "fromBackground": "cultist",
+          "notes": "Watchful Eye liturgy, faith."
+        }
+      ],
+      "languages": ["pidgin", "old_imperial", "hro_hro"],
+      "spaces": [
+        {
+          "id": "sp-hadrian-empty",
+          "active": true,
+          "kind": "other",
+          "name": "(empty at gen — bested-enemy memory slot)",
+          "effect": "Once per 24h, invoke a single-handedly bested enemy: treat a stack as 9, raise damage one step, OR roll Bulk vs harm instead of clean.",
+          "notes": "Fills via single-handed defeats in play."
+        }
+      ],
+      "weapons": [
+        {
+          "id": "wpn-hadrian-spear",
+          "name": "Spear",
+          "damage": "d6",
+          "damageType": "piercing",
+          "slots": 2,
+          "range": "range",
+          "cost": 10,
+          "kit": "weapons",
+          "specials": ["range", "reach", "use as staff"],
+          "notes": "",
+          "twoHanded": true,
+          "equipped": true
+        },
+        {
+          "id": "wpn-hadrian-kinrifle",
+          "name": "Military kin-rifle (Vatori, Sgt Halen's)",
+          "damage": "d6",
+          "damageType": "kinetic",
+          "slots": 1,
+          "range": "long_range",
+          "clip": 5,
+          "ammoLoaded": 3,
+          "ammoSpare": 5,
+          "cost": 0,
+          "kit": "weapons",
+          "specials": ["scope", "range-step over kin-gun"],
+          "notes": "Salvaged from Sgt Halen. Fired 2 at Ferren; 3 loaded + 5 spare.",
+          "twoHanded": true,
+          "equipped": true
+        },
+        {
+          "id": "wpn-hadrian-shotgun",
+          "name": "Shotgun",
+          "damage": "d6",
+          "damageType": "kinetic",
+          "slots": 0.5,
+          "range": "range",
+          "clip": 5,
+          "ammoLoaded": 0,
+          "ammoSpare": 5,
+          "cost": 60,
+          "kit": "weapons",
+          "specials": ["close-up burst"],
+          "notes": "Empty / 5 spare.",
+          "twoHanded": true,
+          "equipped": true
+        }
+      ],
+      "armor": [
+        {
+          "id": "arm-hadrian-aramid",
+          "name": "Aramid Armor",
+          "strength": "kinetic",
+          "weakness": "slashing",
+          "slots": 1,
+          "cost": 100,
+          "kit": "armor",
+          "notes": "Kinetic resist.",
+          "primeOnly": false,
+          "equipped": true,
+          "isShield": false,
+          "isHelmet": false
+        },
+        {
+          "id": "arm-hadrian-helmet",
+          "name": "Helmet",
+          "slots": 0.5,
+          "cost": 50,
+          "kit": "armor",
+          "notes": "Avoids extra crit ed6.",
+          "equipped": true,
+          "isShield": false,
+          "isHelmet": true,
+          "strength": "",
+          "weakness": "",
+          "primeOnly": false
+        }
+      ],
+      "inventory": [
+        {
+          "id": "inv-hadrian-shotgun-mag",
+          "name": "Mag (Kinetic, 5-shot, shotgun spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "worn",
+          "notes": "Shotgun ammo: 5 shots, 0 loaded + 5 spare.",
+          "ammoLoaded": 5
+        },
+        {
+          "id": "inv-hadrian-rifle-mag",
+          "name": "Mag (Kinetic, 5-shot, rifle spare)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "worn",
+          "notes": "Rifle ammo: 8 shots, 3 loaded + 5 spare.",
+          "ammoLoaded": 5
+        },
+        {
+          "id": "inv-hadrian-stim-anti",
+          "name": "Stim Antibiotics",
+          "slots": 0.5,
+          "cost": 15,
+          "location": "worn",
+          "notes": "Wound infection.",
+          "kit": "chemical"
+        },
+        {
+          "id": "inv-hadrian-stim-poison",
+          "name": "Stim Antidote",
+          "slots": 0.5,
+          "cost": 15,
+          "location": "worn",
+          "notes": "Poison guard.",
+          "kit": "chemical"
+        },
+        {
+          "id": "inv-hadrian-stim-rad",
+          "name": "Stim Antirad",
+          "slots": 0.5,
+          "cost": 25,
+          "location": "worn",
+          "notes": "Radiation guard.",
+          "kit": "chemical"
+        },
+        {
+          "id": "inv-hadrian-lighter",
+          "name": "Lighter",
+          "slots": 0.5,
+          "cost": 5,
+          "location": "worn",
+          "notes": "Fire start.",
+          "kit": "general"
+        },
+        {
+          "id": "inv-hadrian-backpack",
+          "name": "Backpack (5-slot container)",
+          "slots": 1,
+          "cost": 5,
+          "location": "slot10",
+          "notes": "+5 internal slots.",
+          "kit": "general"
+        },
+        {
+          "id": "inv-hadrian-blade-storage",
+          "name": "Blade",
+          "slots": 1,
+          "cost": 50,
+          "location": "storage",
+          "notes": "Stored at Mira's apartment; backup melee.",
+          "kit": "weapons"
+        },
+        {
+          "id": "inv-hadrian-general-kit-storage",
+          "name": "General Kit (G)",
+          "slots": 0.5,
+          "cost": 10,
+          "location": "storage",
+          "notes": "Stored at Mira's apartment; kept for future missions.",
+          "kit": "general"
+        },
+        {
+          "id": "inv-hadrian-sleeping-storage",
+          "name": "Sleeping Bag",
+          "slots": 2,
+          "cost": 15,
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house; dumped from backpack to make room for rifle.",
+          "kit": "general"
+        },
+        {
+          "id": "inv-hadrian-food-storage",
+          "name": "Food & Water (5 days)",
+          "slots": 2,
+          "cost": 3,
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house; dumped from backpack."
+        },
+        {
+          "id": "inv-hadrian-rope-storage",
+          "name": "Hook & Wire",
+          "slots": 1,
+          "cost": 8,
+          "location": "storage",
+          "notes": "Stored at Iy-Lan's adept-house; dumped from backpack.",
+          "kit": "tools"
+        },
+        {
+          "id": "inv-hadrian-sigil",
+          "name": "Watchful Eye sigil pinned on left lapel",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Pinned on left lapel."
+        },
+        {
+          "id": "inv-hadrian-icon",
+          "name": "Small icon of the Watchful Eye",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Sewn into the inside of his coat."
+        },
+        {
+          "id": "inv-hadrian-ring",
+          "name": "Saira's wedding band on cord",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Around neck."
+        },
+        {
+          "id": "inv-hadrian-coat",
+          "name": "Long traveling coat over Aramid",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Worn."
+        }
+      ],
+      "formulae": [],
+      "implants": [],
+      "pets": [],
+      "vehicles": [],
+      "purse": {
+        "parts": 900,
+        "smallParts": 0,
+        "energyPacks": 0,
+        "energyCells": 0,
+        "stashedParts": 0,
+        "stashedSmallParts": 0,
+        "stashedEnergyPacks": 0,
+        "stashedEnergyCells": 0
+      },
+      "debts": [],
+      "beginnerGuntaCoins": 0,
+      "guntaValue": 0,
+      "specialCoins": [
+        {
+          "id": "sc-hadrian-liturgy",
+          "name": "The Last Liturgy",
+          "effect": "Once per session, when Hadrian openly invokes Watchful Eye liturgy aloud in front of allies during a tense or pivotal moment (full chant in Old Imperial), he gains 1 Gunta Coin to spend immediately or save until end of scene.",
+          "refresh": "session",
+          "refreshNotes": "Refreshed at Session 05 start, invoked once and spent in scene at Wick Row sniper shot. Refresh at Session 06 start. Ties to Religion (Ghost) + Old Imperial.",
+          "held": false
+        }
+      ],
+      "shadow": 0,
+      "reputation": 0,
+      "harm": {
+        "harmTaken": 0,
+        "harmCap": 20,
+        "naniteTaken": 0,
+        "naniteCap": 20,
+        "status": "unharmed",
+        "statusNote": "",
+        "endRollSuspended": false,
+        "suspendedAtHarm": 0,
+        "dyingTimer": null,
+        "dyingTimerUnit": null,
+        "bleeding": false,
+        "bloodShed": 0,
+        "comaDays": null,
+        "lastAidAttemptLongTurn": null,
+        "detrimentalKeywords": [],
+        "shiftUpPenalty": false
+      },
+      "sessionLog": [],
+      "typeGraphPosition": {
+        "x": 0,
+        "y": 1
+      },
+      "advancementHistory": [
+        {
+          "id": "adv-hadrian-transit-01",
+          "fromNode": {
+            "x": 0,
+            "y": 0
+          },
+          "toNode": {
+            "x": 0,
+            "y": 1
+          },
+          "appliedAt": "2026-05-09T20:00:00.000Z",
+          "changes": ["Moved (0, 0) → (0, 1) — intermediate cell (Shadow + Gunta unchanged)"],
+          "reversible": false,
+          "beforeState": {
+            "shadow": 0,
+            "guntaValue": 0
+          }
+        }
+      ],
+      "stackComposition": {
+        "archive": {
+          "base": 2,
+          "lifeFormBonus": 1,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 3
+        },
+        "bulk": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 5
+        },
+        "ghost": {
+          "base": 3,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 7
+        },
+        "morph": {
+          "base": 0,
+          "lifeFormBonus": 1,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 1
+        },
+        "speed": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 3
+        },
+        "tech": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 3
+        },
+        "close": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 5
+        },
+        "ranged": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 5
+        }
+      },
+      "identity": {
+        "age": "late 30s/early 40s",
+        "gender": "male",
+        "appearance": "Heavy-built. Clean-shaven, close-cut grey hair. Hard eyes, scarred forearms. Tall (~6'2\"). Aramid under a long traveling coat with a visible Watchful Eye sigil on the left lapel.",
+        "speech": "Old Imperial cadence — Watchful Eye education. Pidgin with formal emphasis. Hro-hro learned during a forced detour through Hynian territory in his soldier days.",
+        "habits": "Speaks little. Clipped and direct. Prays three times a day silently — Watchful Eye liturgy. Cracks knuckles before action. Touches the Watchful Eye sigil before going through doors. Eats meals standing up. Sleeps light.",
+        "orientation": "Was married. Widowed 8 years. Doesn't expect to be again.",
+        "demeanor": "Solid, immovable. Stands close to allies. Knows how to take a hit meant for another.",
+        "notes": ""
+      },
+      "hooks": [
+        {
+          "id": "hk-hadrian-origin",
+          "title": "Origin",
+          "body": "Cradle Imperial-leftover military district. Joined the Watchful Eye Knights of the Listening Star (a templar order, now defunct) in his late teens. Trained in faith + arms.",
+          "open": false
+        },
+        {
+          "id": "hk-hadrian-career",
+          "title": "Career",
+          "body": "Served in Vatori Frontier conflicts as a templar-soldier. Knight order disbanded after a heretical scandal involving the Inner Circle. Hadrian refused to denounce; left with no rank, no pension, no name in current Watchful Eye doctrine — but with the training and the icon.",
+          "open": true
+        },
+        {
+          "id": "hk-hadrian-saira",
+          "title": "Saira",
+          "body": "Wife. Civilian, killed in Vatori shelling eight years ago while he was deployed. He blames himself. Wears her wedding band on a cord. Picked up Hro-hro during that same Hynian deployment.",
+          "open": false
+        },
+        {
+          "id": "hk-hadrian-job",
+          "title": "Why this job",
+          "body": "Solom Kroth pays fair to deniable veterans. Hadrian doesn't ask why. The 100 E total goes to Saira's surviving sister (Mira Volk) and her children, whom Hadrian has supported for eight years.",
+          "open": false
+        },
+        {
+          "id": "hk-hadrian-heresy",
+          "title": "Inner Circle heresy",
+          "body": "The Watchful Eye Knights' Inner Circle heresy. He won't talk about it. Yet.",
+          "open": true
+        },
+        {
+          "id": "hk-hadrian-vatori-officer",
+          "title": "Vatori officer",
+          "body": "A Vatori officer who may have been involved in the shelling that killed Saira.",
+          "open": true
+        },
+        {
+          "id": "hk-hadrian-relics",
+          "title": "Order's relics",
+          "body": "Hadrian carries one icon. Where are the others?",
+          "open": true
+        }
+      ],
+      "notes": "Prime: any armor + any weapon. Two attacks once per combat in place of one. Protect ally for one round (enemies get Speed roll). Double Bulk vs poison/disease, double Ghost vs death. Acts as normal while injured but half rolls; if harmed while already injured, dies in d20 minutes on failed death Ghost roll. Cash on hand: 900 P.",
+      "createdAt": "2026-05-09T19:51:00.000Z",
+      "updatedAt": "2026-05-15T09:52:24.050Z",
+      "shadowEncountersBanked": 0,
+      "baseStackRolls": {
+        "archive": 2,
+        "bulk": 1,
+        "ghost": 3,
+        "morph": 0,
+        "speed": 1,
+        "tech": 1
+      },
+      "thirdLanguageRoll": 3,
+      "spentAtGen": 62,
+      "startingFundsRoll": 4,
+      "startingFunds": 100,
+      "artisticMod": {
+        "chosen": true,
+        "kind": "special_coin",
+        "description": "Special Gunta Coin: 'The Last Liturgy.' Once per session, when Hadrian openly invokes Watchful Eye liturgy aloud in front of allies during a tense or pivotal moment (full chant in Old Imperial), he gains 1 Gunta Coin to spend immediately or save until end of scene.",
+        "drawback": "Requires public liturgical invocation in Old Imperial — narrative cost in non-friendly company."
+      }
+    },
+    {
+      "id": "f262e329-6876-4f65-bc32-91b33558337c",
+      "schemaVersion": 1,
+      "name": "Kira Voss",
+      "title": "The Static Saint",
+      "type": "core",
+      "lifeForm": "blood",
+      "background": "archivist",
+      "ownedGraphs": [
+        {
+          "id": "04e881df-a388-46e3-acfe-e30b8df0447a",
+          "name": "Default Core",
+          "source": "default",
+          "graph": {
+            "type": "core",
+            "origo": {
+              "spaces": 1,
+              "implants": 0,
+              "shadow": 0,
+              "gunta": 0,
+              "closeStart": 0,
+              "rangedStart": 0
+            },
+            "nodes": [
+              {
+                "x": 1,
+                "y": 1,
+                "spaces": 2,
+                "kind": "open",
+                "implantsFloor": 1,
+                "notes": "First advancement — spaces 2, implants 1.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 3,
+                "y": 1,
+                "spaces": 3,
+                "kind": "double",
+                "closeFloor": 1,
+                "implantsFloor": 1,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 5,
+                "y": 1,
+                "spaces": null,
+                "kind": "filled",
+                "rangedFloor": 1,
+                "closeFloor": 2,
+                "implantsFloor": 2,
+                "notes": "Rearrange + bond swap.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 7,
+                "y": 1,
+                "spaces": 4,
+                "kind": "open",
+                "closeFloor": 3,
+                "rangedFloor": 2,
+                "implantsFloor": 3,
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 2,
+                "y": 2,
+                "spaces": 3,
+                "kind": "open",
+                "implantsFloor": 2,
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 4,
+                "y": 2,
+                "spaces": 4,
+                "kind": "double",
+                "implantsFloor": 3,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 6,
+                "y": 2,
+                "spaces": 5,
+                "kind": "double",
+                "notes": "New keyword.",
+                "satellitePlacements": []
+              },
+              {
+                "x": 1,
+                "y": 3,
+                "spaces": 3,
+                "kind": "double",
+                "rangedFloor": 1,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "spaces": null,
+                "kind": "filled",
+                "rangedFloor": 2,
+                "closeFloor": 1,
+                "notes": "Rearrange + bond swap.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 5,
+                "y": 3,
+                "spaces": 4,
+                "kind": "open",
+                "rangedFloor": 3,
+                "closeFloor": 2,
+                "implantsFloor": 2,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 7,
+                "y": 3,
+                "spaces": 5,
+                "kind": "open",
+                "implantsFloor": 3,
+                "rangedFloor": 3,
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 2,
+                "y": 4,
+                "spaces": null,
+                "kind": "double_filled",
+                "notes": "New keyword + rearrange + bond swap.",
+                "satellitePlacements": []
+              },
+              {
+                "x": 6,
+                "y": 4,
+                "spaces": null,
+                "kind": "double_filled",
+                "notes": "New keyword + rearrange + bond swap.",
+                "satellitePlacements": []
+              }
+            ]
+          },
+          "acquiredAt": "2026-05-12T21:43:41.626Z"
+        }
+      ],
+      "activeGraphId": "04e881df-a388-46e3-acfe-e30b8df0447a",
+      "origo": {
+        "spaces": 1,
+        "implants": 0,
+        "shadow": 0,
+        "gunta": 0,
+        "closeStart": 0,
+        "rangedStart": 0
+      },
+      "stacks": {
+        "archive": 6,
+        "bulk": 1,
+        "ghost": 3,
+        "morph": 4,
+        "speed": 2,
+        "tech": 5,
+        "close": 2,
+        "ranged": 2
+      },
+      "aptCombatPick": "ranged",
+      "keywords": [
+        {
+          "id": "kw-kira-history",
+          "name": "History",
+          "stack": "archive",
+          "source": "background",
+          "fromBackground": "archivist",
+          "notes": "Thaldean / Imperial / Watchful Eye lore."
+        },
+        {
+          "id": "kw-kira-nanites",
+          "name": "Nanites",
+          "stack": "ghost",
+          "source": "background",
+          "fromBackground": "archivist",
+          "notes": "Core formulae bonus, ICE protection."
+        },
+        {
+          "id": "kw-kira-medicine",
+          "name": "Medicine",
+          "stack": "tech",
+          "source": "background",
+          "fromBackground": "archivist",
+          "notes": "Pairs with Heal formula."
+        },
+        {
+          "id": "kw-kira-hacking",
+          "name": "Hacking",
+          "stack": "archive",
+          "source": "cross",
+          "fromBackground": "fixer",
+          "notes": "Cross-pick. Module-essential."
+        }
+      ],
+      "languages": ["pidgin", "vatori"],
+      "spaces": [
+        {
+          "id": "sp-kira-heal",
+          "active": true,
+          "kind": "formula",
+          "name": "Heal",
+          "effect": "Remove d6 physical harm.",
+          "notes": "1 H"
+        },
+        {
+          "id": "sp-kira-openlock",
+          "active": false,
+          "kind": "formula",
+          "name": "Open Lock",
+          "effect": "Open any mechanical or electronic lock with max DN 20. Nanite locks may pay ed6 extra Harm.",
+          "notes": "2 H"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "wpn-kira-kingun",
+          "name": "Kin-Gun",
+          "damage": "d6",
+          "damageType": "kinetic",
+          "slots": 0.5,
+          "range": "range",
+          "clip": 5,
+          "ammoLoaded": 5,
+          "ammoSpare": 5,
+          "cost": 50,
+          "kit": "weapons",
+          "specials": [],
+          "notes": "Standard sidearm.",
+          "twoHanded": false,
+          "equipped": true
+        }
+      ],
+      "armor": [
+        {
+          "id": "arm-kira-aramid",
+          "name": "Aramid Armor",
+          "strength": "kinetic",
+          "weakness": "slashing",
+          "slots": 1,
+          "cost": 100,
+          "kit": "armor",
+          "notes": "Kinetic resist. Force Armor or lighter for Core.",
+          "primeOnly": false,
+          "equipped": true,
+          "isShield": false,
+          "isHelmet": false
+        },
+        {
+          "id": "arm-kira-helmet",
+          "name": "Helmet",
+          "slots": 0.5,
+          "cost": 50,
+          "kit": "armor",
+          "notes": "Avoids extra crit ed6.",
+          "equipped": true,
+          "isShield": false,
+          "isHelmet": true,
+          "strength": "",
+          "weakness": "",
+          "primeOnly": false
+        }
+      ],
+      "inventory": [
+        {
+          "id": "inv-kira-infoslate",
+          "name": "Info Slate",
+          "slots": 0.5,
+          "cost": 100,
+          "location": "worn",
+          "energyDraw": "1e/w",
+          "kit": "tools",
+          "notes": "Research, data, comms."
+        },
+        {
+          "id": "inv-kira-binoculars",
+          "name": "Binoculars (HUD)",
+          "slots": 0.5,
+          "cost": 40,
+          "location": "worn",
+          "kit": "tools",
+          "notes": "Drone spot, recon."
+        },
+        {
+          "id": "inv-kira-codebreaker",
+          "name": "Code Breaker",
+          "slots": 0.5,
+          "cost": 180,
+          "location": "worn",
+          "kit": "tools",
+          "notes": "Hacking bonus tool."
+        },
+        {
+          "id": "inv-kira-mag",
+          "name": "Mag (Kinetic, 5-shot)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "worn",
+          "ammoLoaded": 5,
+          "notes": "Spare Kin-Gun mag."
+        },
+        {
+          "id": "inv-kira-stim-anti",
+          "name": "Stim Antibiotics",
+          "slots": 0.5,
+          "cost": 15,
+          "location": "worn",
+          "kit": "chemical",
+          "notes": "Wound infection."
+        },
+        {
+          "id": "inv-kira-stim-poison",
+          "name": "Stim Antidote",
+          "slots": 0.5,
+          "cost": 15,
+          "location": "worn",
+          "kit": "chemical",
+          "notes": "Poison guard."
+        },
+        {
+          "id": "inv-kira-stim-rad",
+          "name": "Stim Antirad",
+          "slots": 0.5,
+          "cost": 25,
+          "location": "worn",
+          "kit": "chemical",
+          "notes": "Radiation guard."
+        },
+        {
+          "id": "inv-kira-bne",
+          "name": "B & E Tools",
+          "slots": 1,
+          "cost": 20,
+          "location": "worn",
+          "kit": "tools",
+          "notes": "Tower entry, picks."
+        },
+        {
+          "id": "inv-kira-cuberec",
+          "name": "Cube Recorder",
+          "slots": 1,
+          "cost": 20,
+          "location": "worn",
+          "energyDraw": "1e/w",
+          "kit": "tools",
+          "notes": "Audio + video evidence."
+        },
+        {
+          "id": "inv-kira-backpack",
+          "name": "Backpack (5-slot container)",
+          "slots": 1,
+          "cost": 5,
+          "location": "slot10",
+          "kit": "general",
+          "notes": "+5 internal slots."
+        },
+        {
+          "id": "inv-kira-rope",
+          "name": "Hook & Wire (20 dots rope)",
+          "slots": 1,
+          "cost": 8,
+          "location": "backpack",
+          "kit": "tools",
+          "notes": ""
+        },
+        {
+          "id": "inv-kira-sleeping",
+          "name": "Sleeping Bag",
+          "slots": 2,
+          "cost": 15,
+          "location": "backpack",
+          "kit": "general",
+          "notes": ""
+        },
+        {
+          "id": "inv-kira-food",
+          "name": "Food & Water (5 days)",
+          "slots": 2,
+          "cost": 3,
+          "location": "backpack",
+          "notes": ""
+        },
+        {
+          "id": "inv-kira-interface",
+          "name": "Holographic Hacker Interface",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "energyDraw": "1e/w",
+          "notes": "Artistic Mod gift. Maker-tier — normally unbuildable from scratch."
+        },
+        {
+          "id": "inv-kira-headphones",
+          "name": "HoloH-attuned headphones",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Around neck. Feeds soft static / signal noise from local holofield."
+        },
+        {
+          "id": "inv-kira-stylus",
+          "name": "Stylus",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Sketches diagrams on left palm."
+        },
+        {
+          "id": "inv-kira-fatigues",
+          "name": "Plain grey utility fatigues + long charcoal coat",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Worn."
+        },
+        {
+          "id": "inv-kira-satchel",
+          "name": "Vatori-cut leather satchel",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Worn."
+        }
+      ],
+      "formulae": [
+        {
+          "id": "fml-kira-heal",
+          "name": "Heal",
+          "category": "basic",
+          "active": true,
+          "hCost": "1",
+          "notes": "Remove d6 physical harm."
+        },
+        {
+          "id": "fml-kira-openlock",
+          "name": "Open Lock",
+          "category": "basic",
+          "active": false,
+          "hCost": "2",
+          "notes": "Open any mechanical or electronic lock with max DN 20. Nanite locks may pay ed6 extra Harm."
+        }
+      ],
+      "implants": [],
+      "pets": [],
+      "vehicles": [],
+      "purse": {
+        "parts": 1215,
+        "smallParts": 0,
+        "energyPacks": 0,
+        "energyCells": 0,
+        "stashedParts": 0,
+        "stashedSmallParts": 0,
+        "stashedEnergyPacks": 0,
+        "stashedEnergyCells": 0
+      },
+      "debts": [],
+      "beginnerGuntaCoins": 0,
+      "guntaValue": 0,
+      "specialCoins": [],
+      "shadow": 0,
+      "reputation": 0,
+      "harm": {
+        "harmTaken": 0,
+        "harmCap": 20,
+        "naniteTaken": 0,
+        "naniteCap": 20,
+        "status": "unharmed",
+        "statusNote": "",
+        "endRollSuspended": false,
+        "suspendedAtHarm": 0,
+        "dyingTimer": null,
+        "dyingTimerUnit": null,
+        "bleeding": false,
+        "bloodShed": 0,
+        "comaDays": null,
+        "lastAidAttemptLongTurn": null,
+        "detrimentalKeywords": [],
+        "shiftUpPenalty": false
+      },
+      "sessionLog": [],
+      "typeGraphPosition": {
+        "x": 0,
+        "y": 1
+      },
+      "advancementHistory": [
+        {
+          "id": "adv-kira-transit-01",
+          "fromNode": {
+            "x": 0,
+            "y": 0
+          },
+          "toNode": {
+            "x": 0,
+            "y": 1
+          },
+          "appliedAt": "2026-05-09T20:00:00.000Z",
+          "changes": ["Moved (0, 0) → (0, 1) — intermediate cell (Shadow + Gunta unchanged)"],
+          "reversible": false,
+          "beforeState": {
+            "shadow": 0,
+            "guntaValue": 0
+          }
+        }
+      ],
+      "stackComposition": {
+        "archive": {
+          "base": 2,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 6
+        },
+        "bulk": {
+          "base": 0,
+          "lifeFormBonus": 1,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 1
+        },
+        "ghost": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 3
+        },
+        "morph": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 1,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 4
+        },
+        "speed": {
+          "base": 1,
+          "lifeFormBonus": 1,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 2
+        },
+        "tech": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 5
+        },
+        "close": {
+          "base": 0,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 2
+        },
+        "ranged": {
+          "base": 0,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 2
+        }
+      },
+      "identity": {
+        "age": "late 20s",
+        "gender": "female",
+        "appearance": "Slim. Pale. Short black hair, undercut on the left side. Vatori-Imperial mixed features — sharp cheekbones, narrow eyes. Faint scar across the right eyebrow. Long charcoal coat over plain grey utility fatigues. Worn leather satchel.",
+        "speech": "Pidgin with Vatori cadence — clipped, precise, slight rolling r's. Tends to undersell. Quotes formulae and old documents from memory.",
+        "habits": "Mutters in Vatori under her breath when computing or hacking. Sketches diagrams with a stylus on her left palm when thinking. Wears HoloH-attuned headphones around her neck. Calls her HoloH bond 'the song' — never names it directly. Skips meals when working a problem. Drinks tea, never coffee.",
+        "orientation": "Open about it; doesn't make a thing of it.",
+        "demeanor": "Coiled and a bit tense. Tracks doorways and exits. Has been in trouble before.",
+        "notes": ""
+      },
+      "hooks": [
+        {
+          "id": "hk-kira-origin",
+          "title": "Origin",
+          "body": "Daughter of a Vatori field-engineer mother and a Cradle Imperial-scribe father. Grew up between Vatori encampments and Cradle technical schools. Mixed loyalty — neither side trusts her fully.",
+          "open": false
+        },
+        {
+          "id": "hk-kira-career",
+          "title": "Career",
+          "body": "Early 20s freelancing for the Cyber State — payment processors, registry tweaks, occasional industrial espionage. Earned her holographic interface on credit.",
+          "open": false
+        },
+        {
+          "id": "hk-kira-bond",
+          "title": "The bond",
+          "body": "HoloH started reaching her three years ago — static in dreams, then a presence she couldn't deny. She doesn't trust it. It has saved her hands when a cyber dive went bad. She calls it 'the song.'",
+          "open": true
+        },
+        {
+          "id": "hk-kira-job",
+          "title": "Why this job",
+          "body": "Solom Kroth is a Cyber State referral. Pay knocks real points off her holographic-interface debt (now CLEARED). Cradle Cyber State's interest in the Union Front overlaps Solom's. Officially deniable.",
+          "open": false
+        },
+        {
+          "id": "hk-kira-fixer",
+          "title": "Cyber State fixer",
+          "body": "Tor Ka — Cyber State fixer she previously owed 300 P to. CLEARED Day 6. Wants what, specifically — long term?",
+          "open": true
+        },
+        {
+          "id": "hk-kira-holoh-interest",
+          "title": "HoloH's interest",
+          "body": "Why now, why her. HoloH-listening classification suggests she's rare.",
+          "open": true
+        },
+        {
+          "id": "hk-kira-uncle",
+          "title": "Vatori uncle",
+          "body": "Mother's brother. Surveillance worker in Vatori District 5. Hasn't spoken to her in two years. Beneficiary on file with Solom.",
+          "open": true
+        },
+        {
+          "id": "hk-kira-old-hack",
+          "title": "Old hack",
+          "body": "An old hack she ran on a Cradle relay system years ago. Looked clean but left a footprint. She's never been sure who saw it.",
+          "open": true
+        },
+        {
+          "id": "hk-kira-veska",
+          "title": "Veska Mort spot job",
+          "body": "Tor Ka's bounty — now 500 E. Veska briefly spotted in Cradle during party's absence.",
+          "open": true
+        }
+      ],
+      "notes": "Core: Force Armor or lighter only. Half rolls with weapons taking up more than 1 slot. Recovers nanite harm at twice normal rate. Double rolls vs hostile formulae + mind effects. HoloH bond: easier access to cyber/electronic systems; chance of awaking dead artifacts; clean roll on retried failures (cyber/electronic). Cash on hand: 1,215 P. Cyber State debt to Tor Ka cleared Day 6.",
+      "createdAt": "2026-05-09T19:51:00.000Z",
+      "updatedAt": "2026-05-15T09:52:24.050Z",
+      "coreBond": "holoh",
+      "coreBondNotes": "HoloH-listening — rare classification, identified by Cradle Cyber State adept-counselor Day 22. Calls it 'the song.'",
+      "shadowEncountersBanked": 0,
+      "baseStackRolls": {
+        "archive": 2,
+        "bulk": 0,
+        "ghost": 1,
+        "morph": 1,
+        "speed": 1,
+        "tech": 1
+      },
+      "thirdLanguageRoll": 1,
+      "spentAtGen": 249,
+      "startingFundsRoll": 3,
+      "startingFunds": 100,
+      "artisticMod": {
+        "chosen": true,
+        "kind": "expensive_equipment",
+        "description": "Holographic Hacker Interface (Maker-tier, normally unbuildable from scratch). 1 e/w energy draw, no slot.",
+        "drawback": "Originally owed 300 P to a Cradle Cyber State fixer (Tor Ka) — debt CLEARED Day 6. Cyber State retains long-term leverage."
+      }
+    },
+    {
+      "id": "88e18250-feba-437c-ba83-3a0919bb0592",
+      "schemaVersion": 1,
+      "name": "Osric Ward",
+      "title": "The Quiet Hand",
+      "type": "apt",
+      "lifeForm": "blood",
+      "background": "outrider",
+      "ownedGraphs": [
+        {
+          "id": "25202e64-6a81-4913-a60a-3221af92604b",
+          "name": "Default Apt",
+          "source": "default",
+          "graph": {
+            "type": "apt",
+            "origo": {
+              "spaces": 1,
+              "implants": 1,
+              "shadow": 0,
+              "gunta": 0,
+              "closeStart": 0,
+              "rangedStart": 1
+            },
+            "nodes": [
+              {
+                "x": 1,
+                "y": 1,
+                "spaces": 1,
+                "kind": "open",
+                "implantsFloor": 2,
+                "rangedFloor": 1,
+                "closeFloor": 1,
+                "notes": "First advancement node — implants 2, both C/R 1.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "implants",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 3,
+                "y": 1,
+                "spaces": 2,
+                "kind": "open",
+                "closeFloor": 2,
+                "implantsFloor": 3,
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TR"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 5,
+                "y": 1,
+                "spaces": 3,
+                "kind": "open",
+                "rangedFloor": 2,
+                "closeFloor": 3,
+                "implantsFloor": 4,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "BL"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 7,
+                "y": 1,
+                "spaces": 4,
+                "kind": "double",
+                "closeFloor": 4,
+                "implantsFloor": 5,
+                "rangedFloor": 3,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BR"
+                  }
+                ]
+              },
+              {
+                "x": 2,
+                "y": 2,
+                "spaces": 2,
+                "kind": "double",
+                "rangedFloor": 2,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  }
+                ]
+              },
+              {
+                "x": 4,
+                "y": 2,
+                "spaces": 3,
+                "kind": "double_filled",
+                "notes": "New keyword + rearrange.",
+                "satellitePlacements": []
+              },
+              {
+                "x": 6,
+                "y": 2,
+                "spaces": 4,
+                "kind": "open",
+                "rangedFloor": 4,
+                "implantsFloor": 3,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  },
+                  {
+                    "satellite": "implants",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 1,
+                "y": 3,
+                "spaces": 2,
+                "kind": "open",
+                "closeFloor": 2,
+                "rangedFloor": 2,
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "spaces": 3,
+                "kind": "open",
+                "rangedFloor": 3,
+                "closeFloor": 2,
+                "satellitePlacements": [
+                  {
+                    "satellite": "ranged",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "close",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 5,
+                "y": 3,
+                "spaces": 4,
+                "kind": "double",
+                "closeFloor": 2,
+                "notes": "New keyword.",
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "BL"
+                  }
+                ]
+              },
+              {
+                "x": 7,
+                "y": 3,
+                "spaces": 4,
+                "kind": "open",
+                "closeFloor": 3,
+                "rangedFloor": 5,
+                "satellitePlacements": [
+                  {
+                    "satellite": "close",
+                    "corner": "TL"
+                  },
+                  {
+                    "satellite": "ranged",
+                    "corner": "TR"
+                  }
+                ]
+              },
+              {
+                "x": 2,
+                "y": 4,
+                "spaces": null,
+                "kind": "filled",
+                "notes": "Rearrange (no spaces).",
+                "satellitePlacements": []
+              },
+              {
+                "x": 6,
+                "y": 4,
+                "spaces": 4,
+                "kind": "double_filled",
+                "notes": "New keyword + rearrange (4 spaces).",
+                "satellitePlacements": []
+              }
+            ]
+          },
+          "acquiredAt": "2026-05-12T21:43:41.625Z"
+        }
+      ],
+      "activeGraphId": "25202e64-6a81-4913-a60a-3221af92604b",
+      "origo": {
+        "spaces": 1,
+        "implants": 2,
+        "shadow": 0,
+        "gunta": 0,
+        "closeStart": 0,
+        "rangedStart": 1
+      },
+      "stacks": {
+        "archive": 3,
+        "bulk": 2,
+        "ghost": 5,
+        "morph": 5,
+        "speed": 6,
+        "tech": 4,
+        "close": 3,
+        "ranged": 6
+      },
+      "aptCombatPick": "ranged",
+      "keywords": [
+        {
+          "id": "kw-osric-stealth",
+          "name": "Stealth",
+          "stack": "speed",
+          "source": "background",
+          "fromBackground": "outrider",
+          "notes": "double-roll on Speed sneak / cover / silent approach"
+        },
+        {
+          "id": "kw-osric-tracking",
+          "name": "Tracking",
+          "stack": "morph",
+          "source": "background",
+          "fromBackground": "outrider",
+          "notes": "signs, trails, anomalies"
+        },
+        {
+          "id": "kw-osric-survival",
+          "name": "Survival",
+          "stack": "ghost",
+          "source": "background",
+          "fromBackground": "outrider",
+          "notes": "wilderness, weather, threat ID"
+        },
+        {
+          "id": "kw-osric-languages",
+          "name": "Languages",
+          "stack": "morph",
+          "source": "cross",
+          "fromBackground": "diplomat",
+          "notes": "expert spoken in all known languages"
+        }
+      ],
+      "languages": ["pidgin", "old_imperial"],
+      "spaces": [
+        {
+          "id": "sp-osric-lastchance",
+          "active": true,
+          "kind": "equipment",
+          "name": "Kin-Gun \"Last Chance\"",
+          "effect": "Once per 24 h: treat Ranged on adjacent higher scale for one action — when the action relates to the gun.",
+          "notes": "Customized over years. Frontanium-etched grip carries the same Imperial sigil as the bronze coin."
+        }
+      ],
+      "weapons": [
+        {
+          "id": "wpn-osric-lastchance",
+          "name": "Kin-Gun \"Last Chance\"",
+          "damage": "d6",
+          "damageType": "kinetic",
+          "slots": 0.5,
+          "range": "range",
+          "clip": 5,
+          "ammoLoaded": 5,
+          "ammoSpare": 10,
+          "cost": 50,
+          "kit": "weapons",
+          "specials": ["Burst", "Full Auto", "Silencer"],
+          "notes": "SPACED. Apt crit on 19/20.",
+          "twoHanded": false,
+          "equipped": true
+        }
+      ],
+      "armor": [
+        {
+          "id": "arm-osric-aramid",
+          "name": "Aramid Armor",
+          "strength": "kinetic",
+          "weakness": "slashing",
+          "slots": 1,
+          "cost": 100,
+          "kit": "armor",
+          "notes": "Kinetic resist.",
+          "primeOnly": false,
+          "equipped": true,
+          "isShield": false,
+          "isHelmet": false
+        },
+        {
+          "id": "arm-osric-helmet",
+          "name": "Helmet",
+          "slots": 0.5,
+          "cost": 50,
+          "kit": "armor",
+          "notes": "Avoids extra crit ed6.",
+          "equipped": true,
+          "isShield": false,
+          "isHelmet": true,
+          "strength": "",
+          "weakness": "",
+          "primeOnly": false
+        }
+      ],
+      "inventory": [
+        {
+          "id": "inv-osric-mapslate",
+          "name": "Map Slate (3D)",
+          "slots": 0.5,
+          "cost": 100,
+          "location": "worn",
+          "freePick": true,
+          "energyDraw": "1e/w",
+          "notes": "Hynian + Thaldean nav."
+        },
+        {
+          "id": "inv-osric-binoculars",
+          "name": "Binoculars (HUD)",
+          "slots": 0.5,
+          "cost": 40,
+          "location": "worn",
+          "freePick": true,
+          "notes": "Drone spotting, scout."
+        },
+        {
+          "id": "inv-osric-bne",
+          "name": "B & E Tools",
+          "slots": 1,
+          "cost": 20,
+          "location": "worn",
+          "freePick": true,
+          "kit": "tools",
+          "notes": "Tower entry, picks."
+        },
+        {
+          "id": "inv-osric-spyfly",
+          "name": "Spyfly drone",
+          "slots": 1,
+          "cost": 100,
+          "location": "worn",
+          "kit": "tools",
+          "notes": "Spying drone — for Object 47-K shadow."
+        },
+        {
+          "id": "inv-osric-camera",
+          "name": "Camera (Instagraphic)",
+          "slots": 0.5,
+          "cost": 30,
+          "location": "worn",
+          "kit": "tools",
+          "notes": "Visual evidence recording."
+        },
+        {
+          "id": "inv-osric-mag1",
+          "name": "Mag (Kinetic, 5-shot)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "worn",
+          "ammoLoaded": 5,
+          "notes": "Spare mag for Last Chance."
+        },
+        {
+          "id": "inv-osric-mag2",
+          "name": "Mag (Kinetic, 5-shot)",
+          "slots": 0.5,
+          "cost": 3,
+          "location": "worn",
+          "ammoLoaded": 5,
+          "notes": "Spare mag for Last Chance."
+        },
+        {
+          "id": "inv-osric-stim-anti",
+          "name": "Stim Antibiotics",
+          "slots": 0.5,
+          "cost": 15,
+          "location": "worn",
+          "kit": "chemical",
+          "notes": "Wound infection guard."
+        },
+        {
+          "id": "inv-osric-stim-poison",
+          "name": "Stim Antidote",
+          "slots": 0.5,
+          "cost": 15,
+          "location": "worn",
+          "kit": "chemical",
+          "notes": "Poison guard."
+        },
+        {
+          "id": "inv-osric-stim-rad",
+          "name": "Stim Antirad",
+          "slots": 0.5,
+          "cost": 25,
+          "location": "worn",
+          "kit": "chemical",
+          "notes": "Radiation guard."
+        },
+        {
+          "id": "inv-osric-flashlight",
+          "name": "Flashlight",
+          "slots": 0.5,
+          "cost": 2,
+          "location": "worn",
+          "kit": "general",
+          "notes": ""
+        },
+        {
+          "id": "inv-osric-backpack",
+          "name": "Backpack (5-slot container)",
+          "slots": 1,
+          "cost": 5,
+          "location": "slot10",
+          "kit": "general",
+          "notes": "Holds 5 internal slots."
+        },
+        {
+          "id": "inv-osric-rope",
+          "name": "Hook & Wire (20 dots rope)",
+          "slots": 1,
+          "cost": 8,
+          "location": "backpack",
+          "kit": "tools",
+          "notes": "Climbing, snare, landslide."
+        },
+        {
+          "id": "inv-osric-sleeping",
+          "name": "Sleeping Bag",
+          "slots": 2,
+          "cost": 15,
+          "location": "backpack",
+          "kit": "general",
+          "notes": "Cold mountain night."
+        },
+        {
+          "id": "inv-osric-food",
+          "name": "Food & Water (5 days)",
+          "slots": 2,
+          "cost": 3,
+          "location": "backpack",
+          "notes": "Wilderness travel."
+        },
+        {
+          "id": "inv-osric-coin",
+          "name": "Bronze Imperial coin (worn smooth)",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Pocket. Flips when undecided."
+        },
+        {
+          "id": "inv-osric-cloak",
+          "name": "Mountain travel attire",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Cloak, layered greys/browns."
+        },
+        {
+          "id": "inv-osric-ledger",
+          "name": "Worn travel ledger + stylo",
+          "slots": 0,
+          "cost": 0,
+          "location": "no_slot",
+          "notes": "Old Imperial cursive."
+        }
+      ],
+      "formulae": [],
+      "implants": [
+        {
+          "id": "imp-osric-witness",
+          "name": "Witness",
+          "bodyPart": "eye",
+          "effect": "+2 Ranged (4 → 6). Cybernetic targeting eye.",
+          "drawback": "Chronic photosensitive migraines. Half rolls Ranged in bright direct sunlight or strong artificial light.",
+          "stackBonus": [
+            {
+              "stack": "ranged",
+              "bonus": 2
+            }
+          ],
+          "notes": "Mitigation: tinted goggles (~5 P, ½ slot) suppress drawback but dim peripheral vision."
+        }
+      ],
+      "pets": [],
+      "vehicles": [],
+      "purse": {
+        "parts": 98,
+        "smallParts": 0,
+        "energyPacks": 0,
+        "energyCells": 0,
+        "stashedParts": 0,
+        "stashedSmallParts": 0,
+        "stashedEnergyPacks": 0,
+        "stashedEnergyCells": 0
+      },
+      "debts": [],
+      "beginnerGuntaCoins": 2,
+      "guntaValue": 0,
+      "specialCoins": [],
+      "shadow": 0,
+      "reputation": 0,
+      "harm": {
+        "harmTaken": 0,
+        "harmCap": 20,
+        "naniteTaken": 0,
+        "naniteCap": 20,
+        "status": "unharmed",
+        "statusNote": "",
+        "endRollSuspended": false,
+        "suspendedAtHarm": 0,
+        "dyingTimer": null,
+        "dyingTimerUnit": null,
+        "bleeding": false,
+        "bloodShed": 0,
+        "comaDays": null,
+        "lastAidAttemptLongTurn": null,
+        "detrimentalKeywords": [],
+        "shiftUpPenalty": false
+      },
+      "sessionLog": [],
+      "typeGraphPosition": {
+        "x": 0,
+        "y": 1
+      },
+      "advancementHistory": [
+        {
+          "id": "adv-osric-transit-01",
+          "fromNode": {
+            "x": 0,
+            "y": 0
+          },
+          "toNode": {
+            "x": 0,
+            "y": 1
+          },
+          "appliedAt": "2026-05-09T20:00:00.000Z",
+          "changes": ["Moved (0, 0) → (0, 1) — intermediate cell (Shadow + Gunta unchanged)"],
+          "reversible": false,
+          "beforeState": {
+            "shadow": 0,
+            "guntaValue": 0
+          }
+        }
+      ],
+      "stackComposition": {
+        "archive": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 3
+        },
+        "bulk": {
+          "base": 0,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 2
+        },
+        "ghost": {
+          "base": 2,
+          "lifeFormBonus": 1,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 5
+        },
+        "morph": {
+          "base": 2,
+          "lifeFormBonus": 1,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 5
+        },
+        "speed": {
+          "base": 2,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 2,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 6
+        },
+        "tech": {
+          "base": 2,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 0,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 4
+        },
+        "close": {
+          "base": 0,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 1,
+          "implantBonus": 0,
+          "other": 0,
+          "final": 3
+        },
+        "ranged": {
+          "base": 1,
+          "lifeFormBonus": 2,
+          "backgroundBonus": 1,
+          "implantBonus": 2,
+          "other": 0,
+          "final": 6
+        }
+      },
+      "identity": {
+        "age": "mid-40s",
+        "gender": "male",
+        "appearance": "Lean, weathered. Sun-darkened skin. Grey at temples. Old kinetic-burn scar across left forearm.",
+        "speech": "Pidgin with traces of Imperial cadence — long vowels, formal phrasings. Imperial slips through when tired or angry.",
+        "habits": "Cleans Last Chance every night (ritual). Writes in Old Imperial cursive. Chews dried khell-root when nervous. Hums Watchful Eye liturgy when concentrating. Addresses strangers by surname. Flips bronze Imperial coin when undecided.",
+        "orientation": "Straight. Reserved.",
+        "demeanor": "Quiet. Watches before he speaks. Doesn't waste motion.",
+        "notes": ""
+      },
+      "hooks": [
+        {
+          "id": "hk-osric-origin",
+          "title": "Origin",
+          "body": "Late Itori-era Cradle. Imperial-leftover scholar district. Educated by Watchful Eye monks before drifting into wilderness work.",
+          "open": false
+        },
+        {
+          "id": "hk-osric-career",
+          "title": "Career",
+          "body": "20+ years as Outrider in the Hynian region. Knows the trails, the weather, the ruins.",
+          "open": false
+        },
+        {
+          "id": "hk-osric-witness-implant",
+          "title": "Witness implant",
+          "body": "Cradle ASC clinic, paid by an unnamed mentor. Migraines started years later. Won't replace it. Won't say why.",
+          "open": true
+        },
+        {
+          "id": "hk-osric-vella",
+          "title": "Vella (privately supported)",
+          "body": "Beneficiary on file with Solom — Vella, daughter of Osric's late mentor. Chronic nanite-related condition. Monthly treatments are expensive.",
+          "open": true
+        },
+        {
+          "id": "hk-osric-vatori",
+          "title": "Vatori operative",
+          "body": "Past run-in with a Vatori operative who let him walk away — unfinished business.",
+          "open": true
+        }
+      ],
+      "notes": "Apt rules: crit on 19 AND 20. Build half parts. 1 H scrolls usable at 2 H. Armor: Force Armor or lighter; unarmored = full Apt bonuses. Cash on hand: 98 P. Vella treatment paid forward 12 months from Day 22.",
+      "createdAt": "2026-05-09T19:51:00.000Z",
+      "updatedAt": "2026-05-15T09:52:24.050Z",
+      "shadowEncountersBanked": 0,
+      "baseStackRolls": {
+        "archive": 1,
+        "bulk": 0,
+        "ghost": 2,
+        "morph": 2,
+        "speed": 2,
+        "tech": 2
+      },
+      "thirdLanguageRoll": 2,
+      "spentAtGen": 74,
+      "startingFundsRoll": 2,
+      "startingFunds": 100,
+      "artisticMod": {
+        "chosen": true,
+        "kind": "implant",
+        "description": "Eye Implant 'Witness' — cybernetic targeting eye. +2 Ranged.",
+        "drawback": "Chronic photosensitive migraines. Half rolls Ranged in bright direct sunlight or strong artificial light. Tinted goggles mitigate but dim peripheral vision."
+      }
+    }
+  ]
+}

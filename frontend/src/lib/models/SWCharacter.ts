@@ -7,23 +7,11 @@
  * round-tripping are lossless.
  */
 
-import type {
-  CharacterType,
-  LifeForm,
-  Background,
-  PrimaryStack,
-  Stack,
-  Language,
-  ConstructionKit,
-  DamageDie,
-  DamageType,
-  WeaponRange,
-  HarmKind
-} from './Enums';
+import type { CharacterType, LifeForm, Background, Stack, Language, ConstructionKit, DamageDie, DamageType, WeaponRange } from './Enums';
 import type { TypeGraphDef, TypeGraphNode } from '$lib/data/typeGraphs';
 import { getTypeGraph } from '$lib/data/typeGraphs';
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 1;
 
 // ============================================
 // OWNED GRAPHS (multi-graph advancement, rules: looted graphs)
@@ -178,12 +166,12 @@ export interface CharacterFormula {
 // ============================================
 
 export type EquipmentLocation =
-  | 'worn'         // Slots 1-9 outside
-  | 'slot10'       // Slot 10 — backpack itself, etc.
-  | 'backpack'     // Inside the 5-slot backpack
-  | 'no_slot'      // No-slot worn / cosmetic / coins
-  | 'mission'      // Given by the GM / mission start
-  | 'storage'      // Off-character storage
+  | 'worn' // Slots 1-9 outside
+  | 'slot10' // Slot 10 — backpack itself, etc.
+  | 'backpack' // Inside the 5-slot backpack
+  | 'no_slot' // No-slot worn / cosmetic / coins
+  | 'mission' // Given by the GM / mission start
+  | 'storage' // Off-character storage
   | 'other';
 
 export interface EquipmentItem {
@@ -194,6 +182,14 @@ export interface EquipmentItem {
   /** Cost paid (Parts). 0 for gifts / no-cost. */
   cost: number;
   location: EquipmentLocation;
+  /** True when the item is actively ready/deployed. Containers grant slots only while equipped. */
+  equipped: boolean;
+  /** True when the item is stored off-character and does not count toward carried slots. */
+  stashed: boolean;
+  /** True when this item can hold other items. */
+  isContainer?: boolean;
+  /** Extra carried slots granted while this container is equipped. */
+  containerSlots?: number;
   /** Free-text description / notes. */
   notes?: string;
   /** Optional construction kit needed if rebuilt. */
@@ -231,6 +227,8 @@ export interface CharacterWeapon {
   twoHanded?: boolean;
   /** Equipped (in hand or holstered). */
   equipped: boolean;
+  /** Stored off-character; cannot also be equipped. */
+  stashed: boolean;
 }
 
 export interface CharacterArmor {
@@ -247,6 +245,8 @@ export interface CharacterArmor {
   /** True for Prime-only § heavy armors. */
   primeOnly?: boolean;
   equipped: boolean;
+  /** Stored off-character; cannot also be equipped. */
+  stashed: boolean;
   isShield?: boolean;
   isHelmet?: boolean;
 }
@@ -256,15 +256,28 @@ export interface CharacterArmor {
 // ============================================
 
 export interface PursePile {
-  parts: number;       // P
-  energy: number;      // e packs
-  eCredits: number;    // E digital credits
+  /** On-hand / carried Parts (P). Counts against carried money slots. */
+  parts: number;
+  /** On-hand / carried small parts (p). Counts against carried money slots. */
+  smallParts: number;
+  /** On-hand / carried energy packs (E). Counts against carried money slots. */
+  energyPacks: number;
+  /** On-hand / carried energy cells (e). Counts against carried money slots. */
+  energyCells: number;
+  /** Off-character Parts (P). Does not count against carried slots. */
+  stashedParts: number;
+  /** Off-character small parts (p). Does not count against carried slots. */
+  stashedSmallParts: number;
+  /** Off-character energy packs (E). Does not count against carried slots. */
+  stashedEnergyPacks: number;
+  /** Off-character energy cells (e). Does not count against carried slots. */
+  stashedEnergyCells: number;
 }
 
 export interface DebtEntry {
   id: string;
-  amount: number;       // in P
-  holder: string;       // free text — to whom
+  amount: number; // in P
+  holder: string; // free text — to whom
   notes?: string;
 }
 
@@ -288,24 +301,52 @@ export interface SpecialGuntaCoin {
  * High-level harm status (rules/46 + rules/50 + rules/51). Drives badge color
  * and which controls are enabled in the harm tracker UI.
  *
- *   clean        — no harm at all
- *   harmed       — physical 1..bulk; no end-roll required yet
- *   at-risk      — physical > bulk; an end roll is pending
- *   suspended    — attacker suspended a forced end roll (legal until 20)
- *   injured-ko   — failed end roll while harm < 20 → knocked out, NOT dying
- *   dying        — failed end roll while harm = 20 → KO + d20 dying timer
- *   comatose     — nanite track hit 20 → ed6 days, daily DN 20 Ghost or die
- *   dead         — terminal
+ *   unharmed              — no harm at all
+ *   harmed                — harm exists, but no end roll is required yet
+ *   end-roll-pending      — physical harm > Bulk; an end roll is pending
+ *   suspended             — attacker suspended an end roll (legal until 20)
+ *   injured               — injured, still standing
+ *   injured-knocked-down  — injured, knocked down, can get up
+ *   injured-knocked-out   — failed end roll while harm < 20
+ *   dying                 — failed end roll while harm = 20; d20 timer starts
+ *   comatose              — nanite track hit 20; ed6 days + daily Ghost roll
+ *   dead                  — terminal
  */
 export type HarmStatus =
-  | 'clean'
+  | 'unharmed'
   | 'harmed'
-  | 'at-risk'
+  | 'end-roll-pending'
   | 'suspended'
-  | 'injured-ko'
+  | 'injured'
+  | 'injured-knocked-down'
+  | 'injured-knocked-out'
   | 'dying'
   | 'comatose'
   | 'dead';
+
+function normalizeHarmStatus(status: unknown): HarmStatus {
+  switch (status) {
+    case 'unharmed':
+    case 'harmed':
+    case 'end-roll-pending':
+    case 'suspended':
+    case 'injured':
+    case 'injured-knocked-down':
+    case 'injured-knocked-out':
+    case 'dying':
+    case 'comatose':
+    case 'dead':
+      return status;
+    case 'clean':
+      return 'unharmed';
+    case 'at-risk':
+      return 'end-roll-pending';
+    case 'injured-ko':
+      return 'injured-knocked-out';
+    default:
+      return 'unharmed';
+  }
+}
 
 export interface HarmTrackers {
   // ---- Physical track (fills LEFT → RIGHT, box 1..20). Rules/46. ----
@@ -320,6 +361,8 @@ export interface HarmTrackers {
 
   // ---- Status & state machine ----
   status: HarmStatus;
+  /** Freeform table-state note for True Grit, medical aid, injuries, GM rulings. */
+  statusNote: string;
 
   // ---- Suspended end-roll bookkeeping (rules/46:30). ----
   /** Attacker suspended a forced end roll. Legal only while harm < 20. */
@@ -357,11 +400,11 @@ export interface HarmTrackers {
 // ============================================
 
 export interface IdentityBlock {
-  age?: string;          // "mid-40s"
-  gender?: string;       // "male", "female", "nonbinary", free-text
-  appearance?: string;   // long-form description
-  speech?: string;       // long-form
-  habits?: string;       // long-form
+  age?: string; // "mid-40s"
+  gender?: string; // "male", "female", "nonbinary", free-text
+  appearance?: string; // long-form description
+  speech?: string; // long-form
+  habits?: string; // long-form
   orientation?: string;
   demeanor?: string;
   /** Free-form additional notes. */
@@ -639,8 +682,8 @@ export interface SWCharacter {
   schemaVersion: number;
 
   // Identity ribbon
-  name: string;             // PC name, e.g. "Osric Ward"
-  title?: string;           // sheet title, e.g. "The Quiet Hand"
+  name: string; // PC name, e.g. "Osric Ward"
+  title?: string; // sheet title, e.g. "The Quiet Hand"
   type: CharacterType;
   lifeForm: LifeForm;
   background: Background;
@@ -670,11 +713,15 @@ export interface SWCharacter {
   /** For Tank Born: stack capped at 8. */
   tankCappedStack?: 'archive' | 'bulk' | 'morph';
 
-  // Construct subtype
-  constructBuiltIns?: string[];     // up to 3 built-in tools, total ≤ 50 P
-  constructFormula?: string;        // built-in formula adaptation
+  // Construct subtype (rules/18 — Constructs section).
+  constructBuiltIns?: string[]; // up to 3 built-in tools, total ≤ 50 P
+  constructFormula?: string;    // built-in formula adaptation
+  /** Droid Construct Inspiration (rules/18): original use, optimization, since-creation history. */
+  droidInspiration?: { use?: string; optimization?: string; history?: string };
+  /** Holid Construct Inspiration (rules/18): original purpose, transformation effects. */
+  holidInspiration?: { purpose?: string; transform?: string };
 
-  // Alien
+  // Alien (rules/18 — Aliens section).
   alienResistance?: string;
   alienVulnerability?: string;
   alienFeature?: string;
@@ -705,17 +752,17 @@ export interface SWCharacter {
 
   // Currency / economy
   purse: PursePile;
-  spentAtGen?: number;     // P spent during generation
+  spentAtGen?: number; // P spent during generation
   startingFundsRoll?: number; // d6 roll
-  startingFunds?: number;  // P granted by table
+  startingFunds?: number; // P granted by table
   debts: DebtEntry[];
 
   // Trackers
   beginnerGuntaCoins: number; // Default 3, never refreshes
-  guntaValue: number;          // Steady value from type-graph node
+  guntaValue: number; // Steady value from type-graph node
   specialCoins: SpecialGuntaCoin[];
-  shadow: number;              // Shadow value
-  reputation: number;          // 0-8 typical
+  shadow: number; // Shadow value
+  reputation: number; // 0-8 typical
   harm: HarmTrackers;
   /**
    * Historical session log (rules/52, strict no-banking). One entry per
@@ -755,7 +802,7 @@ export interface SWCharacter {
   notes?: string;
 
   // Audit
-  createdAt: string;   // ISO timestamp
+  createdAt: string; // ISO timestamp
   updatedAt: string;
 }
 
@@ -836,7 +883,16 @@ export function createDefaultCharacter(): SWCharacter {
     implants: [],
     pets: [],
     vehicles: [],
-    purse: { parts: 0, energy: 0, eCredits: 0 },
+    purse: {
+      parts: 0,
+      smallParts: 0,
+      energyPacks: 0,
+      energyCells: 0,
+      stashedParts: 0,
+      stashedSmallParts: 0,
+      stashedEnergyPacks: 0,
+      stashedEnergyCells: 0
+    },
     debts: [],
     beginnerGuntaCoins: 3,
     guntaValue: 0,
@@ -848,7 +904,8 @@ export function createDefaultCharacter(): SWCharacter {
       harmCap: 20,
       naniteTaken: 0,
       naniteCap: 20,
-      status: 'clean',
+      status: 'unharmed',
+      statusNote: '',
       endRollSuspended: false,
       suspendedAtHarm: 0,
       dyingTimer: null,
@@ -1014,7 +1071,8 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
   const normWeapons = (c.weapons ?? []).map((w) => ({
     ...w,
     notes: w?.notes ?? '',
-    equipped: typeof w?.equipped === 'boolean' ? w.equipped : false,
+    stashed: typeof w?.stashed === 'boolean' ? w.stashed : w?.equipped === false,
+    equipped: (typeof w?.equipped === 'boolean' ? w.equipped : false) && !(typeof w?.stashed === 'boolean' ? w.stashed : false),
     slots: typeof w?.slots === 'number' ? w.slots : 0,
     cost: typeof w?.cost === 'number' ? w.cost : 0
   }));
@@ -1023,20 +1081,37 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
     strength: a?.strength ?? '',
     weakness: a?.weakness ?? '',
     notes: a?.notes ?? '',
-    equipped: typeof a?.equipped === 'boolean' ? a.equipped : false,
+    stashed: typeof a?.stashed === 'boolean' ? a.stashed : a?.equipped === false,
+    equipped: (typeof a?.equipped === 'boolean' ? a.equipped : false) && !(typeof a?.stashed === 'boolean' ? a.stashed : false),
     slots: typeof a?.slots === 'number' ? a.slots : 0,
     cost: typeof a?.cost === 'number' ? a.cost : 0,
     isShield: typeof a?.isShield === 'boolean' ? a.isShield : false,
     isHelmet: typeof a?.isHelmet === 'boolean' ? a.isHelmet : false,
     primeOnly: typeof a?.primeOnly === 'boolean' ? a.primeOnly : false
   }));
-  const normInventory = (c.inventory ?? []).map((i) => ({
-    ...i,
-    notes: i?.notes ?? '',
-    slots: typeof i?.slots === 'number' ? i.slots : 0,
-    cost: typeof i?.cost === 'number' ? i.cost : 0,
-    location: i?.location ?? 'storage'
-  }));
+  const normInventory = (c.inventory ?? []).map((i) => {
+    const stashed = typeof i?.stashed === 'boolean' ? i.stashed : i?.location === 'storage';
+    const equipped = (typeof i?.equipped === 'boolean' ? i.equipped : !stashed) && !stashed;
+    const name = i?.name ?? '';
+    const notes = i?.notes ?? '';
+    const noteSlotMatch =
+      notes.match(/(\d+(?:\.\d+)?)\s*internal\s*slots?/i) ??
+      notes.match(/(?:grants?|adds?|capacity|container).*?(\d+(?:\.\d+)?)\s*slots?/i);
+    const noteSlots = Number(noteSlotMatch?.[1] ?? 0);
+    const inferredContainerSlots = /carrier bot/i.test(name) ? 10 : /backpack|valise/i.test(name) ? 5 : noteSlots;
+    const isContainer = typeof i?.isContainer === 'boolean' ? i.isContainer : inferredContainerSlots > 0;
+    return {
+      ...i,
+      notes: i?.notes ?? '',
+      slots: typeof i?.slots === 'number' ? i.slots : 0,
+      cost: typeof i?.cost === 'number' ? i.cost : 0,
+      location: stashed ? 'storage' : (i?.location ?? 'worn'),
+      equipped,
+      stashed,
+      isContainer,
+      containerSlots: typeof i?.containerSlots === 'number' ? i.containerSlots : inferredContainerSlots
+    };
+  });
   const normKeywords = (c.keywords ?? []).map((k) => ({
     ...k,
     notes: k?.notes ?? ''
@@ -1069,8 +1144,7 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
   // fresh default; we do not change the active graph in that case.
   const charType: CharacterType = (c.type ?? d.type) as CharacterType;
   let ownedGraphs: OwnedGraph[] = (c as { ownedGraphs?: OwnedGraph[] }).ownedGraphs ?? [];
-  let activeGraphId: string | undefined =
-    (c as { activeGraphId?: string }).activeGraphId ?? undefined;
+  let activeGraphId: string | undefined = (c as { activeGraphId?: string }).activeGraphId ?? undefined;
   if (!Array.isArray(ownedGraphs) || ownedGraphs.length === 0) {
     const seeded = makeDefaultOwnedGraph(charType);
     ownedGraphs = [seeded];
@@ -1081,17 +1155,12 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
       id: og.id || newGraphId(),
       name: og.name || `Graph ${og.id?.slice(0, 4) ?? ''}`,
       source: (og.source as OwnedGraphSource) || 'custom',
-      graph:
-        og.graph && Array.isArray(og.graph.nodes)
-          ? og.graph
-          : structuredClone(getTypeGraph(charType)),
+      graph: og.graph && Array.isArray(og.graph.nodes) ? og.graph : structuredClone(getTypeGraph(charType)),
       acquiredAt: og.acquiredAt || new Date().toISOString(),
       notes: og.notes
     }));
     // Enforce: at least one default-source graph for the character's type.
-    const hasDefaultForType = ownedGraphs.some(
-      (og) => og.source === 'default' && og.graph?.type === charType
-    );
+    const hasDefaultForType = ownedGraphs.some((og) => og.source === 'default' && og.graph?.type === charType);
     if (!hasDefaultForType) {
       ownedGraphs = [makeDefaultOwnedGraph(charType), ...ownedGraphs];
     }
@@ -1099,6 +1168,22 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
       activeGraphId = ownedGraphs[0].id;
     }
   }
+
+  function moneyAmount(value: unknown): number {
+    return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0;
+  }
+
+  const rawPurse = (c.purse ?? {}) as Partial<PursePile> & Record<string, unknown>;
+  const purse: PursePile = {
+    parts: moneyAmount(rawPurse.parts),
+    smallParts: moneyAmount(rawPurse.smallParts),
+    energyPacks: moneyAmount(rawPurse.energyPacks),
+    energyCells: moneyAmount(rawPurse.energyCells),
+    stashedParts: moneyAmount(rawPurse.stashedParts),
+    stashedSmallParts: moneyAmount(rawPurse.stashedSmallParts),
+    stashedEnergyPacks: moneyAmount(rawPurse.stashedEnergyPacks),
+    stashedEnergyCells: moneyAmount(rawPurse.stashedEnergyCells)
+  };
 
   return {
     ...d,
@@ -1113,9 +1198,11 @@ export function normalizeCharacter(raw: unknown): SWCharacter {
       const merged = { ...d.harm, ...(c.harm ?? {}) };
       // Migration: old saves had naniteCap=5 (incorrect — rules/50:36 says 20).
       if ((merged as { naniteCap?: number }).naniteCap !== 20) merged.naniteCap = 20;
+      merged.status = normalizeHarmStatus((merged as { status?: unknown }).status);
+      merged.statusNote = typeof (merged as { statusNote?: unknown }).statusNote === 'string' ? merged.statusNote : '';
       return merged;
     })(),
-    purse: { ...d.purse, ...(c.purse ?? {}) },
+    purse,
     origo: { ...d.origo, ...(c.origo ?? {}) },
     stacks: mergedStacks,
     stackComposition: composition,
@@ -1168,9 +1255,7 @@ export function recomputeStacks(c: SWCharacter, refreshImplantBonus = false): SW
   const implantTotals = refreshImplantBonus ? aggregateImplantBonuses(c.implants) : {};
   for (const k of allStacks) {
     const baseSlot = composition[k] ?? emptyStackComposition();
-    const slot = refreshImplantBonus
-      ? { ...baseSlot, implantBonus: implantTotals[k] ?? 0 }
-      : baseSlot;
+    const slot = refreshImplantBonus ? { ...baseSlot, implantBonus: implantTotals[k] ?? 0 } : baseSlot;
     const final = sumComposition(slot);
     composition[k] = { ...slot, final };
     stacks[k] = final;
@@ -1184,9 +1269,10 @@ export function recomputeStacks(c: SWCharacter, refreshImplantBonus = false): SW
 
 /** Clone a character giving it a new id. Used by import. */
 export function cloneCharacterWithNewIds(input: SWCharacter): SWCharacter {
-  const newId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `sw-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const newId =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `sw-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   return {
     ...input,
     id: newId,

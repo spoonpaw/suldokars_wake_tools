@@ -30,15 +30,8 @@
  * returned character back into state.
  */
 
-import type {
-  SWCharacter,
-  OwnedGraph,
-  AdvancementLogEntry
-} from '$lib/models/SWCharacter';
-import type {
-  TypeGraphDef,
-  TypeGraphNode
-} from '$lib/data/typeGraphs';
+import type { SWCharacter, OwnedGraph, AdvancementLogEntry } from '$lib/models/SWCharacter';
+import type { TypeGraphDef, TypeGraphNode } from '$lib/data/typeGraphs';
 import { getTypeGraph, findNodeAt } from '$lib/data/typeGraphs';
 import type { CharacterType } from '$lib/models/Enums';
 import { typeLabel } from '$lib/models/SWCharacter';
@@ -113,11 +106,7 @@ export function addCustomGraph(c: SWCharacter, name: string): SWCharacter {
  * adventure. The caller supplies a TypeGraphDef (typically a clone of one
  * of the static defaults the GM tweaked).
  */
-export function addLootedGraph(
-  c: SWCharacter,
-  name: string,
-  graph: TypeGraphDef
-): SWCharacter {
+export function addLootedGraph(c: SWCharacter, name: string, graph: TypeGraphDef): SWCharacter {
   const og: OwnedGraph = {
     id: newId(),
     name: name.trim() || `Looted: ${typeLabel(graph.type)}`,
@@ -133,20 +122,14 @@ export function addLootedGraph(
 }
 
 /** Rename a graph. Allowed for any source (default included). */
-export function renameGraph(
-  c: SWCharacter,
-  graphId: string,
-  newName: string
-): SWCharacter {
+export function renameGraph(c: SWCharacter, graphId: string, newName: string): SWCharacter {
   const trimmed = newName.trim();
   if (!trimmed) return c;
   const list = c.ownedGraphs ?? [];
   if (!list.some((og) => og.id === graphId)) return c;
   return {
     ...c,
-    ownedGraphs: list.map((og) =>
-      og.id === graphId ? { ...og, name: trimmed } : og
-    ),
+    ownedGraphs: list.map((og) => (og.id === graphId ? { ...og, name: trimmed } : og)),
     updatedAt: new Date().toISOString()
   };
 }
@@ -196,12 +179,9 @@ export function deleteGraph(c: SWCharacter, graphId: string): SWCharacter {
  * Returns null if the swap is a no-op (target missing or already active).
  * Otherwise returns the updated character + the log entry it appended.
  */
-export function swapToGraph(
-  c: SWCharacter,
-  toGraphId: string
-): { updated: SWCharacter; logEntry: AdvancementLogEntry } | null {
+export function swapToGraph(c: SWCharacter, toGraphId: string): { updated: SWCharacter; logEntry: AdvancementLogEntry } | null {
   const list = c.ownedGraphs ?? [];
-  const fromGraphId = c.activeGraphId ?? (list[0]?.id ?? '');
+  const fromGraphId = c.activeGraphId ?? list[0]?.id ?? '';
   const toEntry = list.find((og) => og.id === toGraphId);
   const fromEntry = list.find((og) => og.id === fromGraphId);
   if (!toEntry || fromGraphId === toGraphId) return null;
@@ -212,13 +192,9 @@ export function swapToGraph(
     activeGraphId: toGraphId,
     updatedAt: new Date().toISOString()
   };
-  const changes: string[] = [
-    `Swapped active graph: ${fromEntry?.name ?? '<unknown>'} → ${toEntry.name}`
-  ];
+  const changes: string[] = [`Swapped active graph: ${fromEntry?.name ?? '<unknown>'} → ${toEntry.name}`];
   if (appliedNode) {
-    changes.push(
-      `Note: node at (${pos.x}, ${pos.y}) on new graph was NOT applied (use GraphSwapModal for effects).`
-    );
+    changes.push(`Note: node at (${pos.x}, ${pos.y}) on new graph was NOT applied (use GraphSwapModal for effects).`);
   } else {
     changes.push('No node at current coord on new graph — no effects applied.');
   }
@@ -247,11 +223,7 @@ export function swapToGraph(
  * uniquely identifies it within the graph — passing a node with the same
  * coords as an existing one replaces it. Default graphs are immutable.
  */
-export function setGraphNode(
-  c: SWCharacter,
-  graphId: string,
-  node: TypeGraphNode
-): SWCharacter {
+export function setGraphNode(c: SWCharacter, graphId: string, node: TypeGraphNode): SWCharacter {
   if (!canEditGraphNodes(c, graphId)) return c;
   return {
     ...c,
@@ -269,12 +241,7 @@ export function setGraphNode(
 }
 
 /** Remove a node from a custom or looted graph. */
-export function removeGraphNode(
-  c: SWCharacter,
-  graphId: string,
-  x: number,
-  y: number
-): SWCharacter {
+export function removeGraphNode(c: SWCharacter, graphId: string, x: number, y: number): SWCharacter {
   if (!canEditGraphNodes(c, graphId)) return c;
   return {
     ...c,
@@ -291,11 +258,7 @@ export function removeGraphNode(
 }
 
 /** Update graph notes / metadata fields (name + notes). Allowed on any source. */
-export function setGraphMeta(
-  c: SWCharacter,
-  graphId: string,
-  patch: { name?: string; notes?: string }
-): SWCharacter {
+export function setGraphMeta(c: SWCharacter, graphId: string, patch: { name?: string; notes?: string }): SWCharacter {
   return {
     ...c,
     ownedGraphs: (c.ownedGraphs ?? []).map((og) => {

@@ -11,9 +11,10 @@ import type {
   EquipmentItem,
   CharacterWeapon,
   CharacterArmor,
-  StackComposition
+  StackComposition,
+  PursePile
 } from '$lib/models/SWCharacter';
-import { BASE_EQUIPMENT_SLOTS, BACKPACK_BONUS_SLOTS, sumComposition } from '$lib/models/SWCharacter';
+import { BASE_EQUIPMENT_SLOTS, sumComposition } from '$lib/models/SWCharacter';
 import type { Stack } from '$lib/models/Enums';
 import { ALL_STACKS } from '$lib/models/Enums';
 import { getBackground } from '$lib/data/backgrounds';
@@ -254,32 +255,48 @@ export function applyBonusesComposed(opts: {
 // EQUIPMENT SLOTS
 // ============================================
 
-/** Total equipment slots: base 10 + (backpack ? +5 : 0) + Carry formula etc. */
+/** Total equipment slots: base 10 + net capacity from active equipped containers. */
 export function totalSlots(c: SWCharacter): number {
-  const hasBackpack = c.inventory.some(
-    (i) => i.location === 'slot10' && /backpack|valise/i.test(i.name)
-  );
-  return BASE_EQUIPMENT_SLOTS + (hasBackpack ? BACKPACK_BONUS_SLOTS : 0);
+  const containerBonus = c.inventory.reduce((sum, item) => {
+    if (item.stashed || !item.equipped || !item.isContainer) return sum;
+    return sum + Math.max(0, (item.containerSlots ?? 0) - item.slots);
+  }, 0);
+  return BASE_EQUIPMENT_SLOTS + containerBonus;
 }
 
-/** Slot count of carried items (worn + slot10 + backpack). */
+const MINOR_PER_MAJOR_CURRENCY = 10;
+const MAJOR_CURRENCY_PER_MONEY_SLOT = 10;
+
+function majorCurrencyEquivalent(major: number, minor: number): number {
+  return major + minor / MINOR_PER_MAJOR_CURRENCY;
+}
+
+function filledSlots(amount: number, perSlot: number): number {
+  if (amount <= 0) return 0;
+  return Math.ceil(amount / perSlot);
+}
+
+/** Slot count for on-hand money. Stashed money is off-character and does not count. */
+export function carriedMoneySlots(purse: PursePile): number {
+  return (
+    filledSlots(majorCurrencyEquivalent(purse.parts, purse.smallParts), MAJOR_CURRENCY_PER_MONEY_SLOT) +
+    filledSlots(majorCurrencyEquivalent(purse.energyPacks, purse.energyCells), MAJOR_CURRENCY_PER_MONEY_SLOT)
+  );
+}
+
+/** Slot count of carried items. Stashed items and stashed money are off-character and do not count. */
 export function usedSlots(c: SWCharacter): number {
-  let used = 0;
+  let used = carriedMoneySlots(c.purse);
   for (const item of c.inventory) {
-    if (
-      item.location === 'worn' ||
-      item.location === 'slot10' ||
-      item.location === 'backpack' ||
-      item.location === 'mission'
-    ) {
+    if (!item.stashed && item.location !== 'storage') {
       used += item.slots;
     }
   }
   for (const w of c.weapons) {
-    if (w.equipped) used += w.slots;
+    if (!w.stashed) used += w.slots;
   }
   for (const a of c.armor) {
-    if (a.equipped) used += a.slots;
+    if (!a.stashed) used += a.slots;
   }
   return used;
 }
@@ -314,9 +331,25 @@ export function ammoTotal(w: CharacterWeapon | EquipmentItem): number {
 // MONEY
 // ============================================
 
-/** Total Parts equivalent: 1 E = 10 P; energy packs are NOT money. */
+/** Display a Parts-equivalent amount without noisy floating point tails. */
+export function formatPartsEquivalent(value: number): string {
+  if (Number.isInteger(value)) return String(value);
+  return value.toFixed(1).replace(/\.0$/, '');
+}
+
+/** On-hand Parts equivalent: 1 E = 10 P; 1 e = 1 P; 10 p = 1 P. */
+export function onHandCashInParts(c: SWCharacter): number {
+  return c.purse.parts + c.purse.smallParts / 10 + c.purse.energyPacks * 10 + c.purse.energyCells;
+}
+
+/** Stashed Parts equivalent: 1 E = 10 P; 1 e = 1 P; 10 p = 1 P. */
+export function stashedCashInParts(c: SWCharacter): number {
+  return c.purse.stashedParts + c.purse.stashedSmallParts / 10 + c.purse.stashedEnergyPacks * 10 + c.purse.stashedEnergyCells;
+}
+
+/** Total Parts equivalent across on-hand and stashed money. */
 export function totalCashInParts(c: SWCharacter): number {
-  return c.purse.parts + c.purse.eCredits * 10;
+  return onHandCashInParts(c) + stashedCashInParts(c);
 }
 
 // ============================================
@@ -344,6 +377,25 @@ export function isNaniteCap(c: SWCharacter): boolean {
 
 import type { HarmTrackers } from '$lib/models/SWCharacter';
 
+function isLockedHarmStatus(status: HarmTrackers['status']): boolean {
+  return (
+    status === 'injured' ||
+    status === 'injured-knocked-down' ||
+    status === 'injured-knocked-out' ||
+    status === 'dying' ||
+    status === 'comatose' ||
+    status === 'dead'
+  );
+}
+
+function recomputeActiveHarmStatus(c: SWCharacter, h: HarmTrackers): HarmTrackers['status'] {
+  if (h.naniteTaken >= h.naniteCap) return 'comatose';
+  if (h.harmTaken >= h.harmCap) return 'end-roll-pending';
+  if (h.harmTaken > c.stacks.bulk) return h.endRollSuspended ? 'suspended' : 'end-roll-pending';
+  if (h.harmTaken > 0 || h.naniteTaken > 0) return 'harmed';
+  return 'unharmed';
+}
+
 /** End-roll DN per rules/46:24 — max(physical, nanite). */
 export function endRollDN(h: HarmTrackers): number {
   return Math.max(h.harmTaken, h.naniteTaken);
@@ -368,31 +420,23 @@ export function isForcedRoll(h: HarmTrackers): boolean {
 /**
  * Apply physical damage. Pure — returns a patched HarmTrackers.
  * Caps at 20 (rules/46:3). Recomputes status:
- *   - clean → harmed (1..bulk)
- *   - harmed → at-risk (> bulk)
- *   - at-risk stays at-risk (or forced-roll at 20)
- *   - already injured-ko / dying / dead are NOT regressed by new damage —
+ *   - unharmed → harmed (1..bulk)
+ *   - harmed → end-roll-pending (> bulk)
+ *   - end-roll-pending stays pending (or forced at 20)
+ *   - already injured-knocked-out / dying / dead are NOT regressed by new damage —
  *     they need their own resolution flow.
  */
 export function applyPhysicalHarm(c: SWCharacter, dmg: number): HarmTrackers {
   const h = { ...c.harm };
-  const bulk = c.stacks.bulk;
   if (dmg <= 0) return h;
   // No-op if already terminal.
   if (h.status === 'dead') return h;
   h.harmTaken = Math.min(h.harmTaken + dmg, h.harmCap);
-  if (h.status === 'dying' || h.status === 'injured-ko' || h.status === 'comatose') {
+  if (isLockedHarmStatus(h.status)) {
     return h; // status unchanged by raw damage in these states
   }
-  if (h.harmTaken >= h.harmCap) {
-    // Forced roll — kills any active suspend.
-    h.status = 'at-risk';
-    h.endRollSuspended = false;
-  } else if (h.harmTaken > bulk) {
-    h.status = h.endRollSuspended ? 'suspended' : 'at-risk';
-  } else if (h.harmTaken > 0) {
-    h.status = 'harmed';
-  }
+  if (h.harmTaken >= h.harmCap) h.endRollSuspended = false;
+  h.status = recomputeActiveHarmStatus(c, h);
   return h;
 }
 
@@ -409,6 +453,8 @@ export function applyNaniteHarm(c: SWCharacter, cost: number, comaDaysIfMaxed?: 
   if (h.naniteTaken >= h.naniteCap) {
     h.status = 'comatose';
     h.comaDays = comaDaysIfMaxed ?? null;
+  } else if (!isLockedHarmStatus(h.status)) {
+    h.status = recomputeActiveHarmStatus(c, h);
   }
   return h;
 }
@@ -417,10 +463,7 @@ export function applyNaniteHarm(c: SWCharacter, cost: number, comaDaysIfMaxed?: 
 export function healPhysicalHarm(c: SWCharacter, amount: number): HarmTrackers {
   const h = { ...c.harm };
   h.harmTaken = Math.max(0, h.harmTaken - amount);
-  if (h.status !== 'dying' && h.status !== 'injured-ko' && h.status !== 'comatose' && h.status !== 'dead') {
-    if (h.harmTaken === 0 && h.naniteTaken === 0) h.status = 'clean';
-    else if (h.harmTaken > 0 && h.harmTaken <= c.stacks.bulk) h.status = 'harmed';
-  }
+  if (!isLockedHarmStatus(h.status)) h.status = recomputeActiveHarmStatus(c, h);
   return h;
 }
 
@@ -429,8 +472,10 @@ export function healNaniteHarm(c: SWCharacter, amount: number): HarmTrackers {
   const h = { ...c.harm };
   h.naniteTaken = Math.max(0, h.naniteTaken - amount);
   if (h.status === 'comatose' && h.naniteTaken < h.naniteCap) {
-    h.status = h.harmTaken === 0 ? 'clean' : 'harmed';
     h.comaDays = null;
+  }
+  if (!isLockedHarmStatus(h.status) || (h.status === 'comatose' && h.naniteTaken < h.naniteCap)) {
+    h.status = recomputeActiveHarmStatus(c, h);
   }
   return h;
 }
@@ -441,13 +486,13 @@ export function endRollPass(c: SWCharacter): HarmTrackers {
   h.harmTaken = 0;
   h.endRollSuspended = false;
   h.suspendedAtHarm = 0;
-  h.status = h.naniteTaken > 0 ? 'harmed' : 'clean';
+  h.status = h.naniteTaken > 0 ? 'harmed' : 'unharmed';
   return h;
 }
 
 /**
  * End-roll failed (rules/46:29 + rules/50). Branches by harm level:
- *   - < 20 → injured-ko (but a True Grit Ghost roll comes next)
+ *   - < 20 → injured-knocked-out (but a True Grit Ghost roll comes next)
  *   - = 20 → dying (start hidden d20 timer; Prime gets minutes)
  */
 export function endRollFail(c: SWCharacter, dyingTimerD20?: number): HarmTrackers {
@@ -458,7 +503,7 @@ export function endRollFail(c: SWCharacter, dyingTimerD20?: number): HarmTracker
     h.dyingTimer = dyingTimerD20 ?? null;
     h.dyingTimerUnit = c.type === 'prime' ? 'minute' : 'round';
   } else {
-    h.status = 'injured-ko';
+    h.status = 'injured-knocked-out';
   }
   return h;
 }
@@ -473,13 +518,13 @@ export function suspendEndRoll(c: SWCharacter): HarmTrackers {
   return h;
 }
 
-/** Reset everything to clean (long-rest, GM override, etc.). */
+/** Reset everything to unharmed (long-rest, GM override, etc.). */
 export function resetHarm(c: SWCharacter): HarmTrackers {
   return {
     ...c.harm,
     harmTaken: 0,
     naniteTaken: 0,
-    status: 'clean',
+    status: 'unharmed',
     endRollSuspended: false,
     suspendedAtHarm: 0,
     dyingTimer: null,
@@ -487,21 +532,34 @@ export function resetHarm(c: SWCharacter): HarmTrackers {
     bleeding: false,
     bloodShed: 0,
     comaDays: null,
-    shiftUpPenalty: false
+    shiftUpPenalty: false,
+    statusNote: ''
   };
 }
 
 /** Friendly status label + color hint for the badge. */
 export function statusBadge(status: HarmTrackers['status']): { label: string; tone: 'ok' | 'warn' | 'danger' | 'critical' } {
   switch (status) {
-    case 'clean':       return { label: 'Clean',       tone: 'ok' };
-    case 'harmed':      return { label: 'Harmed',      tone: 'warn' };
-    case 'at-risk':     return { label: 'At risk',     tone: 'danger' };
-    case 'suspended':   return { label: 'Suspended',   tone: 'danger' };
-    case 'injured-ko':  return { label: 'Injured · KO', tone: 'critical' };
-    case 'dying':       return { label: 'Dying',       tone: 'critical' };
-    case 'comatose':    return { label: 'Comatose',    tone: 'critical' };
-    case 'dead':        return { label: 'Dead',        tone: 'critical' };
+    case 'unharmed':
+      return { label: 'Unharmed', tone: 'ok' };
+    case 'harmed':
+      return { label: 'Harmed', tone: 'warn' };
+    case 'end-roll-pending':
+      return { label: 'End roll pending', tone: 'danger' };
+    case 'suspended':
+      return { label: 'End roll suspended', tone: 'danger' };
+    case 'injured':
+      return { label: 'Injured', tone: 'critical' };
+    case 'injured-knocked-down':
+      return { label: 'Injured + knocked down', tone: 'critical' };
+    case 'injured-knocked-out':
+      return { label: 'Injured + knocked out', tone: 'critical' };
+    case 'dying':
+      return { label: 'Dying', tone: 'critical' };
+    case 'comatose':
+      return { label: 'Comatose', tone: 'critical' };
+    case 'dead':
+      return { label: 'Dead', tone: 'critical' };
   }
 }
 
@@ -510,15 +568,15 @@ export function statusBadge(status: HarmTrackers['status']): { label: string; to
 // ============================================
 
 export function equippedArmor(c: SWCharacter): CharacterArmor | undefined {
-  return c.armor.find((a) => a.equipped && !a.isShield && !a.isHelmet);
+  return c.armor.find((a) => a.equipped && !a.stashed && !a.isShield && !a.isHelmet);
 }
 
 export function equippedShield(c: SWCharacter): CharacterArmor | undefined {
-  return c.armor.find((a) => a.equipped && a.isShield);
+  return c.armor.find((a) => a.equipped && !a.stashed && a.isShield);
 }
 
 export function equippedHelmet(c: SWCharacter): CharacterArmor | undefined {
-  return c.armor.find((a) => a.equipped && a.isHelmet);
+  return c.armor.find((a) => a.equipped && !a.stashed && a.isHelmet);
 }
 
 // ============================================
@@ -542,6 +600,12 @@ export interface CharacterSummary {
   encumbrance: 'ok' | 'overloaded' | 'severely_overloaded';
   /** Cash in equivalent Parts. */
   cashInParts: number;
+  /** On-hand cash in equivalent Parts. */
+  onHandCashInParts: number;
+  /** Stashed cash in equivalent Parts. */
+  stashedCashInParts: number;
+  /** Slots consumed by on-hand money. */
+  moneySlotsUsed: number;
 }
 
 export function summarize(c: SWCharacter): CharacterSummary {
@@ -555,7 +619,10 @@ export function summarize(c: SWCharacter): CharacterSummary {
     slotsUsed: usedSlots(c),
     slotsCap: totalSlots(c),
     encumbrance: encumbranceStatus(c),
-    cashInParts: totalCashInParts(c)
+    cashInParts: totalCashInParts(c),
+    onHandCashInParts: onHandCashInParts(c),
+    stashedCashInParts: stashedCashInParts(c),
+    moneySlotsUsed: carriedMoneySlots(c.purse)
   };
 }
 

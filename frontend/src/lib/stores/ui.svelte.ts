@@ -157,11 +157,19 @@ export function initTheme(savedTheme?: string): void {
 let autoCheckUpdates = $state(true);
 let autoInstallUpdates = $state(false);
 
-export function getAutoCheckUpdates(): boolean { return autoCheckUpdates; }
-export function getAutoInstallUpdates(): boolean { return autoInstallUpdates; }
+export function getAutoCheckUpdates(): boolean {
+  return autoCheckUpdates;
+}
+export function getAutoInstallUpdates(): boolean {
+  return autoInstallUpdates;
+}
 
-export function setAutoCheckUpdates(v: boolean): void { autoCheckUpdates = v; }
-export function setAutoInstallUpdates(v: boolean): void { autoInstallUpdates = v; }
+export function setAutoCheckUpdates(v: boolean): void {
+  autoCheckUpdates = v;
+}
+export function setAutoInstallUpdates(v: boolean): void {
+  autoInstallUpdates = v;
+}
 
 export function initUpdaterPrefs(opts: { autoCheck?: string; autoInstall?: string }): void {
   if (opts.autoCheck !== undefined) autoCheckUpdates = opts.autoCheck === 'true';

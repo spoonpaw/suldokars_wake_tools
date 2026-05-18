@@ -31,10 +31,7 @@ export async function checkForAppUpdate(opts?: { silentIfNone?: boolean; force?:
   } catch (e) {
     console.warn('[updater] check failed:', e);
     if (!silentIfNone) {
-      await message(
-        'Could not check for updates. Try again later.',
-        { title: 'Update check failed', kind: 'warning' }
-      );
+      await message('Could not check for updates. Try again later.', { title: 'Update check failed', kind: 'warning' });
     }
     return;
   }
@@ -53,15 +50,12 @@ export async function checkForAppUpdate(opts?: { silentIfNone?: boolean; force?:
   // Manual checks still always confirm.
   const autoInstall = !force && getAutoInstallUpdates();
   if (!autoInstall) {
-    const proceed = await ask(
-      `Suldokar's Wake Tools ${update.version} is available. Download and install?`,
-      {
-        title: 'Update available',
-        kind: 'info',
-        okLabel: 'Update',
-        cancelLabel: 'Later'
-      }
-    );
+    const proceed = await ask(`Suldokar's Wake Tools ${update.version} is available. Download and install?`, {
+      title: 'Update available',
+      kind: 'info',
+      okLabel: 'Update',
+      cancelLabel: 'Later'
+    });
     if (!proceed) return;
   }
 
@@ -71,9 +65,6 @@ export async function checkForAppUpdate(opts?: { silentIfNone?: boolean; force?:
     await relaunch();
   } catch (e) {
     console.error('[updater] install failed:', e);
-    await message(
-      `Update failed to install: ${e instanceof Error ? e.message : String(e)}`,
-      { title: 'Update failed', kind: 'error' }
-    );
+    await message(`Update failed to install: ${e instanceof Error ? e.message : String(e)}`, { title: 'Update failed', kind: 'error' });
   }
 }

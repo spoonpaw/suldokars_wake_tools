@@ -6,7 +6,15 @@
   import { getDetailTab, setDetailTab } from '$lib/stores/ui.svelte';
   import { characterStore } from '$lib/stores';
   import { Badge, Button, Card } from '$lib/components/ui';
-  import { summarize, encumbranceStatus, statusBadge } from '$lib/utils/computed';
+  import {
+    carriedMoneySlots,
+    encumbranceStatus,
+    formatPartsEquivalent,
+    onHandCashInParts,
+    stashedCashInParts,
+    statusBadge,
+    summarize
+  } from '$lib/utils/computed';
 
   /** Map harm-status tone to Tailwind class string for the header badge. */
   function harmBadgeTone(status: SWCharacter['harm']['status']): { label: string; classes: string } {
@@ -30,6 +38,7 @@
   import LanguagesPanel from '$lib/components/character/LanguagesPanel.svelte';
   import HarmTrackerPanel from '$lib/components/character/HarmTrackerPanel.svelte';
   import EquipmentSection from '$lib/components/character/equipment/EquipmentSection.svelte';
+  import StackCompositionPanel from '$lib/components/character/StackCompositionPanel.svelte';
 
   const id = $derived(page.params.id ?? '');
   const character = $derived<SWCharacter | undefined>(characterStore.getCharacter(id));
@@ -95,9 +104,7 @@
   {@const enc = encumbranceStatus(character)}
   {@const tgPos = character.typeGraphPosition ?? { x: 0, y: 0 }}
   {@const graph = getActiveGraph(character)}
-  {@const currentNode = (tgPos.x === 0 && tgPos.y === 0)
-    ? null
-    : graph.nodes.find((n) => n.x === tgPos.x && n.y === tgPos.y) ?? null}
+  {@const currentNode = tgPos.x === 0 && tgPos.y === 0 ? null : (graph.nodes.find((n) => n.x === tgPos.x && n.y === tgPos.y) ?? null)}
 
   <main class="mx-auto max-w-4xl px-4 py-6">
     <!--
@@ -150,7 +157,9 @@
 
         <!-- Row 3: stat chips (status + harm + advancement state, all inline) -->
         <div class="flex flex-wrap items-center gap-1 text-[11px]">
-          <span class={`rounded-full px-2 py-0.5 font-bold uppercase ${harmBadgeTone(character.harm.status).classes}`}>{harmBadgeTone(character.harm.status).label}</span>
+          <span class={`rounded-full px-2 py-0.5 font-bold uppercase ${harmBadgeTone(character.harm.status).classes}`}
+            >{harmBadgeTone(character.harm.status).label}</span
+          >
           <span class="rounded-full bg-red-900/30 px-2 py-0.5 text-red-200">
             P harm <strong>{character.harm.harmTaken}</strong>/{character.harm.harmCap}
           </span>
@@ -163,7 +172,8 @@
             </span>
           {/if}
           <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
-            Sh <strong class="text-neutral-100">{character.shadow}</strong> · G <strong class="text-neutral-100">{character.guntaValue}</strong>
+            Sh <strong class="text-neutral-100">{character.shadow}</strong> · G
+            <strong class="text-neutral-100">{character.guntaValue}</strong>
           </span>
           <span class="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
             Imp <strong class="text-neutral-100">{character.implants.length}/{character.origo.implants}</strong>
@@ -198,7 +208,11 @@
     {#if tab === 'overview'}
       <div class="space-y-3">
         <!-- Three info panels — collapsed by default, click to expand -->
-        <TypeInfoPanel type={character.type} bind:expanded={typeExpanded} />
+        <TypeInfoPanel
+          type={character.type}
+          bind:expanded={typeExpanded}
+          activeBond={character.coreBond && character.coreBond !== 'none' ? character.coreBond : undefined}
+        />
         <LifeFormInfoPanel
           lifeForm={character.lifeForm}
           bind:expanded={lfExpanded}
@@ -236,114 +250,15 @@
           <Card title="At a glance">
             <p class="text-sm text-neutral-300">Slots: {summary.slotsUsed} / {summary.slotsCap} ({enc})</p>
             <p class="text-sm text-neutral-300">Total ammo: {summary.totalAmmo}</p>
-            <p class="text-sm text-neutral-300">Cash equivalent: {summary.cashInParts} P</p>
+            <p class="text-sm text-neutral-300">Money total: {formatPartsEquivalent(summary.cashInParts)} P equivalent</p>
+            <p class="text-sm text-neutral-300">
+              Money carried: {formatPartsEquivalent(summary.onHandCashInParts)} P equivalent · {summary.moneySlotsUsed} slots
+            </p>
           </Card>
         </div>
       </div>
     {:else if tab === 'stacks'}
-      <!--
-        Stack & combat breakdown — TABULAR layout per stack with right-aligned
-        numeric columns. Zero-contribution columns render muted so the eye
-        skips them. Combat stacks (Close/Ranged) are visually separated from
-        the six primary stacks by a "Combat" divider row. On narrow screens
-        the table collapses to a stacked-card layout (one card per stack
-        with breakdown inline) — driven by Tailwind `md:` breakpoints.
-      -->
-      {@const stackRows = [
-        { id: 'archive', label: 'Archive', combat: false },
-        { id: 'bulk', label: 'Bulk', combat: false },
-        { id: 'ghost', label: 'Ghost', combat: false },
-        { id: 'morph', label: 'Morph', combat: false },
-        { id: 'speed', label: 'Speed', combat: false },
-        { id: 'tech', label: 'Tech', combat: false },
-        { id: 'close', label: 'Close', combat: true },
-        { id: 'ranged', label: 'Ranged', combat: true }
-      ] as const}
-      {@const fmtSigned = (n: number, mute = false) => {
-        if (n === 0) return mute ? '·' : '0';
-        return (n > 0 ? '+' : '') + n;
-      }}
-      <Card title="Stacks & Combat">
-        <p class="mb-3 text-xs text-neutral-500">
-          Each row sums Base + Life-form + Background + Implant + Other → Final.
-          Zero contributions render as · to keep the column scannable.
-        </p>
-
-        <!-- DESKTOP: proper table, right-aligned numeric columns -->
-        <div class="hidden md:block">
-          <table class="w-full text-sm tabular-nums">
-            <thead>
-              <tr class="border-b border-neutral-800 text-xs uppercase tracking-wider text-neutral-500">
-                <th class="py-2 pr-4 text-left font-medium">Stack</th>
-                <th class="py-2 px-2 text-center font-medium">Base</th>
-                <th class="py-2 px-2 text-center font-medium">+LF</th>
-                <th class="py-2 px-2 text-center font-medium">+BG</th>
-                <th class="py-2 px-2 text-center font-medium">+Imp</th>
-                <th class="py-2 px-2 text-center font-medium">+Other</th>
-                <th class="py-2 pl-4 text-right font-medium">= Final</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each stackRows as s, idx (s.id)}
-                {#if s.combat && (idx === 0 || !stackRows[idx - 1].combat)}
-                  <tr>
-                    <td colspan="7" class="pt-3 pb-1 text-xs uppercase tracking-wider text-neutral-500">
-                      Combat
-                    </td>
-                  </tr>
-                {/if}
-                {@const comp = character.stackComposition?.[s.id] ?? {
-                  base: 0,
-                  lifeFormBonus: 0,
-                  backgroundBonus: 0,
-                  implantBonus: 0,
-                  other: 0,
-                  final: character.stacks[s.id]
-                }}
-                <tr class="border-t border-neutral-800/60">
-                  <td class="py-2 pr-4 text-left font-semibold text-neutral-100">{s.label}</td>
-                  <td class={`py-2 px-2 text-center ${comp.base === 0 ? 'text-neutral-600' : 'text-neutral-200'}`}>{comp.base === 0 ? '·' : comp.base}</td>
-                  <td class={`py-2 px-2 text-center ${comp.lifeFormBonus === 0 ? 'text-neutral-600' : 'text-neutral-200'}`}>{fmtSigned(comp.lifeFormBonus, true)}</td>
-                  <td class={`py-2 px-2 text-center ${comp.backgroundBonus === 0 ? 'text-neutral-600' : 'text-neutral-200'}`}>{fmtSigned(comp.backgroundBonus, true)}</td>
-                  <td class={`py-2 px-2 text-center ${comp.implantBonus === 0 ? 'text-neutral-600' : 'text-neutral-200'}`}>{fmtSigned(comp.implantBonus, true)}</td>
-                  <td class={`py-2 px-2 text-center ${comp.other === 0 ? 'text-neutral-600' : 'text-neutral-200'}`}>{fmtSigned(comp.other, true)}</td>
-                  <td class="py-2 pl-4 text-right text-lg font-bold text-cyan-300">{comp.final}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- MOBILE: stacked cards, one per stack -->
-        <div class="md:hidden space-y-2">
-          {#each stackRows as s, idx (s.id)}
-            {#if s.combat && (idx === 0 || !stackRows[idx - 1].combat)}
-              <p class="pt-2 text-xs uppercase tracking-wider text-neutral-500">Combat</p>
-            {/if}
-            {@const comp = character.stackComposition?.[s.id] ?? {
-              base: 0,
-              lifeFormBonus: 0,
-              backgroundBonus: 0,
-              implantBonus: 0,
-              other: 0,
-              final: character.stacks[s.id]
-            }}
-            <div class="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-              <div class="flex items-baseline justify-between">
-                <span class="font-semibold text-neutral-100">{s.label}</span>
-                <span class="text-2xl font-bold text-cyan-300 tabular-nums">{comp.final}</span>
-              </div>
-              <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs tabular-nums">
-                <span class={comp.base === 0 ? 'text-neutral-600' : 'text-neutral-300'}>Base {comp.base}</span>
-                {#if comp.lifeFormBonus !== 0}<span class="text-neutral-300">LF {fmtSigned(comp.lifeFormBonus)}</span>{/if}
-                {#if comp.backgroundBonus !== 0}<span class="text-neutral-300">BG {fmtSigned(comp.backgroundBonus)}</span>{/if}
-                {#if comp.implantBonus !== 0}<span class="text-neutral-300">Imp {fmtSigned(comp.implantBonus)}</span>{/if}
-                {#if comp.other !== 0}<span class="text-neutral-300">Other {fmtSigned(comp.other)}</span>{/if}
-              </div>
-            </div>
-          {/each}
-        </div>
-      </Card>
+      <StackCompositionPanel {character} />
     {:else if tab === 'advancement'}
       <!--
         View-mode embeds the same panel but read-only. The panel hides bank
@@ -378,7 +293,9 @@
         <ul class="space-y-2">
           {#each character.spaces as s (s.id)}
             <li class="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-              <p class="font-semibold text-neutral-100">{s.name} <span class="text-xs text-neutral-500">({s.kind}{s.active ? ', active' : ''})</span></p>
+              <p class="font-semibold text-neutral-100">
+                {s.name} <span class="text-xs text-neutral-500">({s.kind}{s.active ? ', active' : ''})</span>
+              </p>
               <p class="text-sm text-neutral-300">{s.effect}</p>
               {#if s.notes}<p class="text-xs text-neutral-500">{s.notes}</p>{/if}
             </li>
@@ -427,14 +344,38 @@
     {:else if tab === 'identity'}
       {@const id_ = character.identity}
       <dl class="space-y-2 text-sm text-neutral-200">
-        {#if id_.age}<div><dt class="text-neutral-500">Age</dt><dd>{id_.age}</dd></div>{/if}
-        {#if id_.gender}<div><dt class="text-neutral-500">Gender</dt><dd>{id_.gender}</dd></div>{/if}
-        {#if id_.appearance}<div><dt class="text-neutral-500">Appearance</dt><dd>{id_.appearance}</dd></div>{/if}
-        {#if id_.speech}<div><dt class="text-neutral-500">Speech</dt><dd>{id_.speech}</dd></div>{/if}
-        {#if id_.habits}<div><dt class="text-neutral-500">Habits</dt><dd class="whitespace-pre-line">{id_.habits}</dd></div>{/if}
-        {#if id_.orientation}<div><dt class="text-neutral-500">Orientation</dt><dd>{id_.orientation}</dd></div>{/if}
-        {#if id_.demeanor}<div><dt class="text-neutral-500">Demeanor</dt><dd>{id_.demeanor}</dd></div>{/if}
-        {#if id_.notes}<div><dt class="text-neutral-500">Notes</dt><dd class="whitespace-pre-line">{id_.notes}</dd></div>{/if}
+        {#if id_.age}<div>
+            <dt class="text-neutral-500">Age</dt>
+            <dd>{id_.age}</dd>
+          </div>{/if}
+        {#if id_.gender}<div>
+            <dt class="text-neutral-500">Gender</dt>
+            <dd>{id_.gender}</dd>
+          </div>{/if}
+        {#if id_.appearance}<div>
+            <dt class="text-neutral-500">Appearance</dt>
+            <dd>{id_.appearance}</dd>
+          </div>{/if}
+        {#if id_.speech}<div>
+            <dt class="text-neutral-500">Speech</dt>
+            <dd>{id_.speech}</dd>
+          </div>{/if}
+        {#if id_.habits}<div>
+            <dt class="text-neutral-500">Habits</dt>
+            <dd class="whitespace-pre-line">{id_.habits}</dd>
+          </div>{/if}
+        {#if id_.orientation}<div>
+            <dt class="text-neutral-500">Orientation</dt>
+            <dd>{id_.orientation}</dd>
+          </div>{/if}
+        {#if id_.demeanor}<div>
+            <dt class="text-neutral-500">Demeanor</dt>
+            <dd>{id_.demeanor}</dd>
+          </div>{/if}
+        {#if id_.notes}<div>
+            <dt class="text-neutral-500">Notes</dt>
+            <dd class="whitespace-pre-line">{id_.notes}</dd>
+          </div>{/if}
       </dl>
     {:else if tab === 'hooks'}
       {#if character.hooks.length === 0}
@@ -477,9 +418,8 @@
             Advancement tab in edit mode.
           -->
           {@const sessions = character.sessionLog ?? []}
-          {@const lastSession = sessions.length > 0
-            ? [...sessions].sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())[0]
-            : null}
+          {@const lastSession =
+            sessions.length > 0 ? [...sessions].sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())[0] : null}
           <p class="mt-2 text-sm text-neutral-300">
             Sessions logged: <strong>{sessions.length}</strong>
             {#if lastSession}
@@ -489,21 +429,43 @@
           <p class="text-xs text-neutral-500">Log sessions / take advancement steps / roll back from the Advancement tab.</p>
         </Card>
         {#if character}
-          <HarmTrackerPanel character={character} readOnly />
+          <HarmTrackerPanel {character} readOnly />
         {/if}
-        <Card title="Money">
-          <p class="text-sm text-neutral-300">Parts: <strong>{character.purse.parts}</strong> P</p>
-          <p class="text-sm text-neutral-300">Energy: <strong>{character.purse.energy}</strong> e</p>
-          <p class="text-sm text-neutral-300">E-credits: <strong>{character.purse.eCredits}</strong> E</p>
-          {#if character.debts.length > 0}
-            <p class="mt-2 text-sm text-red-300">Debts:</p>
+        <div class="grid gap-3 sm:col-span-2 sm:grid-cols-2">
+          <Card title="Money on hand">
+            <p class="text-sm text-neutral-300">Parts: <strong>{character.purse.parts}</strong> P</p>
+            <p class="text-sm text-neutral-300">Small parts: <strong>{character.purse.smallParts}</strong> p</p>
+            <p class="text-sm text-neutral-300">Energy packs: <strong>{character.purse.energyPacks}</strong> E</p>
+            <p class="text-sm text-neutral-300">Energy cells: <strong>{character.purse.energyCells}</strong> e</p>
+            <div class="mt-3 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+              <p class="text-sm text-neutral-300">
+                Slots used: <strong class="text-cyan-300 tabular-nums">{carriedMoneySlots(character.purse)}</strong>
+              </p>
+              <p class="text-xs text-neutral-500">10 P or 10 E per slot; 10 p = 1 P, 10 e = 1 E.</p>
+            </div>
+            <p class="mt-2 text-xs text-neutral-500">Parts equivalent: {formatPartsEquivalent(onHandCashInParts(character))} P</p>
+          </Card>
+          <Card title="Money stashed">
+            <p class="text-sm text-neutral-300">Parts: <strong>{character.purse.stashedParts}</strong> P</p>
+            <p class="text-sm text-neutral-300">Small parts: <strong>{character.purse.stashedSmallParts}</strong> p</p>
+            <p class="text-sm text-neutral-300">Energy packs: <strong>{character.purse.stashedEnergyPacks}</strong> E</p>
+            <p class="text-sm text-neutral-300">Energy cells: <strong>{character.purse.stashedEnergyCells}</strong> e</p>
+            <div class="mt-3 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+              <p class="text-sm text-neutral-300">Slots used: <strong class="text-neutral-200">0</strong></p>
+              <p class="text-xs text-neutral-500">Off-character storage does not count against carry.</p>
+            </div>
+            <p class="mt-2 text-xs text-neutral-500">Parts equivalent: {formatPartsEquivalent(stashedCashInParts(character))} P</p>
+          </Card>
+        </div>
+        {#if character.debts.length > 0}
+          <Card title="Debts" class="sm:col-span-2">
             <ul class="text-sm text-red-300">
               {#each character.debts as d (d.id)}
                 <li>· {d.amount} P → {d.holder}</li>
               {/each}
             </ul>
-          {/if}
-        </Card>
+          </Card>
+        {/if}
       </div>
     {/if}
   </main>

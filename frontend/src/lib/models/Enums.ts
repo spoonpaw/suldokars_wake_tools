@@ -21,13 +21,7 @@ export const CHARACTER_TYPES: { id: CharacterType; label: string; tagline: strin
 // LIFE-FORM
 // ============================================
 
-export type LifeForm =
-  | 'blood'
-  | 'palp_alien'
-  | 'amphibious_alien'
-  | 'tank_born'
-  | 'droid'
-  | 'holid';
+export type LifeForm = 'blood' | 'palp_alien' | 'amphibious_alien' | 'tank_born' | 'droid' | 'holid';
 
 export const LIFE_FORMS: { id: LifeForm; label: string; group: 'blood' | 'alien' | 'tank_born' | 'construct' }[] = [
   { id: 'blood', label: 'Blood', group: 'blood' },
@@ -50,15 +44,7 @@ export function allowedLifeForms(pairs: number): LifeForm[] {
 // BACKGROUND
 // ============================================
 
-export type Background =
-  | 'enforcer'
-  | 'diplomat'
-  | 'entertainer'
-  | 'cultist'
-  | 'fixer'
-  | 'outrider'
-  | 'archivist'
-  | 'worker';
+export type Background = 'enforcer' | 'diplomat' | 'entertainer' | 'cultist' | 'fixer' | 'outrider' | 'archivist' | 'worker';
 
 export const BACKGROUNDS: { id: Background; label: string }[] = [
   { id: 'enforcer', label: 'Enforcer' },
@@ -92,6 +78,17 @@ export const STACK_LABELS: Record<Stack, string> = {
   tech: 'Tech',
   close: 'Close',
   ranged: 'Ranged'
+};
+
+export const STACK_DESCRIPTIONS: Record<Stack, string> = {
+  archive: 'Knowledge, memory, records',
+  bulk: 'Strength, endurance, harm',
+  ghost: 'Will, awareness, death',
+  morph: 'Body control, disguise, change',
+  speed: 'Reflexes, stealth, movement',
+  tech: 'Machines, tools, repair',
+  close: 'Melee and close fighting',
+  ranged: 'Guns and distance attacks'
 };
 
 // Single-letter shortcodes used in SW source (A, B, G, M, S, T, C, R)
@@ -137,14 +134,7 @@ export type Language =
 
 export type DamageDie = 'd3' | 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'special' | 'none';
 
-export type DamageType =
-  | 'slashing'
-  | 'piercing'
-  | 'bludgeoning'
-  | 'kinetic'
-  | 'energy'
-  | 'non-injuring'
-  | 'varies';
+export type DamageType = 'slashing' | 'piercing' | 'bludgeoning' | 'kinetic' | 'energy' | 'non-injuring' | 'varies';
 
 export type WeaponRange = 'melee' | 'room' | 'range' | 'long_range';
 
@@ -162,19 +152,19 @@ export const KIT_LABELS: Record<ConstructionKit, string> = {
 };
 
 // ============================================
-// CURRENCY (Parts, energy packs, e-credits)
+// CURRENCY (parts and energy, major/minor denominations)
 // ============================================
 //
-// Zira-Kaan economy uses Parts (P, smallest), energy packs (e), and digital
-// E-credits. 1 E = 10 P (per character sheet examples). Track each independently
-// since players almost always spend in only one denomination.
+// Zira-Kaan economy uses P-arts, p-arts, E-nergy packs, and e-nergy cells.
+// E:P, e:p, E:e, and P:p are all 1:10.
 
-export type Currency = 'parts' | 'energy' | 'e_credits';
+export type Currency = 'parts' | 'small_parts' | 'energy_packs' | 'energy_cells';
 
 export const CURRENCY_LABELS: Record<Currency, string> = {
   parts: 'P',
-  energy: 'e',
-  e_credits: 'E'
+  small_parts: 'p',
+  energy_packs: 'E',
+  energy_cells: 'e'
 };
 
 // ============================================
