@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Required-reason API declarations (Apple, since May 2024).
+	  Suldokar's Wake Tools is 100% offline. No data leaves the device.
+	  No third-party SDKs. No analytics. No tracking.
+
+	  The required-reason APIs declared here are all used INSIDE the
+	  app's own sandbox container, never to derive a user fingerprint
+	  or send data off-device.
+	-->
+
+	<key>NSPrivacyTracking</key>
+	<false/>
+
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- File-timestamp APIs (NSFileManager creation/modification dates,
+		     stat/lstat/getattrlist on container files).
+		     Used by SQLite + the JSON import/export path to read/write
+		     character save files inside the app container. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- C617.1: Read/write/modify timestamps of files inside the app container. -->
+				<string>C617.1</string>
+			</array>
+		</dict>
+
+		<!-- Disk-space APIs (NSFileManager attributesOfFileSystem,
+		     statfs).
+		     Used by SQLite and Tauri's file-system plugin to verify
+		     there is space before writing a character save or export. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- E174.1: Check disk space inside the app container before writing. -->
+				<string>E174.1</string>
+			</array>
+		</dict>
+
+		<!-- UserDefaults (CFPreferences, NSUserDefaults).
+		     Used by WKWebView for its own internal state (cookies / storage
+		     scoping) and indirectly by Tauri runtime bookkeeping. The app
+		     does not store user data in UserDefaults. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- CA92.1: Read/write defaults for the same app or app group. -->
+				<string>CA92.1</string>
+			</array>
+		</dict>
+
+		<!-- System boot time (mach_absolute_time, CACurrentMediaTime).
+		     Used internally by Rust + Tauri runtime to measure short
+		     elapsed intervals (timers, animation frame deltas, performance
+		     counters). Never associated with a user or sent off-device. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- 35F9.1: Measure elapsed time inside the app. -->
+				<string>35F9.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
