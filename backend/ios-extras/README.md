@@ -19,8 +19,14 @@ In addition, the following pbxproj edits must be re-applied to
 
 See git history for the exact UUID layout last used.
 
-The `Info.plist` in `gen/` also carries hand-edited keys
-(`UIFileSharingEnabled`, `LSSupportsOpeningDocumentsInPlace`,
-`CFBundleShortVersionString` 1.0.0) — those are regenerated from
-`backend/tauri.conf.json` + the source plist values on iOS builds, so
-they normally do not need recovery, but verify before App Store upload.
+The `Info.plist` in `gen/` carries `CFBundleShortVersionString` /
+`CFBundleVersion` that should mirror `version` in
+`backend/tauri.conf.json`. Tauri regenerates these from the source on
+iOS builds, so they normally do not need manual recovery — but verify
+before any App Store upload.
+
+`UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace` were
+added temporarily for sim debugging (to load fixture JSON via the
+Files app) and intentionally removed before the v1.0 ship. Do not
+re-add them without a deliberate product decision — they expose the
+app's Documents container to the user-facing Files app.
